@@ -1,0 +1,61 @@
+Number of inputs per network is always 3 (x, y coordinates and the difference in energy level of one of the opposing team predators)
+Number of outputs per predator network (or the predator itself) - outputSize=5 (Up, Down, Right, Left, Idle);                     
+Number of outputs per prey network (or the prey itself) - outputSize_prey=5 (Up, Down, Right, Left, Idle);                     
+
+
+Questions:
+1. Can we have a non toroidal world? - Probably yes
+2. Maxsteps =  1000 steps OR (100 steps after all the prey have been caught)
+3. Fitness function Predator
+   - High fitness if they kill the other predator
+   - Add a counter for computing number of collisions in 1000 trials 
+   
+4. Energy for Predator
+   - Eating prey gives the predator energy
+   - Running causes loss of energy with each step
+   - Higher energy predator can kill the low energy predator from other team
+   - Predator is killed when 2 predators are on the same location 
+
+5. Predators have the following information at their input
+   - Position of predators from other teams
+   - Position of prey (currently fixed)
+     - If the prey is caught then the corresponding neural network inputs are made zeros
+   - Energy difference between the other agents from other teams and itself
+
+6. Future expt 
+        - Predator know the exact energy level of the opponent but do not know their own
+        - Predator do not know the energy level of the opponent
+        - Add obstacles in the map
+        - Prey appear randomly one by one (only one prey in the map at a given time)
+        - Prey moves around with fixed rule
+        - Prey evolves
+        - Scale to teams and compete a evolved team vs. a scripted team
+        - performPredAction_complex & performPreyAction_complex - make sure that all the predators and prey move at the same time
+        - Start Loading from a file
+        - Make color coding scheme for predators-prey scalable
+7. Experiments 
+        - Energy based fitness 
+                - Initial energy = maxsteps
+                - Simulations stops once all prey are caught
+                - Multiple prey
+                - Predators lose 1 unit of energy per time step when idle as well as when moving 
+                - 1000 energy points on catching the prey
+                - How do we make sure that Predators have motivation to kill each other?
+                - Predators lose 1000 energy points if they are killed 
+        - multiple_prey_fixed_pos
+        - multiple_prey_pred_rand_pos
+        - multiple_prey_rand_pos
+        - single_prey_fixed_pos - 
+                - 1000 generations - Red pred eats moves toward the food and meanwhile green pred moves away from the red. Once the red pred eats the food, it starts chasing the green prey. Green prey then reverses its direction
+                - 500 generations - Green stays in place as red moves towards food. Then Green moves upwards, while red changes direction and tries to be in position as the green comes upwards, but green stops moving once the red has reached its final position.
+        - single_prey_rand_pos
+                - 500 generations - Nobody moves
+                - 1000 generations - Red moves 1 step towards the food and then nobody moves 
+        - single_prey_reappears_rand_pos
+
+8. Scripted Agents
+        - Predators
+                - Move away from the pursuer predator which is nearest as well as has Pursuer pred energy  > Pursued pred energy + distance between them
+                - Move towards the pursued predator which is nearest as well as has Pursuer pred energy  > Pursued pred energy + distance between them
+                - Move towards 
+
