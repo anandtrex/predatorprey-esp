@@ -1764,7 +1764,7 @@ void PredPrey::performHunterAction_complex(int hunter_team, int hunter,
         }
 
         hunterAction = (int) (drand48() * 4.0);
-        cout << "Hunter action is "<< hunterAction << endl;
+        //cout << "Hunter action is "<< hunterAction << endl;
         /* NOTE: Can use this to make hunter move towards predators (with modifications)
         if (y_dist < 0 && (abs(y_dist) >= abs(x_dist))) {
             //prey_y[prey]++;
