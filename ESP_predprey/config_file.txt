@@ -1,10 +1,10 @@
 1       // Specify the generation number from which we start the esp (if greater than one, then should have a corresponding .bin file to load from)
-1       // 1 - Simulation display is ON, 0 - OFF
+0       // 1 - Simulation display is ON, 0 - OFF
 1       // Specify after how many generations you want display
 20000   // Maximum number of generations
 1       // Number of predator teams
-3       // Number of predators in each team 
-1       // 1 - Fitness sharing in predator team, 0 - individual fitness in predator team (Change this only if there is only one prey team. If there are more than one team then see line 10)
+1       // Number of predators in each team 
+0       // 1 - Fitness sharing in predator team, 0 - individual fitness in predator team (Change this only if there is only one prey team. If there are more than one team then see line 10)
 0       // 1 - Direct communication in predator teams, 0 - No direct communication in predator teams
 0       // 1 - Broadcast Messaging in predator teams, 0 - No Broadcast Messaging in predator teams
 1       // Number of prey teams (For now, if there is more than 1 team then team 0 is mice (with individual rewards) and team 1 is zebra (with shared rewards))
@@ -14,4 +14,5 @@
 0       // 1 - Direct communication in prey teams, 0 - No direct communication in prey teams
 0       // 1 - Broadcast Messaging in prey teams, 0 - No Broadcast Messaging in prey teams
 100     // Reward for catching prey team 0 (If there are more prey teams, then add more lines below this to specify the prey team reward size)
-1       // Prey speed relative to the predator speed (If there are more prey teams, then add more lines below this to specify the prey team speed)
+0.8       // Prey speed relative to the predator speed (If there are more prey teams, then add more lines below this to specify the prey team speed)
+1       // Number of hunters

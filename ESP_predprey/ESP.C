@@ -204,6 +204,7 @@ int BURST_MUTATE = 0; //EVOLVE_PREY
 int BURST_MUTATE_PREY = 0; //EVOLVE_PREY
 
 int IS_COMBINER_NW = 0;
+// QUE What is combine?
 int COMBINE = 1;
 
 //int total_prey_networks_per_team = 2; //number of prey ******PADMINI //ADITYA
@@ -646,25 +647,21 @@ Esp::Esp(int num_of_predators, int num_of_prey, int num_teams_predator,
 
 	IS_PREY = false;
 	for (int j = 0; j < num_teams_predator; j++) {
-		IS_COMBINER_NW = 0;
-		for (int i = 0;
-				i
-						< total_predator_networks_per_team
-								- COMBINE * num_of_predators; i++) {
-			temp_overall_best_teams.push_back(genNetType(netType, numPops[i])); // generate new net
-			temp_overall_best_teams[i]->create(); // create net
-		}
-		IS_COMBINER_NW = 1;
-		for (int i = total_predator_networks_per_team
-				- COMBINE * num_of_predators;
-				i < total_predator_networks_per_team; i++) {
-			temp_overall_best_teams.push_back(genNetType(netType, numPops[i])); // generate new net
-			temp_overall_best_teams[i]->create(); // create net
-		}
-		overall_best_teams_sum_individual_fitness.push_back(0.0);
-		overall_best_teams.push_back(temp_overall_best_teams);
-		temp_overall_best_teams.clear();
-	}
+        IS_COMBINER_NW = 0;
+        for (int i = 0; i < total_predator_networks_per_team - COMBINE * num_of_predators; i++) {
+            temp_overall_best_teams.push_back(genNetType(netType, numPops[i]));  // generate new net
+            temp_overall_best_teams[i]->create();  // create net
+        }
+        IS_COMBINER_NW = 1;
+        for (int i = total_predator_networks_per_team - COMBINE * num_of_predators;
+                i < total_predator_networks_per_team; i++) {
+            temp_overall_best_teams.push_back(genNetType(netType, numPops[i]));  // generate new net
+            temp_overall_best_teams[i]->create();  // create net
+        }
+        overall_best_teams_sum_individual_fitness.push_back(0.0);
+        overall_best_teams.push_back(temp_overall_best_teams);
+        temp_overall_best_teams.clear();
+    }
 
 	IS_PREY = true;
 	for (int j = 0; j < num_teams_prey; j++) {
@@ -2400,6 +2397,12 @@ int main(int argc, char *argv[]) {
 	int netType;
 	bool analyze = false;
 
+	if(argc == 1){
+		cout << "Enter name of config file when running the command\n";
+		cout << "For example: \"./esp-predprey config_file.txt\"\n";
+		exit(1);
+	}
+
 	//*******************************Reading parameters from config file*************************
 
 	double value;
@@ -2436,6 +2439,9 @@ int main(int argc, char *argv[]) {
 		prey_move_probability.push_back((double) config_data[i]); // Prey speed relative to the predator speed (If there are more prey teams, then add more lines below this to specify the prey team speed)
 	}
 
+	int num_of_hunters = (int) config_data[i];
+	cout << "Num hunters in main is "<<num_of_hunters<<endl;
+
 	if (if_evolve_prey) {
 		cout << " Prey evolution is not supported now." << endl;
 		exit(0);
@@ -2448,7 +2454,7 @@ int main(int argc, char *argv[]) {
 	checkArgs(num_hidden_neurons, popSize);
 	reseed(seed);
 	PredPrey predprey(num_of_predators, num_of_prey, num_teams_predator,
-			num_teams_prey, prey_move_probability); // this is our experiment.
+			num_teams_prey, prey_move_probability, num_of_hunters); // this is our experiment.
 
 	cout << "  ESP.C :: number of predator teams:: " << num_teams_predator
 			<< " number of prey teams:: " << num_teams_prey
@@ -2523,7 +2529,7 @@ int main(int argc, char *argv[]) {
 	}
 	// --- Load an old ESP from file ---
 	else {
-		char filename[50];
+		char filename[50] = "";
 		std::string s;
 		std::stringstream out;
 		out << start_generation;

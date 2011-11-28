@@ -9,11 +9,15 @@
 class PredPrey: public Environment {
 public:
 	PredPrey(int num_of_predators, int num_of_prey, int num_teams_predator,
-			int num_teams_prey, vector<double> prey_move_probability);
+			int num_teams_prey, vector<double> prey_move_probability, int num_of_hunters);
 	int num_of_predators;
 	int num_of_prey;
 	int num_teams_predator;
 	int num_teams_prey;
+
+	int num_of_hunters;
+	int num_teams_hunters; // Hack to make code editing easier. Ideally, there are no teams of hunters, and this variable shouldn't exist
+
 	int time_to_catch_prey;
 	int steps;
 	vector<double> prey_move_probability;
@@ -47,7 +51,7 @@ private:
 	int getMaxPos(const vector<double>&);
 	int getMaxPos_complex(const vector<double>&);
 
-	void init(bool preyRandom, bool predsRandom, int generation);
+	void init(bool preyRandom, bool predsRandom, bool huntersRandom, int generation);
 	void reset_prey_position(int prey_team, int prey);
 	void setupInput(int, vector<double>&);
 	void setupInput_complex_prey(int, vector<vector<double> >&,
@@ -60,6 +64,8 @@ private:
 	void performPreyAction(int prey, const vector<double>&);
 	void performPreyAction_complex(int prey_team, int prey,
 			const vector<double>&);
+    void performHunterAction_complex(int hunter_team, int hunter,
+            const vector<double>&);
 
 	// ---- variables ----
 
@@ -74,11 +80,15 @@ private:
 
 	int numPrey; //To store the number of prey in the world ******PADMINI
 
+	// prey_x[prey_team][prey]
 	vector<vector<int> > pred_x;
 	vector<vector<int> > pred_y;
 
 	vector<vector<int> > prey_x;
 	vector<vector<int> > prey_y;
+
+	vector<vector<int> > hunter_x;
+	vector<vector<int> > hunter_y;
 
 	vector<vector<int> > prey_lifetime;
 
@@ -94,6 +104,10 @@ private:
 	//bool surrounded;
 
 	vector<vector<bool> > prey_caught;
+	// Predators hit by hunter
+	vector<vector<bool> > pred_hit;
+	vector<int> num_of_pred_hit;
+	// the number of opponent predators killed by each team
 	vector<vector<bool> > pred_killed;
 	vector<int> num_of_pred_kills;
 	vector<int> num_of_prey_caught;
