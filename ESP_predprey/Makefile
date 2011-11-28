@@ -14,7 +14,7 @@ CC = clang #g++
 LD = clang #g++
 
 DIR = .
-CFLAGS = -g -O4  -Wall 
+CFLAGS = -g -O3  -Wall 
 LDLIBS = -L/usr/include/X11/ -lglut  -lGL -lGLU -L/usr/lib/X11 -lXi -lXmu -lX11 -lm
 LDFLAGS = -L.
 ARCHIVES = -lm -lstdc++
