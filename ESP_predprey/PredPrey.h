@@ -67,6 +67,11 @@ private:
     void performHunterAction_complex(int hunter_team, int hunter,
             const vector<double>&);
 
+    // Display functions
+    void showHunter(int hunter_team, int hunter, int old_hunter_x, int old_hunter_y);
+    void showPred(int pred_team, int pred, int old_pred_x, int old_pred_y);
+    void showPrey(int prey_team, int prey, int old_prey_x, int old_prey_y);
+
 	// ---- variables ----
 
 	// variables used for incremental learning
