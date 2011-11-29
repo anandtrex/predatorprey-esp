@@ -103,10 +103,6 @@ private:
 	vector<vector<int> > num_of_prey_caught_individually;
 
 	vector<vector<int> > pred_hit_wall_times;
-	// vector<int> average_nearest_distance;
-
-	//bool caught;
-	//bool surrounded;
 
 	vector<vector<bool> > prey_caught;
 	// Predators hit by hunter
