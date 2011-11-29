@@ -208,6 +208,9 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
 
     while (steps++ < maxSteps && temp_break_while == false) {
 
+        //cout << "Next step " << steps << endl;
+        //cout << "Temp break while " << temp_break_while << endl;
+
         if (SHOW) {  //Added another clear screen here ******PADMINI
 
             //Saving Predator-Prey location. Each time step is printed in a newline
@@ -226,6 +229,7 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         int p;
         for (p = 0; p < num_teams_prey; p++) {
             for (i = 0; i < num_of_prey; i++) {
+                //cout << "Prey" << endl;
                 temp_output_prey.clear();
                 if (prey_communication == true) {
                 }
@@ -286,6 +290,7 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         for (p = 0; p < num_teams_predator; p++) {
             temp_messages.clear();
             for (i = 0; i < num_of_predators; i++) {
+                //cout << "COMBINE" << COMBINE <<  endl;
                 temp_output.clear();
                 for (j = 0; j < inputSize_pred_combiner; j++) {
                     temp_output.push_back(output[p][inputSize_pred_combiner * i + j]);
@@ -608,8 +613,10 @@ void PredPrey::init(bool preyRandom, bool predsRandom, bool huntersRandom, int g
 
     pred_killed.clear();
     prey_caught.clear();
+    pred_hit.clear();
 
     num_of_pred_kills.clear();
+    num_of_pred_hit.clear();
     num_of_prey_caught.clear();
 
     pred_energy.clear();
@@ -805,6 +812,7 @@ void PredPrey::performPreyAction_complex(int prey_team, int prey,
         const vector<double>& output_single_prey)
 {  //Added the argument int prey to check which prey is being processed ******PADMINI
     //double nearestDist = calc_dist(pred_x[0], pred_y[0], prey_x[prey], prey_y[prey]); //To hold the distances of the prey from its nearest predator
+    //cout << "Performing prey action" << endl;
     double nearestDist = MAP_LENGTH * 2 + 1;  //Big number
 
     int nearestPred = 0;  //To hold the nearest predator to the prey
@@ -1406,6 +1414,7 @@ void PredPrey::setupInput_complex_predator(int num_of_prey, vector<vector<double
 void PredPrey::performPredAction_complex(int pred_team, int pred,
         const vector<double>& output_single_predator)
 {
+    //cout << "Performing pred action" << endl;
     int predAction = 0;
     //bool finished = false; Commented this variable because it is never used ******PADMINI
     int old_pred_x = pred_x[pred_team][pred];
@@ -1642,12 +1651,12 @@ void PredPrey::performPredAction_complex(int pred_team, int pred,
             if (prey_caught[p][i] == false && pred_killed[pred_team][pred] == false && pred_hit[pred_team][pred] == false
                     && pred_x[pred_team][pred] == prey_x[p][i]
                     && pred_y[pred_team][pred] == prey_y[p][i]) {
+                //cout << "Bingo! Prey caught!!" << endl;
                 if (prey_reappears == true) {
                     reset_prey_position(p, i);
                 } else {
                     prey_caught[p][i] = true;
                     prey_lifetime[p][i] = steps;
-                    cout << "Bingo! Prey caught!!" << endl;
                 }
 
                 pred_energy[pred_team][pred] = pred_energy[pred_team][pred] + 100;
@@ -1685,7 +1694,7 @@ void PredPrey::performPredAction_complex(int pred_team, int pred,
                     && pred_y[pred_team][pred] == hunter_y[p][i]) {
                 pred_hit[pred_team][pred] = true;
                 num_of_pred_hit[p]++;
-                cout << "Bingo! Hunter hit!!" << endl;
+                //cout << "Bingo! Hunter hit!!" << endl;
             }
         }
     }
