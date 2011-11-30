@@ -1,4 +1,4 @@
-1500       // Specify the generation number from which we start the esp (if greater than one, then should have a corresponding .bin file to load from)
+1       // Specify the generation number from which we start the esp (if greater than one, then should have a corresponding .bin file to load from)
 1       // 1 - Simulation display is ON, 0 - OFF
 1       // Specify after how many generations you want display
 20000   // Maximum number of generations

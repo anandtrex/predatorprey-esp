@@ -599,14 +599,14 @@ void subPop::crossover(const vector<double> &parent1, const vector<double> &pare
 //////////////////////////////////////////////////////////////////////
 
 // Esp constructor -- constructs a new ESP
-Esp::Esp(int num_of_predators, int num_of_prey, int num_teams_predator, int num_teams_prey,
+Esp::Esp(int num_of_predators, int num_of_prey, int num_teams_predator, int num_teams_prey, int num_teams_hunters, int num_of_hunters,
         int nPops, int nSize, Environment &e, int netTp = FF) :
         Envt(e)
 {
     generation = 0;  // start at generation 0
 
     total_predator_networks_per_team = num_of_predators
-            * (num_of_prey * num_teams_prey + num_of_predators * (num_teams_predator - 1))
+            * (num_of_prey * num_teams_prey + num_teams_hunters * num_of_hunters + num_of_predators * (num_teams_predator - 1))
             + COMBINE * num_of_predators;  //Total Predator Networks in a team
 
     total_prey_networks_per_team = num_of_prey * (num_of_predators * num_teams_predator)
@@ -1236,6 +1236,7 @@ void Esp::performEval(int num_of_predators, int num_of_prey, int num_teams_preda
 
     IS_PREY = false;
     for (int k = 0; k < num_teams_predator; k++) {
+        // TODO temp_team here has to be of the proper size
         IS_COMBINER_NW = 0;
         temp_team.clear();
         temp_bestTeam.clear();
@@ -2390,7 +2391,7 @@ int main(int argc, char *argv[])
 
     // --- Construct a new ESP ---
     if (start_generation == 1) {
-        Esp esp(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey,
+        Esp esp(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey, 1 /*num_teams_hunters*/, num_of_hunters,
                 num_hidden_neurons, popSize, predprey, netType);
 
         if (analyze) {

@@ -108,7 +108,7 @@ class Esp {
 public:
  		
   // constructor for new Esp
-  Esp(int nPreds, int nPreys, int num_teams_predator, int num_teams_prey, int nPops, int nSize, Environment &e, int netTp);
+  Esp(int nPreds, int nPreys, int num_teams_predator, int num_teams_prey, int num_teams_hunteres, int num_of_hunters, int nPops, int nSize, Environment &e, int netTp);
 
   // constructor to load an old Esp from file
   Esp (char* fname, int nPreds, int nPreys, int num_teams_predator, int num_teams_prey, int nPops, int nSize, Environment &e, int netTp);
