@@ -122,6 +122,8 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         vector<vector<Network*> >& team_prey, int generation)  //Added number of prey to arguments ******PADMINI
 {
 
+    //cout << "Starting evalNet" << endl;
+
     if (SHOW) {
         //Saving predator-prey locations
         if ((fptr = fopen("pred_prey_location.txt", "at")) == NULL) {
@@ -309,6 +311,7 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         //While break condition when all predators are killed
         for (p = 0; p < num_teams_predator; p++) {
             if (num_of_pred_kills[p] == num_of_predators) {
+                cout << "All predators killed" << endl;
                 temp_break_while = true;
                 break;
             }
@@ -317,6 +320,8 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         //While break condition when all predators are killed by hunters
         for (p = 0; p < num_teams_predator; p++) {
             if (num_of_pred_hit[p] == num_of_predators) {
+                if(DEBUG)
+                    cout << "All predators killed by hunters" << endl;
                 temp_break_while = true;
                 break;
             }
@@ -333,6 +338,8 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         }
 
         if (count_prey_caught == num_teams_prey * num_of_prey) {
+            if(DEBUG)
+                cout << "All prey caught";
             break;
         }
 
@@ -376,9 +383,13 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
             if (num_teams_prey == 1) {
                 double individual_fitness_value = num_of_prey_caught_individually[p][i]
                         * reward_prey_team[0] + num_of_prey_caught[p] * reward_prey_team[0];
+                if(DEBUG)
+                    cout << "Fitness was " << individual_fitness_value << endl;
                 // NOTE Fitness value decreased if predator is hit by hunter
                 if(pred_hit[p][i] == true){
                     individual_fitness_value -= 100;
+                    if(DEBUG)
+                        cout << "Fitness decreased" << endl;
                 }
                 temp_individual_fitness.push_back(individual_fitness_value);  // This is individual fitness for Competing agents
             } else if (num_teams_prey == 2) {
@@ -422,7 +433,7 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
                 << count_generation_mice_caught / TOTAL_EVALUATIONS << endl;
         cout << "----------------------------------------------------------" << endl;
         // Assuming there are only one team of predators
-        cout << "No. prey caught :: " << num_of_prey_caught[0] << endl;
+        cout << "No. prey caught individually :: " << num_of_prey_caught_individually[0][0] << endl;
         cout << "No. hunter hits :: " << num_of_pred_hit[0] << endl;
 
         count_generation_best_zebra_caught = 0;
@@ -473,6 +484,8 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
     }
     fitness.push_back(temp_team_fitness);
     temp_team_fitness.clear();
+
+    //cout << "Ending evalNet with prey caught ::  " << num_of_prey_caught[0] << " and predators hit :: " << num_of_pred_hit[0] << endl;
 
     return fitness;
 
@@ -788,6 +801,7 @@ void PredPrey::performPreyAction_complex(int prey_team, int prey,
 
 void PredPrey::showPrey(int prey_team, int prey, int old_prey_x, int old_prey_y)
 {
+    fprintf(fptr, "Prey");
     //Saving Predator-Prey location
     if (prey_caught[prey_team][prey] == false) {
         fprintf(fptr, "%d ", prey_x[prey_team][prey]);  // int generation
@@ -1185,7 +1199,12 @@ void PredPrey::performPredAction_complex(int pred_team, int pred,
             if (prey_caught[p][i] == false && pred_killed[pred_team][pred] == false && pred_hit[pred_team][pred] == false
                     && pred_x[pred_team][pred] == prey_x[p][i]
                     && pred_y[pred_team][pred] == prey_y[p][i]) {
-                //cout << "Bingo! Prey caught!!" << endl;
+                if(DEBUG){
+                    cout << "Predator caught prey" << endl;
+                    cout << "Predator was at " << pred_x[pred_team][pred] << ", "
+                            << pred_y[pred_team][pred] << endl;
+                    cout << "Prey was at " << prey_x[p][i] << ", " << prey_y[p][i] << endl;
+                }
                 if (prey_reappears == true) {
                     reset_prey_position(p, i);
                 } else {
@@ -1211,7 +1230,11 @@ void PredPrey::performPredAction_complex(int pred_team, int pred,
                     && pred_y[pred_team][pred] == hunter_y[p][i]) {
                 pred_hit[pred_team][pred] = true;
                 num_of_pred_hit[p]++;
-                //cout << "Bingo! Hunter hit!!" << endl;
+                if(DEBUG){
+                    cout << "Predator hit by hunter" << endl;
+                    cout << "Predator was at " << pred_x[pred_team][pred] << ", " << pred_y[pred_team][pred] << endl;
+                    cout << "Hunter was at " << hunter_x[p][i] << ", " << hunter_y[p][i] << endl;
+                }
             }
         }
     }
@@ -1222,8 +1245,11 @@ void PredPrey::showPred(int pred_team, int pred, int old_pred_x, int old_pred_y)
     double color1 = 0;
     double color2 = 0;
     double color3 = 0;
+
+    fprintf(fptr, "Predator");
+
     //Saving Predator-Prey location
-    if (pred_killed[pred_team][pred] == false) {
+    if (pred_killed[pred_team][pred] == false || pred_hit[pred_team][pred_team] == false) {
         fprintf(fptr, "%d ", pred_x[pred_team][pred]);  // int generation
         fprintf(fptr, " ");  //  character
         fprintf(fptr, "%d ", pred_y[pred_team][pred]);  // int generation
@@ -1476,6 +1502,8 @@ void PredPrey::performHunterAction_complex(int hunter_team, int hunter,
 
 void PredPrey::showHunter(int team, int individual, int old_x, int old_y)
 {
+    fprintf(fptr, "Hunter");
+
     // Saving hunter location
     fprintf(fptr, "%d ", hunter_x[team][individual]);  // int generation
     fprintf(fptr, " ");  //  character

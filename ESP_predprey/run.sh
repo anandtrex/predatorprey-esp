@@ -1,4 +1,3 @@
 #!/bin/bash
-rm -f *.o
-make
-esp-predprey config_file.txt 
+make -j 3
+./esp-predprey config_file.txt 

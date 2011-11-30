@@ -1032,6 +1032,7 @@ void Esp::evolve(int cycles, int num_of_predators, int num_of_prey, int num_team
 // cycles: the number of generations to evolve
 {
 
+    cout << "Starting evolve and running " << cycles << " cycles" << endl;
     while (gInterrupt == false && ++generation <= cycles) {
         evalPop(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey);  //evaluate neurons
 
@@ -1123,6 +1124,8 @@ void Esp::evolve(int cycles, int num_of_predators, int num_of_prey, int num_team
     }  //end while
 
     endEvolution();
+
+    cout << "Ending evolve" << endl;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1367,6 +1370,16 @@ void Esp::performEval(int num_of_predators, int num_of_prey, int num_teams_preda
         //of fitness for Prey teams
         for (int p = 0; p < EVALTRIALS; p++) {
             teams_fitness = Envt.evalNet(current_teams, current_teams_prey, generation);
+            if(false) {
+                cout << "Team fitness is " << endl;
+                for(int i = 0; i < teams_fitness.size(); i++){
+                    for (int j = 0; j < teams_fitness[i].size(); j++){
+                        cout << teams_fitness[i][j][0] << " ";
+                    }
+                    cout << endl;
+                }
+            }
+
             for (int q = 0; q < num_teams_predator; q++) {
                 for (int r = 0; r < num_of_predators; r++) {  //Individual predator fitness is used in case of competing predators
                     predator_prey_teams_fitness[0][q][r] = predator_prey_teams_fitness[0][q][r]
