@@ -167,6 +167,7 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         }
 
     }
+
     steps = 0;
     int maxSteps;
     double ave_initial_dist = 0;
@@ -231,6 +232,7 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
             for (i = 0; i < num_of_prey; i++) {
                 //cout << "Prey" << endl;
                 temp_output_prey.clear();
+
                 if (prey_communication == true) {
                 }
                 //***************************Commenting below else block because prey is fixed*************
@@ -329,7 +331,6 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
             }
         }
 
-        // TODO Add hunter code here
         /************************************HUNTER************************************************************/
         for (p = 0; p < num_teams_hunters; p++) {
             for (i = 0; i < num_of_hunters; i++) {
@@ -938,107 +939,112 @@ void PredPrey::performPreyAction_complex(int prey_team, int prey,
 
     if (SHOW) {
 
-        //Saving Predator-Prey location
-        if (prey_caught[prey_team][prey] == false) {
-            fprintf(fptr, "%d ", prey_x[prey_team][prey]);  // int generation
-            fprintf(fptr, " ");  //  character
-            fprintf(fptr, "%d ", prey_y[prey_team][prey]);  // int generation
-            fprintf(fptr, " ");  //  character
-        } else {
-            int x = -1;
-            fprintf(fptr, "%d ", x);  // int generation
-            fprintf(fptr, " ");  //  character
-            fprintf(fptr, "%d ", x);  // int generation
-            fprintf(fptr, " ");  //  character
-        }
+        showPrey(prey_team, prey, old_prey_x, old_prey_y);
+    }
+}
 
-        // erase old prey point
+void PredPrey::showPrey(int prey_team, int prey, int old_prey_x, int old_prey_y)
+{
+    //Saving Predator-Prey location
+    if (prey_caught[prey_team][prey] == false) {
+        fprintf(fptr, "%d ", prey_x[prey_team][prey]);  // int generation
+        fprintf(fptr, " ");  //  character
+        fprintf(fptr, "%d ", prey_y[prey_team][prey]);  // int generation
+        fprintf(fptr, " ");  //  character
+    } else {
+        int x = -1;
+        fprintf(fptr, "%d ", x);  // int generation
+        fprintf(fptr, " ");  //  character
+        fprintf(fptr, "%d ", x);  // int generation
+        fprintf(fptr, " ");  //  character
+    }
+
+    // erase old prey point
+    glBegin(GL_POINTS);
+    {
+        GLint err = glGetError();
+        if (err != GL_NO_ERROR)
+            cout << "15. Error" << endl;
+    }  //ADI
+
+    glColor3f(1.0f, 1.0f, 1.0f);
+    {
+        GLint err = glGetError();
+        if (err != GL_NO_ERROR)
+            cout << "14. Error" << endl;
+    }  //ADI
+
+    glVertex3f(old_prey_x, old_prey_y, 0);
+    {
+        GLint err = glGetError();
+        if (err != GL_NO_ERROR)
+            cout << "16. Error" << endl;
+    }  //ADI
+
+    void glEnd(void);
+    {
+        GLint err = glGetError();
+        if (err != GL_NO_ERROR)
+            cout << "17. Error" << endl;
+    }  //ADI
+
+    if (prey_caught[prey_team][prey] == false) {  //Added this if-else condition so that caught prey are drawn in white ******PADMINI
+
+        // draw new prey point
         glBegin(GL_POINTS);
         {
             GLint err = glGetError();
             if (err != GL_NO_ERROR)
-                cout << "15. Error" << endl;
+                cout << "19. Error" << endl;
         }  //ADI
 
-        glColor3f(1.0f, 1.0f, 1.0f);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "14. Error" << endl;
-        }  //ADI
-
-        glVertex3f(old_prey_x, old_prey_y, 0);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "16. Error" << endl;
-        }  //ADI
-
-        void glEnd(void);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "17. Error" << endl;
-        }  //ADI
-
-        if (prey_caught[prey_team][prey] == false) {  //Added this if-else condition so that caught prey are drawn in white ******PADMINI
-
-            // draw new prey point
-            glBegin(GL_POINTS);
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "19. Error" << endl;
-            }  //ADI
-
-            if (prey_team == 0) {
-                glColor3f(1.0f, 0.0f, 1.0f);  //trying to change the colors of different prey ******PADMINI
-            }
-            if (prey_team == 1) {
-                glColor3f(0.0f, 0.9f, 1.0f);  //trying to change the colors of different prey ******PADMINI
-            }
-
-            glVertex3f(prey_x[prey_team][prey], prey_y[prey_team][prey], 0);
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "20. Error" << endl;
-            }  //ADI
-
-            glEnd();
-            //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "21. Error" <<err<<endl; } //ADI : DONT know why this is not going even after changing gl end to void
+        if (prey_team == 0) {
+            glColor3f(1.0f, 0.0f, 1.0f);  //trying to change the colors of different prey ******PADMINI
+        }
+        if (prey_team == 1) {
+            glColor3f(0.0f, 0.9f, 1.0f);  //trying to change the colors of different prey ******PADMINI
         }
 
-        else {
-            // draw new prey point
-            glBegin(GL_POINTS);
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "19. Error" << endl;
-            }  //ADI
+        glVertex3f(prey_x[prey_team][prey], prey_y[prey_team][prey], 0);
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "20. Error" << endl;
+        }  //ADI
 
-            glColor3f(1.0f, 1.0f, 1.0f);  //white color for the prey that've already been caught, i.e. they vanish ******PADMINI
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "18. Error" << endl;
-            }  //ADI
-
-            glVertex3f(prey_x[prey_team][prey], prey_y[prey_team][prey], 0);
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "20. Error" << endl;
-            }  //ADI
-
-            glEnd();
-            //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "21. Error" <<err<<endl; } //ADI : DONT know why this is not going even after changing gl end to void
-        }
-
-        glFlush();
-        //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "22. Error" <<endl; } //ADI
+        glEnd();
+        //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "21. Error" <<err<<endl; } //ADI : DONT know why this is not going even after changing gl end to void
     }
+
+    else {
+        // draw new prey point
+        glBegin(GL_POINTS);
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "19. Error" << endl;
+        }  //ADI
+
+        glColor3f(1.0f, 1.0f, 1.0f);  //white color for the prey that've already been caught, i.e. they vanish ******PADMINI
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "18. Error" << endl;
+        }  //ADI
+
+        glVertex3f(prey_x[prey_team][prey], prey_y[prey_team][prey], 0);
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "20. Error" << endl;
+        }  //ADI
+
+        glEnd();
+        //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "21. Error" <<err<<endl; } //ADI : DONT know why this is not going even after changing gl end to void
+    }
+
+    glFlush();
+    //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "22. Error" <<endl; } //ADI
 }
 
 void PredPrey::reset_prey_position(int prey_team, int prey)
@@ -1410,7 +1416,6 @@ void PredPrey::setupInput_complex_predator(int num_of_prey, vector<vector<double
     }
 }
 
-// TODO Add check to see if predator hit by hunter
 void PredPrey::performPredAction_complex(int pred_team, int pred,
         const vector<double>& output_single_predator)
 {
@@ -1494,141 +1499,11 @@ void PredPrey::performPredAction_complex(int pred_team, int pred,
     if (pred_y[pred_team][pred] < 0)
         pred_y[pred_team][pred] += MAP_HEIGHT;
 
-    double color1 = 0;
-    double color2 = 0;
-    double color3 = 0;
+
 
     if (SHOW) {
-        //Saving Predator-Prey location
-        if (pred_killed[pred_team][pred] == false) {
-            fprintf(fptr, "%d ", pred_x[pred_team][pred]);  // int generation
-            fprintf(fptr, " ");  //  character
-            fprintf(fptr, "%d ", pred_y[pred_team][pred]);  // int generation
-            fprintf(fptr, " ");  //  character
-        } else {
-            int x = -1;
-            fprintf(fptr, "%d ", x);  // int generation
-            fprintf(fptr, " ");  //  character
-            fprintf(fptr, "%d ", x);  // int generation
-            fprintf(fptr, " ");  //  character
-        }
-
-        // erase old pred point
-        glBegin(GL_POINTS);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "6. Error" << endl;
-        }  //ADI
-
-        glColor3f(1.0f, 1.0f, 1.0f);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "5. Error" << endl;
-        }  //ADI
-
-        glVertex3f(old_pred_x, old_pred_y, 0);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "7. Error" << endl;
-        }  //ADI
-
-        void glEnd(void);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "8. Error" << endl;
-        }  //ADI
-
-        // draw new pred point
-        if (pred_killed[pred_team][pred] == false) {
-            if (pred_team == 0 && pred == 0) {
-                color1 = 1;
-            } else if (pred_team == 0 && pred == 1) {
-                color2 = 1;
-            } else if (pred_team == 0 && pred == 2) {
-                color3 = 1;
-            } else if (pred_team == 1 && pred == 0) {
-                color2 = 1;
-            } else if (pred_team == 1 && pred == 1) {
-                color3 = 0;
-            } else if (pred_team == 1 && pred == 2) {
-                color3 = 0;
-            }
-
-            glBegin(GL_POINTS);
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "10. Error" << endl;
-            }  //ADI
-
-            glColor3f(color1, color2, color3);
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "9. Error" << endl;
-            }  //ADI
-
-            glVertex3f(pred_x[pred_team][pred], pred_y[pred_team][pred], 0);
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "11. Error" << endl;
-            }  //ADI
-
-            void glEnd(void);
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "12. Error" << endl;
-            }  //ADI
-
-            glFlush();
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "13. Error" << endl;
-            }  //ADI
-        } else {
-            glBegin(GL_POINTS);
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "10. Error" << endl;
-            }  //ADI
-
-            glColor3f(1.0f, 1.0f, 1.0f);
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "9. Error" << endl;
-            }  //ADI
-
-            glVertex3f(pred_x[pred_team][pred], pred_y[pred_team][pred], 0);
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "11. Error" << endl;
-            }  //ADI
-
-            void glEnd(void);
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "12. Error" << endl;
-            }  //ADI
-
-            glFlush();
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "13. Error" << endl;
-            }  //ADI
-        }
-    }
+        showPred(pred_team, pred, old_pred_x, old_pred_y);
+    } // end show
 
     if (DEBUG) {
         cout << "Predator " << pred << " at \t(" << pred_x[pred_team][pred] << ", "
@@ -1714,6 +1589,142 @@ void PredPrey::performPredAction_complex(int pred_team, int pred,
     //for (i=0; i<num_of_prey; i++) {
     //        average_nearest_distance[i]+= calc_dist (pred_x[pred], pred_y[pred], prey_x[i], prey_y[i]);
     //}
+}
+
+void PredPrey::showPred(int pred_team, int pred, int old_pred_x, int old_pred_y)
+{
+    double color1 = 0;
+    double color2 = 0;
+    double color3 = 0;
+    //Saving Predator-Prey location
+    if (pred_killed[pred_team][pred] == false) {
+        fprintf(fptr, "%d ", pred_x[pred_team][pred]);  // int generation
+        fprintf(fptr, " ");  //  character
+        fprintf(fptr, "%d ", pred_y[pred_team][pred]);  // int generation
+        fprintf(fptr, " ");  //  character
+    } else {
+        int x = -1;
+        fprintf(fptr, "%d ", x);  // int generation
+        fprintf(fptr, " ");  //  character
+        fprintf(fptr, "%d ", x);  // int generation
+        fprintf(fptr, " ");  //  character
+    }
+
+    // erase old pred point
+    glBegin(GL_POINTS);
+    {
+        GLint err = glGetError();
+        if (err != GL_NO_ERROR)
+            cout << "6. Error" << endl;
+    }  //ADI
+
+    glColor3f(1.0f, 1.0f, 1.0f);
+    {
+        GLint err = glGetError();
+        if (err != GL_NO_ERROR)
+            cout << "5. Error" << endl;
+    }  //ADI
+
+    glVertex3f(old_pred_x, old_pred_y, 0);
+    {
+        GLint err = glGetError();
+        if (err != GL_NO_ERROR)
+            cout << "7. Error" << endl;
+    }  //ADI
+
+    void glEnd(void);
+    {
+        GLint err = glGetError();
+        if (err != GL_NO_ERROR)
+            cout << "8. Error" << endl;
+    }  //ADI
+
+    // draw new pred point
+    if (pred_killed[pred_team][pred] == false) {
+        if (pred_team == 0 && pred == 0) {
+            color1 = 1;
+        } else if (pred_team == 0 && pred == 1) {
+            color2 = 1;
+        } else if (pred_team == 0 && pred == 2) {
+            color3 = 1;
+        } else if (pred_team == 1 && pred == 0) {
+            color2 = 1;
+        } else if (pred_team == 1 && pred == 1) {
+            color3 = 0;
+        } else if (pred_team == 1 && pred == 2) {
+            color3 = 0;
+        }
+
+        glBegin(GL_POINTS);
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "10. Error" << endl;
+        }  //ADI
+
+        glColor3f(color1, color2, color3);
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "9. Error" << endl;
+        }  //ADI
+
+        glVertex3f(pred_x[pred_team][pred], pred_y[pred_team][pred], 0);
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "11. Error" << endl;
+        }  //ADI
+
+        void glEnd(void);
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "12. Error" << endl;
+        }  //ADI
+
+        glFlush();
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "13. Error" << endl;
+        }  //ADI
+    } else {
+        glBegin(GL_POINTS);
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "10. Error" << endl;
+        }  //ADI
+
+        glColor3f(1.0f, 1.0f, 1.0f);
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "9. Error" << endl;
+        }  //ADI
+
+        glVertex3f(pred_x[pred_team][pred], pred_y[pred_team][pred], 0);
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "11. Error" << endl;
+        }  //ADI
+
+        void glEnd(void);
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "12. Error" << endl;
+        }  //ADI
+
+        glFlush();
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "13. Error" << endl;
+        }  //ADI
+    }
 }
 
 void PredPrey::performHunterAction_complex(int hunter_team, int hunter,
@@ -1832,113 +1843,74 @@ void PredPrey::performHunterAction_complex(int hunter_team, int hunter,
 
     // Code for showing simulation in UI
     if (SHOW) {
-        /*
-        if (prey_caught[hunter_team][hunter] == false) {
-            fprintf(fptr, "%d ", prey_x[hunter_team][hunter]);  // int generation
-            fprintf(fptr, " ");  //  character
-            fprintf(fptr, "%d ", prey_y[hunter_team][hunter]);  // int generation
-            fprintf(fptr, " ");  //  character
-        } else {
-            int x = -1;
-            fprintf(fptr, "%d ", x);  // int generation
-            fprintf(fptr, " ");  //  character
-            fprintf(fptr, "%d ", x);  // int generation
-            fprintf(fptr, " ");  //  character
-        }*/
-        // Saving hunter location
-        fprintf(fptr, "%d ", hunter_x[hunter_team][hunter]);  // int generation
-        fprintf(fptr, " ");  //  character
-        fprintf(fptr, "%d ", hunter_y[hunter_team][hunter]);  // int generation
-        fprintf(fptr, " ");  //  character
-
-        // erase old prey point
-        glBegin(GL_POINTS);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "15. Error" << endl;
-        }  //ADI
-
-        glColor3f(1.0f, 1.0f, 1.0f);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "14. Error" << endl;
-        }  //ADI
-
-        glVertex3f(old_hunter_x, old_hunter_y, 0);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "16. Error" << endl;
-        }  //ADI
-
-        void glEnd(void);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "17. Error" << endl;
-        }  //ADI
-
-        //if (prey_caught[hunter_team][hunter] == false) {  //Added this if-else condition so that caught prey are drawn in white ******PADMINI
-
-        // draw new prey point
-        glBegin(GL_POINTS);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "19. Error" << endl;
-        }  //ADI
-
-        if (hunter_team == 0) {
-            glColor3f(0.0f, 0.0f, 0.0f);
-        }
-        /* N/A
-         if (hunter_team == 1) {
-         glColor3f(0.0f, 0.9f, 1.0f);  //trying to change the colors of different prey ******PADMINI
-         }*/
-
-        glVertex3f(hunter_x[hunter_team][hunter], hunter_y[hunter_team][hunter], 0);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "20. Error" << endl;
-        }  //ADI
-
-        glEnd();
-        //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "21. Error" <<err<<endl; } //ADI : DONT know why this is not going even after changing gl end to void
-        /*}
-
-        else {
-            // draw new prey point
-            glBegin(GL_POINTS);
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "19. Error" << endl;
-            }  //ADI
-
-            glColor3f(1.0f, 1.0f, 1.0f);  //white color for the prey that've already been caught, i.e. they vanish ******PADMINI
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "18. Error" << endl;
-            }  //ADI
-
-            glVertex3f(prey_x[hunter_team][hunter], prey_y[hunter_team][hunter], 0);
-            {
-                GLint err = glGetError();
-                if (err != GL_NO_ERROR)
-                    cout << "20. Error" << endl;
-            }  //ADI
-
-            glEnd();
-            //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "21. Error" <<err<<endl; } //ADI : DONT know why this is not going even after changing gl end to void
-        }*/
-
-        glFlush();
-        //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "22. Error" <<endl; } //ADI
+        showHunter(hunter_team, hunter, old_hunter_x, old_hunter_y);
     }
+}
+
+void PredPrey::showHunter(int team, int individual, int old_x, int old_y)
+{
+    // Saving hunter location
+    fprintf(fptr, "%d ", hunter_x[team][individual]);  // int generation
+    fprintf(fptr, " ");  //  character
+    fprintf(fptr, "%d ", hunter_y[team][individual]);  // int generation
+    fprintf(fptr, " ");  //  character
+
+    // erase old prey point
+    glBegin(GL_POINTS);
+    {
+        GLint err = glGetError();
+        if (err != GL_NO_ERROR)
+            cout << "15. Error" << endl;
+    }  //ADI
+
+    glColor3f(1.0f, 1.0f, 1.0f);
+    {
+        GLint err = glGetError();
+        if (err != GL_NO_ERROR)
+            cout << "14. Error" << endl;
+    }  //ADI
+
+    glVertex3f(old_x, old_y, 0);
+    {
+        GLint err = glGetError();
+        if (err != GL_NO_ERROR)
+            cout << "16. Error" << endl;
+    }  //ADI
+
+    void glEnd(void);
+    {
+        GLint err = glGetError();
+        if (err != GL_NO_ERROR)
+            cout << "17. Error" << endl;
+    }  //ADI
+
+    //if (prey_caught[hunter_team][hunter] == false) {  //Added this if-else condition so that caught prey are drawn in white ******PADMINI
+
+    // draw new prey point
+    glBegin(GL_POINTS);
+    {
+        GLint err = glGetError();
+        if (err != GL_NO_ERROR)
+            cout << "19. Error" << endl;
+    }  //ADI
+
+    if (team == 0) {
+        glColor3f(0.0f, 0.0f, 0.0f);
+    }
+
+    glVertex3f(hunter_x[team][individual], hunter_y[team][individual], 0);
+    {
+        GLint err = glGetError();
+        if (err != GL_NO_ERROR)
+            cout << "20. Error" << endl;
+    }  //ADI
+
+    glEnd();
+    //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "21. Error" <<err<<endl; } //ADI : DONT know why this is not going even after changing gl end to void
+    //}
+
+    glFlush();
+    //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "22. Error" <<endl; } //ADI
 }
 
 // Make task harder
