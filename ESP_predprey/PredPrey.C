@@ -387,7 +387,7 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
                     cout << "Fitness was " << individual_fitness_value << endl;
                 // NOTE Fitness value decreased if predator is hit by hunter
                 if(pred_hit[p][i] == true){
-                    individual_fitness_value -= 100;
+                    individual_fitness_value -= 300;
                     if(DEBUG)
                         cout << "Fitness decreased" << endl;
                 }

@@ -713,7 +713,6 @@ Esp::Esp(int num_of_predators, int num_of_prey, int num_teams_predator, int num_
             temp = new vector<subPop*>;
             for (int j = 0; j < numPops[0]; j++) {
                 temp->push_back(new subPop(nSize));  //Creating a (pointer to the) population of 100 neurons for each hidden neuron
-
             }
             total_hidden_neuron_populations_per_team.push_back(*temp);  //Should we clear/delete temp or not?. What is this line doing?
         }
@@ -775,6 +774,7 @@ Esp::Esp(char* fname, int num_of_predators, int num_of_prey, int num_teams_preda
         numPops.push_back(nPops);  // set the number of subpops
 
     numTrials = nSize * 10;  // # of trials ~10/neuron
+    TOTAL_EVALUATIONS = numTrials * EVALTRIALS;  // 6000 for now
     netType = netTp;  // set the network type (FF,SRN,2ndOrder)
     NUM_INPUTS_PRED_COMBINER = Envt.inputSize_pred_combiner;  // network in/out dimensions
     NUM_INPUTS_PREY_COMBINER = Envt.inputSize_prey_combiner;  // network in/out dimensions
@@ -802,6 +802,7 @@ Esp::Esp(char* fname, int num_of_predators, int num_of_prey, int num_teams_preda
             temp_overall_best_teams.push_back(genNetType(netType, numPops[i]));  // generate new net
             temp_overall_best_teams[i]->create();  // create net
         }
+        overall_best_teams_sum_individual_fitness.push_back(0.0);
         overall_best_teams.push_back(temp_overall_best_teams);
         temp_overall_best_teams.clear();
     }
@@ -819,6 +820,7 @@ Esp::Esp(char* fname, int num_of_predators, int num_of_prey, int num_teams_preda
             temp_overall_best_teams_prey.push_back(genNetType(netType, numPops[0]));  // generate new net
             temp_overall_best_teams_prey[i]->create();  // create net
         }
+        overall_best_teams_prey_sum_individual_fitness.push_back(0.0);
         overall_best_teams_prey.push_back(temp_overall_best_teams_prey);
         temp_overall_best_teams_prey.clear();
     }
@@ -876,7 +878,7 @@ Esp::Esp(char* fname, int num_of_predators, int num_of_prey, int num_teams_preda
                                 tempDouble;  // weights
                     }
 
-    if (COMBINE == 1) {
+    //if (COMBINE == 1) {
         for (int p = 0; p < num_teams_predator; p++)
             for (int i = total_predator_networks_per_team - (COMBINE * num_of_predators);
                     i < total_predator_networks_per_team; i++)
@@ -899,7 +901,7 @@ Esp::Esp(char* fname, int num_of_predators, int num_of_prey, int num_teams_preda
                             total_hidden_neuron_populations_prey[p][i][j]->pop[k]->weight[m] =
                                     tempDouble;  // weights
                         }
-    }
+    //}
 
     fclose(fptr);
 
