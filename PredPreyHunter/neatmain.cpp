@@ -109,7 +109,8 @@ int main(int argc, char *argv[]) {
   cout<<"5 - PredPrey"<<endl;
   cout<<"Number: ";
 
-  cin>>choice;
+  //cin>>choice;
+  choice = 5;
 
   switch ( choice )
     {
