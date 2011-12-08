@@ -39,7 +39,8 @@ public:
 //  vector<double> delta;
   double fitness;            //neuron's fitness value
   int tests;                 //holds the total # of networks participated in
-  double activation;         //neuron's activation level 
+  double activation;         //neuron's activation level
+  // QUE What does lesioned do?
   bool lesioned;
 
   //constructor
@@ -66,7 +67,7 @@ public:
   //protected:
   vector<neuron*> pop;  
 
-public:
+//public:
   int numNeurons;
 
   subPop(int size);
@@ -111,7 +112,7 @@ public:
   Esp(int nPreds, int nPreys, int num_teams_predator, int num_teams_prey, int num_teams_hunteres, int num_of_hunters, int nPops, int nSize, Environment &e, int netTp);
 
   // constructor to load an old Esp from file
-  Esp (char* fname, int nPreds, int nPreys, int num_teams_predator, int num_teams_prey, int nPops, int nSize, Environment &e, int netTp);
+  Esp (char* fname, int nPreds, int nPreys, int num_teams_predator, int num_teams_prey, int num_teams_hunters, int num_of_hunters, int nPops, int nSize, Environment &e, int netTp);
 
   ~Esp();
 
@@ -132,10 +133,10 @@ public:
 private:
   int total_predator_networks_per_team; //numPreds;
   int total_prey_networks_per_team; //numPrey ;
-  vector<int> numPops;
+  vector<int> num_hidden_neurons; // was called nPops
 
-  vector<vector< vector<subPop*> > > total_hidden_neuron_populations;
-  vector<vector< vector<subPop*> > > total_hidden_neuron_populations_prey;
+  vector<vector< vector<subPop*> > > hidden_neuron_populations;
+  vector<vector< vector<subPop*> > > hidden_neuron_populations_prey;
 
   int numTrials;
   int netType;

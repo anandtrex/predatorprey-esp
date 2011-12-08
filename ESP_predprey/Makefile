@@ -10,16 +10,16 @@
 #
 ######################################################################
 
-CC = clang #g++
-LD = clang #g++
+CC = g++
+LD = g++
 
-DIR = .
-CFLAGS = -g -O3  -Wall 
-LDLIBS = -L/usr/include/X11/ -lglut  -lGL -lGLU -L/usr/lib/X11 -lXi -lXmu -lX11 -lm
+DIR = $(shell echo `pwd`)
+CFLAGS = -g -O3  -Wall -Wunused-function
+LDLIBS = -L/usr/include/X11/ -L$(DIR)/glog/lib/ -L$(DIR)/libconfig/lib/ -lglut  -lGL -lGLU -L/usr/lib/X11 -lXi -lXmu -lX11 -lm -lglog -lconfig++
 LDFLAGS = -L.
 ARCHIVES = -lm -lstdc++
 ## INCLUDES = -I/usr/include/g++
-INCLUDES = -I/p/include/Mesa -I/usr/include/X11   -I/usr/lib/X11
+INCLUDES = -I/p/include/Mesa -I/usr/include/X11 -I/usr/lib/X11 -I. -Iglog/include -Ilibconfig/include
 
 DEPENDFLAGS = $(INCLUDES)
 

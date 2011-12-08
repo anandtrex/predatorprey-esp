@@ -17,6 +17,7 @@
 using namespace std;
 
 extern bool SHOW;
+
 extern int delay_pred_evolution;
 extern int prey_slow;
 extern int MAXPREDS;

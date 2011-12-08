@@ -16,3 +16,5 @@
 100     // Reward for catching prey team 0 (If there are more prey teams, then add more lines below this to specify the prey team reward size)
 0.8       // Prey speed relative to the predator speed (If there are more prey teams, then add more lines below this to specify the prey team speed)
 1       // Number of hunters
+10 		// Number of hidden neurons per network
+100 	// Population size for each hidden neuron
