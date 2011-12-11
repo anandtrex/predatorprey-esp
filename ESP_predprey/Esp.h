@@ -131,11 +131,11 @@ public:
 
 
 private:
-  int total_predator_networks_per_team; //numPreds;
-  int total_prey_networks_per_team; //numPrey ;
+  int total_predator_networks_per_team;
+  int total_prey_networks_per_team;
   vector<int> num_hidden_neurons; // was called nPops
 
-  vector<vector< vector<subPop*> > > hidden_neuron_populations;
+  vector<vector< vector<subPop*> > > hidden_neuron_populations; // num teams x num networks x num hidden neurons per network
   vector<vector< vector<subPop*> > > hidden_neuron_populations_prey;
 
   int numTrials;
@@ -157,7 +157,7 @@ private:
   void save (char* fname, int num_of_predators, int num_of_prey, int num_teams_predator, int num_teams_prey); 
   subPop* load(char *fname);
   void setupNetDimensions(int num_of_predators, int num_of_prey);
-  Network* genNetType(int nt, int nPops);
+  Network* generateNetwork(int networkType, int num_hidden_neurons);
   void evalReset(int num_teams_predator, int num_teams_prey);
   void performEval(int num_of_predators, int num_of_prey, int num_teams_predator, int num_teams_prey);
   void average(int num_teams_predator, int num_teams_prey);

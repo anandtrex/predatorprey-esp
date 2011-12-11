@@ -10,6 +10,8 @@ class PredPrey: public Environment {
 public:
 	PredPrey(int num_of_predators, int num_of_prey, int num_teams_predator,
 			int num_teams_prey, vector<double> prey_move_probability, int num_of_hunters);
+	PredPrey(int num_of_predators, int num_of_prey, int num_teams_predator,
+	            int num_teams_prey, vector<double> prey_move_probability);
 	int num_of_predators;
 	int num_of_prey;
 	int num_teams_predator;
@@ -56,7 +58,7 @@ private:
 	void setupInput(int, vector<double>&);
 	void setupInput_complex_prey(int, vector<vector<double> >&,
 			vector<vector<Network*> >& team_prey);
-	void setupInput_complex_predator(int, vector<vector<double> >&,
+	void setupInput_complex_predator(/*int, */vector<vector<double> >&,
 			vector<vector<Network*> >& team);
 	void performPredAction(int pred, const vector<double>&);
 	void performPredAction_complex(int pred_team, int pred,

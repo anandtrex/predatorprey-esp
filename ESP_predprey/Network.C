@@ -93,8 +93,8 @@ inline double sigmoid(double x, double slope = 1.0)
 }
 
 // NOTE Does the calculation of the output of the network here
-void FeedForwardNetwork::activate(vector<double> &input, vector<double> &output, int num_of_prey,
-        int num_of_predators, int num_teams_prey, int num_teams_predator, int inputSize_combiner)
+void FeedForwardNetwork::activate(vector<double> &input, vector<double> &output, /*int num_of_prey,
+        int num_of_predators, int num_teams_prey, int num_teams_predator,*/ int inputSize_combiner)
 {
     register int i, j, neuron_input_connections, output_weight_index;
     if (!IS_PREY) {

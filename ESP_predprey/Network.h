@@ -34,8 +34,8 @@ public:
     int lesion(Environment &e, vector<Network*>& team, int num_of_predators, int num_of_prey);
     void addFitness();
     void incrementTests();
-    virtual void activate(vector<double> &input, vector<double> &output, int num_of_prey,
-            int num_of_predators, int num_teams_prey, int num_teams_predator,
+    virtual void activate(vector<double> &input, vector<double> &output, /*int num_of_prey,
+            int num_of_predators, int num_teams_prey, int num_teams_predator,*/
             int inputSize_combiner) = 0;
 
     virtual void save(char *filename) = 0;
@@ -50,8 +50,8 @@ public:
         ;
     }
 
-    void activate(vector<double> &input, vector<double> &output, int num_of_prey,
-            int num_of_predators, int num_teams_prey, int num_teams_predator,
+    void activate(vector<double> &input, vector<double> &output,/* int num_of_prey,
+            int num_of_predators, int num_teams_prey, int num_teams_predator,*/
             int inputSize_combiner);
     void addNeuron();
     void removeNeuron(int sp);
