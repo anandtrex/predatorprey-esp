@@ -208,7 +208,6 @@ int BURST_MUTATE = 0;  //EVOLVE_PREY
 int BURST_MUTATE_PREY = 0;  //EVOLVE_PREY
 
 int IS_COMBINER_NW = 0;
-// QUE What is combine?
 int COMBINE = 1;
 
 //int total_prey_networks_per_team = 2; //number of prey ******PADMINI //ADITYA

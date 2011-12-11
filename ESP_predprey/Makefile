@@ -10,23 +10,22 @@
 #
 ######################################################################
 
-CC = g++
-LD = g++
+CC = clang++ #g++
+LD = clang++ #g++
 
 DIR = $(shell echo `pwd`)
-CFLAGS = -g -O3  -Wall -Wunused-function
-LDLIBS = -L/usr/include/X11/ -L$(DIR)/glog/lib/ -L$(DIR)/libconfig/lib/ -lglut  -lGL -lGLU -L/usr/lib/X11 -lXi -lXmu -lX11 -lm -lglog -lconfig++
+CFLAGS = -g -O3 -Wall
+LDLIBS = -L/usr/include/X11/ -L$(DIR)/glog/lib/ -L$(DIR)/libconfig/lib/ -L/usr/lib/X11 -lglut -lGL -lGLU -lXi -lXmu -lX11 -lm -lglog -lconfig++
 LDFLAGS = -L.
 ARCHIVES = -lm -lstdc++
-## INCLUDES = -I/usr/include/g++
-INCLUDES = -I/p/include/Mesa -I/usr/include/X11 -I/usr/lib/X11 -I. -Iglog/include -Ilibconfig/include
+INCLUDES = -I/p/include/Mesa -I/usr/include/X11 -I/usr/lib/X11 -I. -Iglog/include -Ilibconfig/include -I/usr/include/x86_64-linux-gnu #last include if for clang's benefit
 
 DEPENDFLAGS = $(INCLUDES)
 
 TARGET = esp-predprey
 LIBNAME = libWal.a
 
-OBJECTS = ESP.o Network.o signal-handler.o 
+OBJECTS = ESP.o Network.o signal-handler.o PredPrey.o PredPreyST1.o PredPreyST2.o
 
 
 ######################################################################
@@ -43,8 +42,8 @@ OBJECTS = ESP.o Network.o signal-handler.o
 ######################################################################
 
 
-$(TARGET): Makefile $(OBJECTS) PredPrey.o $(MYLIBS)
-	$(LD) PredPrey.o $(OBJECTS) $(LDLIBS) $(ARCHIVES) -o $(TARGET)
+$(TARGET): Makefile $(OBJECTS) $(MYLIBS)
+	$(LD) $(OBJECTS) $(LDLIBS) $(ARCHIVES) -o $(TARGET)
 
 
 
@@ -70,8 +69,12 @@ pure::  clean
 	rm -f $(LIBNAME)
 
 tar:
-	tar cvf ESP.tar *.C *.h $(EXTRATAR) \
-	ChangeLog Makefile RCS README USERDOC
+	tar cvf ESP.tar *.C *.h $(EXTRATAR) Makefile \
+	esp_predprey.cfg config_file.txt install_dependencies.sh doxy_config condor_run README #\
+	#ChangeLog Makefile RCS README USERDOC
+	
+doc:
+	doxygen -g doxy_config
 
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.

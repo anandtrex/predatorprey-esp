@@ -13,6 +13,7 @@
 #include <GL/glut.h>
 #include <GL/glx.h>
 #include <iostream>
+#include <glog/logging.h>
 
 using namespace std;
 
@@ -25,8 +26,6 @@ extern bool INCREMENTAL_LEARNING;
 extern int TOTAL_EVALUATIONS;  //Total number of evaluations within a generation
 extern int EVALTRIALS;  // number of times to call evalNet for a given team
 
-double pred_flee_factor = 1.0;
-bool DEBUG = false;
 extern bool IS_PREY;
 extern int COMBINE;
 extern int IS_COMBINER_NW;
@@ -285,7 +284,7 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         /************************************HUNTER************************************************************/
         for (p = 0; p < num_teams_hunters; p++) {
             for (i = 0; i < num_of_hunters; i++) {
-                performHunterAction_complex(p, i, temp_combiner_output_prey);
+                performHunterAction_complex(p, i);
             }
         }
 
@@ -318,8 +317,7 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         //While break condition when all predators are killed by hunters
         for (p = 0; p < num_teams_predator; p++) {
             if (num_of_pred_hit[p] == num_of_predators) {
-                if (DEBUG)
-                    cout << "All predators killed by hunters" << endl;
+                VLOG(1) << "All predators killed by hunters" << endl;
                 temp_break_while = true;
                 break;
             }
@@ -336,8 +334,7 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         }
 
         if (count_prey_caught == num_teams_prey * num_of_prey) {
-            if (DEBUG)
-                cout << "All prey caught";
+            VLOG(1) << "All prey caught";
             break;
         }
 
@@ -381,13 +378,11 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
             if (num_teams_prey == 1) {
                 double individual_fitness_value = num_of_prey_caught_individually[p][i]
                         * reward_prey_team[0] + num_of_prey_caught[p] * reward_prey_team[0];
-                if (DEBUG)
-                    cout << "Fitness was " << individual_fitness_value << endl;
+                VLOG(1) << "Fitness was " << individual_fitness_value << endl;
                 // NOTE Fitness value decreased if predator is hit by hunter
                 if (pred_hit[p][i] == true) {
                     individual_fitness_value -= 300;
-                    if (DEBUG)
-                        cout << "Fitness decreased" << endl;
+                    VLOG(1) << "Fitness decreased" << endl;
                 }
                 temp_individual_fitness.push_back(individual_fitness_value);  // This is individual fitness for Competing agents
             } else if (num_teams_prey == 2) {
@@ -1259,15 +1254,14 @@ void PredPrey::performPredAction_complex(int pred_team, int pred,
         showPred(pred_team, pred, old_pred_x, old_pred_y);
     }  // end show
 
-    if (DEBUG) {
-        cout << "Predator " << pred << " at \t(" << pred_x[pred_team][pred] << ", "
-                << pred_y[pred_team][pred] << "), \tOutput: ";
+    VLOG(1)
+            << "Predator " << pred << " at \t(" << pred_x[pred_team][pred] << ", "
+                    << pred_y[pred_team][pred] << "), \tOutput: ";
 
-        for (int i = 0; i < (int) output_single_predator.size(); i++)
-            cout << output_single_predator[i] << " ";
+    for (int i = 0; i < (int) output_single_predator.size(); i++)
+        VLOG(1) << output_single_predator[i] << " ";
 
-        cout << endl << "Action: " << predAction << endl;
-    }
+    VLOG(1) << endl << "Action: " << predAction << endl;
 
     //Changed the above to say that predators have only finished catching the prey
     //if they've caught all the prey. Also, the same predator needn't have caught all the prey. ******PADMINI
@@ -1276,12 +1270,10 @@ void PredPrey::performPredAction_complex(int pred_team, int pred,
             if (prey_caught[p][i] == false && pred_killed[pred_team][pred] == false
                     && pred_hit[pred_team][pred] == false && pred_x[pred_team][pred] == prey_x[p][i]
                     && pred_y[pred_team][pred] == prey_y[p][i]) {
-                if (DEBUG) {
-                    cout << "Predator caught prey" << endl;
-                    cout << "Predator was at " << pred_x[pred_team][pred] << ", "
+                VLOG(1) << "Predator caught prey" << endl;
+                VLOG(1) << "Predator was at " << pred_x[pred_team][pred] << ", "
                             << pred_y[pred_team][pred] << endl;
-                    cout << "Prey was at " << prey_x[p][i] << ", " << prey_y[p][i] << endl;
-                }
+                VLOG(1) << "Prey was at " << prey_x[p][i] << ", " << prey_y[p][i] << endl;
                 if (prey_reappears == true) {
                     reset_prey_position(p, i);
                 } else {
@@ -1306,12 +1298,10 @@ void PredPrey::performPredAction_complex(int pred_team, int pred,
                     && pred_y[pred_team][pred] == hunter_y[p][i]) {
                 pred_hit[pred_team][pred] = true;
                 num_of_pred_hit[p]++;
-                if (DEBUG) {
-                    cout << "Predator hit by hunter" << endl;
-                    cout << "Predator was at " << pred_x[pred_team][pred] << ", "
+                VLOG(1) << "Predator hit by hunter" << endl;
+                VLOG(1) << "Predator was at " << pred_x[pred_team][pred] << ", "
                             << pred_y[pred_team][pred] << endl;
-                    cout << "Hunter was at " << hunter_x[p][i] << ", " << hunter_y[p][i] << endl;
-                }
+                VLOG(1) << "Hunter was at " << hunter_x[p][i] << ", " << hunter_y[p][i] << endl;
             }
         }
     }
@@ -1456,8 +1446,7 @@ void PredPrey::showPred(int pred_team, int pred, int old_pred_x, int old_pred_y)
     }
 }
 
-void PredPrey::performHunterAction_complex(int hunter_team, int hunter,
-        const vector<double>& output_single_prey)
+void PredPrey::performHunterAction_complex(int hunter_team, int hunter)
 {  //Added the argument int prey to check which prey is being processed ******PADMINI
 //double nearestDist = MAP_LENGTH * 2 + 1;  //Big number
 

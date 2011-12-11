@@ -6,27 +6,27 @@
 #include <getopt.h>
 #include <time.h>
 #include <ctype.h>
-#include "PredPrey.h"
+#include "PredPreyST1.h"
 #include "Network.h" 
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
 #include <GL/glx.h>
 #include <iostream>
+#include <glog/logging.h>
 
 using namespace std;
 
 extern bool SHOW;
-
 extern int TOTAL_EVALUATIONS;  //Total number of evaluations within a generation
 extern int EVALTRIALS;  // number of times to call evalNet for a given team
 
-double pred_flee_factor = 1.0;
-bool DEBUG = false;
+//extern double pred_flee_factor = 1.0;
+//extern bool DEBUG = false;
 extern bool IS_PREY;
 extern int COMBINE;
 extern int IS_COMBINER_NW;
-FILE* fptr;
+extern FILE* fptr;
 
 //*************************Parameters Read from the Config file**********************
 extern bool if_shared_fitness_predator;  // 1 - Fitness sharing in predator team, 0 - individual fitness in predator team
@@ -38,7 +38,7 @@ extern vector<int> reward_prey_team;  // Reward for prey team 0 (If there are mo
 extern bool prey_communication;  // 1 - Direct communication in prey teams, 0 - No direct communication in prey teams
 //*************************END Parameters Read from the Config file**********************
 
-PredPrey::PredPrey(int num_of_predators, int num_of_prey, int num_teams_predator,
+PredPreyST1::PredPreyST1(int num_of_predators, int num_of_prey, int num_teams_predator,
         int num_teams_prey, vector<double> prey_move_probability)
 {
     this->num_of_predators = num_of_predators;
@@ -46,14 +46,12 @@ PredPrey::PredPrey(int num_of_predators, int num_of_prey, int num_teams_predator
     this->num_teams_predator = num_teams_predator;
     this->num_teams_prey = num_teams_prey;
     this->prey_move_probability = prey_move_probability;
-//    this->num_of_hunters = num_of_hunters;
-//    cout << "Num hunters is " << this->num_of_hunters << endl;
-//    this->num_teams_hunters = 1;
 
     // class Environment variables
     // input and output sizes for EACH predator/prey agent
     inputSize = (num_of_prey * num_teams_prey + num_of_predators * (num_teams_predator - 1)) * 2;  //Number of inputs for all the networks in a single predator
-    inputSize_prey = (num_of_predators * num_teams_predator + num_of_prey * (num_teams_prey - 1)) * 2;  //Number of inputs for all the networks in a single prey
+    inputSize_prey = (num_of_predators * num_teams_predator + num_of_prey * (num_teams_prey - 1))
+            * 2;  //Number of inputs for all the networks in a single prey
 
     if (pred_communication == true) {
         inputSize = inputSize + (num_of_predators - 1) * 2;  //Extra inputs for predator direct communication
@@ -96,28 +94,24 @@ PredPrey::PredPrey(int num_of_predators, int num_of_prey, int num_teams_predator
 }
 
 //Defined as static to count the number of zebra caught
-// QUE Where are these set?!
-int PredPrey::previous_generation = 1;
-int PredPrey::count_trials = 0;
-double PredPrey::count_overall_best_zebra_caught = 0;
-double PredPrey::count_generation_best_zebra_caught = 0;
-double PredPrey::count_generation_zebra_caught = 0;
-double PredPrey::count_zebra_caught_6 = 0;
-double PredPrey::count_overall_best_mice_caught = 0;
-double PredPrey::count_generation_best_mice_caught = 0;
-double PredPrey::count_generation_mice_caught = 0;
-double PredPrey::count_mice_caught_6 = 0;
+int PredPreyST1::previous_generation = 1;
+int PredPreyST1::count_trials = 0;
+double PredPreyST1::count_overall_best_zebra_caught = 0;
+double PredPreyST1::count_generation_best_zebra_caught = 0;
+double PredPreyST1::count_generation_zebra_caught = 0;
+double PredPreyST1::count_zebra_caught_6 = 0;
+double PredPreyST1::count_overall_best_mice_caught = 0;
+double PredPreyST1::count_generation_best_mice_caught = 0;
+double PredPreyST1::count_generation_mice_caught = 0;
+double PredPreyST1::count_mice_caught_6 = 0;
 
 // Fitness = (ave_initial_distance - ave_final_distance) / steps
 //           if prey caught then X 10
 // If (random) then prey starts at random location
 //             else prey starts at (prey_start_x, prey_start_y)
-// QUE What does this do?
-vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& team,
+vector<vector<vector<double> > > PredPreyST1::evalNet(vector<vector<Network*> >& team,
         vector<vector<Network*> >& team_prey, int generation)  //Added number of prey to arguments ******PADMINI
 {
-
-    //cout << "Starting evalNet" << endl;
 
     if (SHOW) {
         //Saving predator-prey locations
@@ -125,6 +119,10 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
             cout << endl << "Error - cannot open " << "pred_prey_location.txt" << endl;
             exit(1);
         }
+
+        //fprintf (fptr,"%d ", generation);   // int generation
+        //fprintf (fptr, " ");   //  character
+        //fprintf (fptr,"%d ", simu_trial);   // int simu_trial
 
         // clear display window
         glClearColor(1.0, 1.0, 1.0, 0.0);
@@ -161,10 +159,8 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         }
 
     }
-
     steps = 0;
     int maxSteps;
-    double ave_initial_dist = 0;
     vector<double> ave_final_dist;
     vector<double> result;
     int flip = 0;
@@ -175,16 +171,33 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
 
     vector<vector<double> > output_prey, output;
 
+    //prey_caught.clear(); //To clear the vector so that new values can be loaded in it ******PADMINI
+    //prey_lifetime.clear();
+    //average_nearest_distance.clear();
+
+    //for(j = 0; j < num_of_prey; j++) { //Initializing the vector prey_caught to all false ******PADMINI
+    //  prey_caught.push_back(false);
+    //  average_nearest_distance.push_back(10000);
+    //  prey_lifetime.push_back(0);
+    //}
 
     //Randomly initialize the positions of predators and prey
-    init(true, true, true, generation);
+    init(true, true, generation);
+
+// // calculate average initial distance
+// for (int i=0; i<num_of_predators; i++) {
+//   for(j = 0; j < num_of_prey; j++) { //Added an inner for loop to account for multiple prey
+//     ave_initial_dist += calc_dist (pred_x[i], pred_y[i], prey_x[j], prey_y[j]);
+//   }
+// }
+//
+// ave_initial_dist /= num_of_predators;
 
     maxSteps = 300;
 
     bool temp_break_while = false;
 
     while (steps++ < maxSteps && temp_break_while == false) {
-
 
         if (SHOW) {  //Added another clear screen here ******PADMINI
 
@@ -204,11 +217,23 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         int p;
         for (p = 0; p < num_teams_prey; p++) {
             for (i = 0; i < num_of_prey; i++) {
-                //cout << "Prey" << endl;
                 temp_output_prey.clear();
-
                 if (prey_communication == true) {
                 }
+                //***************************Commenting below else block because prey is fixed*************
+                //else {
+                //        for(j = 0; j < (num_teams_predator*num_of_predators)*NUM_OUTPUTS_PREY; j++){
+                //                temp_output_prey.push_back(output_prey[p][(num_teams_predator*num_of_predators)*NUM_OUTPUTS_PREY*i + j ]);
+                //        }
+                //        if (COMBINE == 1) {
+                //                team_prey[p][(num_teams_predator*num_of_predators) * num_of_prey  + i]->activate(temp_output_prey, temp_combiner_output_prey, num_of_predators, num_of_prey, num_teams_predator, num_teams_prey);
+                //        }
+                //        else {
+                //                temp_combiner_output_prey.clear(); // Clear this to make sure there is size matching
+                //                temp_combiner_output_prey = temp_output_prey;
+                //        }
+                //}
+                //***************************END Commenting below else block because prey is fixed*************
 
                 if (prey_caught[p][i] == true) {
                     if (SHOW) {
@@ -244,7 +269,7 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         IS_PREY = false;
         vector<double> temp_output, temp_combiner_output(NUM_OUTPUT_PRED_COMBINER);
         IS_COMBINER_NW = 0;
-        setupInput_complex_predator(num_of_prey, output, team);
+        setupInput_complex_predator(output, team);
         IS_COMBINER_NW = 1;
 
         messages.clear();  //messages
@@ -252,19 +277,31 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         for (p = 0; p < num_teams_predator; p++) {
             temp_messages.clear();
             for (i = 0; i < num_of_predators; i++) {
-                //cout << "COMBINE" << COMBINE <<  endl;
                 temp_output.clear();
                 for (j = 0; j < inputSize_pred_combiner; j++) {
                     temp_output.push_back(output[p][inputSize_pred_combiner * i + j]);
                 }
                 if (COMBINE == 1) {
                     team[p][(inputSize / 2) * num_of_predators + i]->activate(temp_output,
-                            temp_combiner_output, num_of_prey, num_of_predators, num_teams_prey,
-                            num_teams_predator, inputSize_pred_combiner);
+                            temp_combiner_output, /*num_of_prey,
+                             num_of_predators, num_teams_prey,
+                             num_teams_predator,*/inputSize_pred_combiner);
                 } else {
                     temp_combiner_output.clear();  // Clear this to make sure there is size matching
                     temp_combiner_output = temp_output;
                 }
+                //if (temp_combiner_output[NUM_OUTPUT_PRED_COMBINER-1] < 0.333) { //Discretizing the outputs
+                //        temp_combiner_output[NUM_OUTPUT_PRED_COMBINER-1] = 1;
+                //}
+                //else if (temp_combiner_output[NUM_OUTPUT_PRED_COMBINER-1] < 0.666) {
+                //        temp_combiner_output[NUM_OUTPUT_PRED_COMBINER-1] = 2;
+                //}
+                //else if (temp_combiner_output[NUM_OUTPUT_PRED_COMBINER-1] <= 1) {
+                //        temp_combiner_output[NUM_OUTPUT_PRED_COMBINER-1] = 2;
+                //}
+                //else {
+                //        cout << " ERRRROR " <<endl;
+                //}
                 if (pred_messaging == true) {
                     temp_messages.push_back(temp_combiner_output[NUM_OUTPUT_PRED_COMBINER - 1]);  //messages
                     temp_combiner_output.pop_back();  //Delete the last element which is the message
@@ -276,13 +313,6 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
             }
             if (pred_messaging == true) {
                 messages.push_back(temp_messages);  //messages
-            }
-        }
-
-        /************************************HUNTER************************************************************/
-        for (p = 0; p < num_teams_hunters; p++) {
-            for (i = 0; i < num_of_hunters; i++) {
-                  performHunterAction_complex(p, i, temp_combiner_output_prey);
             }
         }
 
@@ -301,22 +331,13 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
                 flip = 5;
             else if (flip == 5)
                 flip = 0;
+
+            //sleep(1);
         }  // end while
 
         //While break condition when all predators are killed
         for (p = 0; p < num_teams_predator; p++) {
             if (num_of_pred_kills[p] == num_of_predators) {
-                cout << "All predators killed" << endl;
-                temp_break_while = true;
-                break;
-            }
-        }
-
-        //While break condition when all predators are killed by hunters
-        for (p = 0; p < num_teams_predator; p++) {
-            if (num_of_pred_hit[p] == num_of_predators) {
-                if(DEBUG)
-                    cout << "All predators killed by hunters" << endl;
                 temp_break_while = true;
                 break;
             }
@@ -333,8 +354,6 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         }
 
         if (count_prey_caught == num_teams_prey * num_of_prey) {
-            if(DEBUG)
-                cout << "All prey caught";
             break;
         }
 
@@ -376,21 +395,13 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
             }
             temp_hit_wall = temp_hit_wall + pred_hit_wall_times[p][i];
             if (num_teams_prey == 1) {
-                double individual_fitness_value = num_of_prey_caught_individually[p][i]
-                        * reward_prey_team[0] + num_of_prey_caught[p] * reward_prey_team[0];
-                if(DEBUG)
-                    cout << "Fitness was " << individual_fitness_value << endl;
-                // NOTE Fitness value decreased if predator is hit by hunter
-                if(pred_hit[p][i] == true){
-                    individual_fitness_value -= 300;
-                    if(DEBUG)
-                        cout << "Fitness decreased" << endl;
-                }
-                temp_individual_fitness.push_back(individual_fitness_value);  // This is individual fitness for Competing agents
+                temp_individual_fitness.push_back(
+                        num_of_prey_caught_individually[p][i] * reward_prey_team[0]
+                                + num_of_prey_caught[p] * reward_prey_team[0]);  // This is individual fitness for Competing agents
             } else if (num_teams_prey == 2) {
-                //temp_individual_fitness.push_back(
-                //        num_of_prey_caught_individually[p][i] * reward_prey_team[0]
-                //                + num_of_prey_caught[p] * reward_prey_team[1]);  // This is individual fitness for Competing agents
+                temp_individual_fitness.push_back(
+                        num_of_prey_caught_individually[p][i] * reward_prey_team[0]
+                                + num_of_prey_caught[p] * reward_prey_team[1]);  // This is individual fitness for Competing agents
             } else {
                 cout << " ERROR: Too many prey teams. Not supported now" << endl;
                 exit(0);
@@ -426,11 +437,6 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         cout << " Generation Number :: " << previous_generation
                 << " Generation Average Number of Mice Caught :  "
                 << count_generation_mice_caught / TOTAL_EVALUATIONS << endl;
-        cout << "----------------------------------------------------------" << endl;
-        // Assuming there are only one team of predators
-        cout << "No. prey caught individually :: " << num_of_prey_caught_individually[0][0] << endl;
-        cout << "No. hunter hits :: " << num_of_pred_hit[0] << endl;
-
         count_generation_best_zebra_caught = 0;
         count_generation_zebra_caught = num_of_prey_caught[0];
         count_generation_best_mice_caught = 0;
@@ -464,6 +470,20 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
         count_trials = 0;
     }
 
+////Energy based Fitness function
+// for (int p = 0; p < num_teams_predator; p++) {
+//
+//          temp_fitness.push_back(0);
+//          temp_pred_killed = 0;
+//          for (int i = 0; i < num_of_predators; i++) {
+//                  if (pred_killed[p][i] == true) {
+//                          temp_pred_killed++;
+//                  }
+//                  temp_fitness[p] = temp_fitness[p] + pred_energy[p][i];
+//          }
+//          temp_fitness[p] = temp_fitness[p] - 1000 * temp_pred_killed; //Lose 1000 energy points if you are killed
+// }
+
     fitness.push_back(temp_team_fitness);
     temp_team_fitness.clear();
 
@@ -480,21 +500,19 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
     fitness.push_back(temp_team_fitness);
     temp_team_fitness.clear();
 
-    //cout << "Ending evalNet with prey caught ::  " << num_of_prey_caught[0] << " and predators hit :: " << num_of_pred_hit[0] << endl;
-
     return fitness;
 
 }  //End function
 
 // Runs net for number of trials, returns number of times it caught prey
-vector<vector<double> > PredPrey::testNet(vector<vector<Network*> >& team,
+vector<vector<double> > PredPreyST1::testNet(vector<vector<Network*> >& team,
         vector<vector<Network*> >& team_prey, int trials)
 {
 
     vector<vector<double> > result(num_teams_predator);  //This stores the number of prey caught and number of predators killed by each predator team
 
     for (int p = 0; p < num_teams_predator; p++) {
-        result[p].push_back(0.0);
+
         result[p].push_back(0.0);
         result[p].push_back(0.0);
     }
@@ -502,20 +520,17 @@ vector<vector<double> > PredPrey::testNet(vector<vector<Network*> >& team,
     for (int i = 0; i < trials; i++) {
         evalNet(team, team_prey, 1);
         for (int p = 0; p < num_teams_predator; p++) {
+
             result[p][0] = result[p][0] + ((double) num_of_prey_caught[p]) / trials;
             result[p][1] = result[p][1] + ((double) num_of_pred_kills[p]) / trials;
-            result[p][2] = result[p][2] + ((double) num_of_pred_hit[p]) / trials;
         }
     }
 
     return result;
 }
 
-// TODO Separate out into initialization for hunters, predators and prey
-void PredPrey::init(bool preyRandom, bool predsRandom, bool huntersRandom, int generation)
+void PredPreyST1::init(bool preyRandom, bool predsRandom, int generation)
 {
-
-    int x, y;  //To store the initial random starting positions of the prey *******PADMINI
 
     vector<int> temp_x;
     vector<int> temp_y;
@@ -531,16 +546,10 @@ void PredPrey::init(bool preyRandom, bool predsRandom, bool huntersRandom, int g
     prey_x.clear();  //To clear the previous postions of all the prey ******PADMINI
     prey_y.clear();
 
-    // NOTE Hunters
-    hunter_x.clear();
-    hunter_y.clear();
-
     pred_killed.clear();
     prey_caught.clear();
-    pred_hit.clear();
 
     num_of_pred_kills.clear();
-    num_of_pred_hit.clear();
     num_of_prey_caught.clear();
 
     pred_energy.clear();
@@ -555,7 +564,6 @@ void PredPrey::init(bool preyRandom, bool predsRandom, bool huntersRandom, int g
     for (int p = 0; p < num_teams_predator; p++) {
 
         num_of_pred_kills.push_back(0);  //Initializing the number of opponent predators killed by each team
-        num_of_pred_hit.push_back(0);  //Initializing the number of predators killed by hunters
         num_of_prey_caught.push_back(0);  //Initializing the number of prey caught by each team
         for (int i = 0; i < num_of_predators; i++) {
 
@@ -564,12 +572,10 @@ void PredPrey::init(bool preyRandom, bool predsRandom, bool huntersRandom, int g
 
         }
         pred_killed.push_back(temp_killed);
-        pred_hit.push_back(temp_killed);
         num_of_prey_caught_individually.push_back(temp_num_of_prey_caught_individually);
         temp_killed.clear();
         temp_num_of_prey_caught_individually.clear();
     }
-
 
     for (int p = 0; p < num_teams_prey; p++) {
         for (int i = 0; i < num_of_prey; i++) {
@@ -591,6 +597,13 @@ void PredPrey::init(bool preyRandom, bool predsRandom, bool huntersRandom, int g
         prey_caught[1][3] = true;
     }
 
+    if (generation < 300) {
+// prey_caught[0][0] = true;
+// prey_caught[0][1] = true;
+// prey_caught[0][2] = true;
+// prey_caught[0][3] = true;
+    }
+
     // arrange the prey randomly
     if (preyRandom) {
         for (int k = 0; k < num_teams_prey; k++) {
@@ -608,17 +621,51 @@ void PredPrey::init(bool preyRandom, bool predsRandom, bool huntersRandom, int g
         }
     }
 
-    // arrange the hunters randomly
-    if (huntersRandom) {
-        for (int k = 0; k < num_teams_hunters; k++) {
-            for (int i = 0; i < num_of_hunters; i++) {
-                temp_x.push_back((int) (drand48() * 100));
-                temp_y.push_back((int) (drand48() * 100));
-            }
-            hunter_x.push_back(temp_x);
-            hunter_y.push_back(temp_y);
+    //Start prey from a fixed location
+    else {
+        //  for (int k = 0; k < num_teams_prey; k++) {
+        //          for(int i = 0; i < num_of_prey; i++) {
+        //                  temp_x.push_back(MAP_LENGTH/2);
+        //                  temp_y.push_back(MAP_LENGTH/2);
+        //                  temp_energy.push_back(1000);
+        //          }
+        //          prey_x.push_back(temp_x);
+        //          prey_y.push_back(temp_y);
+        //          prey_energy.push_back(temp_energy);
+        //          temp_x.clear();
+        //          temp_y.clear();
+        //          temp_energy.clear();
+        //  }
+
+        //Hardcoding for 4 prey to fixed positions to surround the predators
+        for (int k = 0; k < num_teams_prey; k++) {
+
+            //Prey 0
+            temp_x.push_back(MAP_LENGTH / 4);
+            temp_y.push_back(MAP_LENGTH / 4);
+            temp_energy.push_back(1000);
+
+            //Prey 1
+            temp_x.push_back(MAP_LENGTH / 4 * 3);
+            temp_y.push_back(MAP_LENGTH / 4);
+            temp_energy.push_back(1000);
+
+            //Prey 2
+            temp_x.push_back(MAP_LENGTH / 4);
+            temp_y.push_back(MAP_LENGTH / 4 * 3);
+            temp_energy.push_back(1000);
+
+            //Prey 3
+            temp_x.push_back(MAP_LENGTH / 4 * 3);
+            temp_y.push_back(MAP_LENGTH / 4 * 3);
+            temp_energy.push_back(1000);
+
+            prey_x.push_back(temp_x);
+            prey_y.push_back(temp_y);
+            prey_energy.push_back(temp_energy);
             temp_x.clear();
             temp_y.clear();
+            temp_energy.clear();
         }
     }
 
@@ -676,9 +723,588 @@ void PredPrey::init(bool preyRandom, bool predsRandom, bool huntersRandom, int g
 
 }
 
-void PredPrey::performPreyAction_complex(int prey_team, int prey,
+void PredPreyST1::reset_prey_position(int prey_team, int prey)
+{
+    prey_x[prey_team][prey] = ((int) (drand48() * 100));
+    prey_y[prey_team][prey] = ((int) (drand48() * 100));
+
+}
+
+/**********************************************************************************************/
+void PredPreyST1::setupInput_complex_prey(int num_of_predators,
+        vector<vector<double> >& output_prey, vector<vector<Network*> >& team_prey)
+{
+    //Changed these to vectors to store the x- and y-distances of the predators from the multiple prey ******PADMINI
+    int x_dist;
+    int y_dist;
+    vector<double> temp_output_prey(NUM_OUTPUTS_PREY);
+    vector<double> temp_input_prey(NUM_INPUTS_PREY);
+    vector<double> output_per_team_prey;
+
+    int temp = 0;
+
+    int i, j, p, q;  //Counters for loops ******PADMINI
+
+    output_prey.clear();
+    output_per_team_prey.clear();
+    int count = 0;
+
+    IS_PREY = true;
+    for (p = 0; p < num_teams_prey; p++) {
+        count = 0;
+        for (i = 0; i < num_of_prey && !prey_caught[p][i]; i++) {
+            for (q = 0; q < num_teams_predator; q++) {
+                for (j = 0; j < num_of_predators; j++) {
+                    temp_input_prey.clear();
+                    //temp_output.clear();
+                    if (!pred_killed[q][j]) {
+                        x_dist = abs(prey_x[p][i] - pred_x[q][j]);  //The distance in x-direction between predator and prey
+                        y_dist = abs(prey_y[p][i] - pred_y[q][j]);  //The distance in y-direction between predator and prey
+                    } else {
+                        x_dist = 0;
+                        y_dist = 0;
+                    }
+
+                    //Commenting this out for sensing the wall
+                    if ((abs(x_dist)) > (MAP_LENGTH / 2)) {
+                        temp = x_dist;
+                        x_dist = MAP_LENGTH - abs(x_dist);
+
+                        if (temp > 0)
+                            x_dist = 0 - x_dist;
+                    }
+
+                    if ((abs(y_dist)) > (MAP_HEIGHT / 2)) {
+                        temp = y_dist;
+                        y_dist = MAP_HEIGHT - abs(y_dist);
+
+                        if (temp > 0)
+                            y_dist = 0 - y_dist;
+                    }
+                    temp_input_prey.push_back(x_dist);
+                    temp_input_prey.push_back(y_dist);
+                    //temp_input.push_back(0);  //Energy difference with Prey is zero
+                    //temp_input.push_back(0);  //Dummy input
+                    team_prey[p][count]->activate(temp_input_prey, temp_output_prey, /*num_of_predators, num_of_prey,
+                     num_teams_predator, num_teams_prey,*/
+                    inputSize_prey_combiner);
+                    count++;
+                    for (int k = 0; k < NUM_OUTPUTS_PREY; k++) {
+                        output_per_team_prey.push_back(temp_output_prey[k]);
+                    }
+                }
+            }
+            //******************************Commenting this so that Prey teams do not track each other*******************************
+            // for (q=0; q< num_teams_prey; q++) {
+            //         for(j = 0; j < num_of_prey && q!=p; j++) {
+            //                 temp_input_prey.clear();
+            //                 //temp_output.clear();
+            //                 if (!prey_caught[q][j]) {
+            //                         x_dist = (prey_x[p][i] - prey_x[q][j]); //The distance in x-direction between predator and prey
+            //                         y_dist = (prey_y[p][i] - prey_y[q][j]); //The distance in y-direction between predator and prey
+            //                         energy_diff = (prey_energy[p][i] - prey_energy[q][j]); //Calculating energy difference
+            //                 }
+            //                 else {
+            //                         x_dist = 0;
+            //                         y_dist = 0;
+            //                         energy_diff = 0;
+            //                 }
+
+            //                 //Commenting this out for sensing the wall
+            //                 if ((abs(x_dist)) > (MAP_LENGTH/2)) {
+            //                  temp = x_dist;
+            //                  x_dist = MAP_LENGTH  - abs(x_dist);
+
+            //                  if (temp > 0)
+            //                      x_dist = 0 - x_dist;
+            //                 }
+
+            //                 if ((abs(y_dist)) > (MAP_HEIGHT/2)) {
+            //                  temp = y_dist;
+            //                  y_dist = MAP_HEIGHT  - abs(y_dist);
+
+            //                  if (temp > 0)
+            //                      y_dist = 0 - y_dist;
+            //                 }
+            //                     temp_input_prey.push_back(x_dist);
+            //                     temp_input_prey.push_back(y_dist);
+            //                     //temp_input.push_back(energy_diff);  //Energy difference with Prey is zero
+            //                     //temp_input.push_back(0);  //Dummy input
+            //                     team_prey[p][count]->activate(temp_input_prey, temp_output_prey, num_of_predators, num_of_prey, num_teams_predator, num_teams_prey);
+            //                     count++;
+            //                     for(int k = 0; k < NUM_OUTPUTS_PREY; k++) {
+            //                             output_per_team_prey.push_back(temp_output_prey[k]);
+            //                     }
+            //                 }
+            // }
+            //******************************END Commenting this so that Prey teams do not track each other*******************************
+
+            ////Adding extra neural network for sensing walls
+            //temp_input.clear();
+            //temp_input.push_back(abs(pred_x[p][i])); //X coordinate of own position
+            //temp_input.push_back(abs(pred_y[p][i])); //Y coordinate of own position
+            //temp_input.push_back(abs(pred_x[p][i] - MAP_LENGTH)); //
+            //temp_input.push_back(abs(pred_y[p][i] - MAP_LENGTH)); //
+            //team[p][count]->activate(temp_input, temp_output, num_of_prey, num_of_predators, num_teams_prey, num_teams_predator);
+            //for(int k = 0; k < NUM_OUTPUTS; k++) {
+            //        output_per_team.push_back(temp_output[k]);
+            //}
+
+        }
+        output_prey.push_back(output_per_team_prey);
+        output_per_team_prey.clear();
+    }
+}
+
+/**********************************************************************************************/
+void PredPreyST1::setupInput_complex_predator(vector<vector<double> >& output,
+        vector<vector<Network*> >& team)
+{
+    //Changed these to vectors to store the x- and y-distances of the predators from the multiple prey ******PADMINI
+    int x_dist;
+    int y_dist;
+    int energy_diff;
+    vector<double> temp_output(NUM_OUTPUTS);
+    vector<double> temp_input(NUM_INPUTS);
+    vector<double> output_per_team;
+
+    int temp = 0;
+
+    int i, j, p, q;  //Counters for loops ******PADMINI
+
+    output.clear();
+    output_per_team.clear();
+    int count = 0;
+
+    IS_PREY = false;
+    for (p = 0; p < num_teams_predator; p++) {
+        count = 0;
+        for (i = 0; i < num_of_predators && !pred_killed[p][i]; i++) {
+            for (q = 0; q < num_teams_prey; q++) {
+                for (j = 0; j < num_of_prey; j++) {
+                    temp_input.clear();
+                    //temp_output.clear();
+                    if (!prey_caught[q][j]) {
+                        x_dist = abs(pred_x[p][i] - prey_x[q][j]);  //The distance in x-direction between predator and prey
+                        y_dist = abs(pred_y[p][i] - prey_y[q][j]);  //The distance in y-direction between predator and prey
+                    } else {
+                        x_dist = 0;
+                        y_dist = 0;
+                    }
+
+                    //Commenting this out for sensing the wall
+                    if ((abs(x_dist)) > (MAP_LENGTH / 2)) {
+                        temp = x_dist;
+                        x_dist = MAP_LENGTH - abs(x_dist);
+
+                        if (temp > 0)
+                            x_dist = 0 - x_dist;
+                    }
+
+                    if ((abs(y_dist)) > (MAP_HEIGHT / 2)) {
+                        temp = y_dist;
+                        y_dist = MAP_HEIGHT - abs(y_dist);
+
+                        if (temp > 0)
+                            y_dist = 0 - y_dist;
+                    }
+                    temp_input.push_back(x_dist);
+                    temp_input.push_back(y_dist);
+                    //temp_input.push_back(0);  //Energy difference with Prey is zero
+                    //temp_input.push_back(0);  //Dummy input
+                    team[p][count]->activate(temp_input, temp_output,
+                    /*num_of_prey, num_of_predators, num_teams_prey,
+                     num_teams_predator,*/inputSize_pred_combiner);
+                    count++;
+                    for (int k = 0; k < NUM_OUTPUTS; k++) {
+                        output_per_team.push_back(temp_output[k]);
+                    }
+                }
+            }
+
+            //Detecting other predators (own teammates in case of direct communication, other teams in case of multiple teams)
+            for (q = 0; q < num_teams_predator; q++) {
+                for (j = 0; j < num_of_predators; j++) {
+                    if (pred_communication == true && q == p && i == j) {  //This for Predator communication case
+                        continue;
+                    } else if (pred_communication == false && q == p) {
+                        continue;
+                    }
+                    temp_input.clear();
+                    //temp_output.clear();
+                    if (!pred_killed[q][j]) {
+                        x_dist = (pred_x[p][i] - pred_x[q][j]);  //The distance in x-direction between predator and prey
+                        y_dist = (pred_y[p][i] - pred_y[q][j]);  //The distance in y-direction between predator and prey
+                        energy_diff = (pred_energy[p][i] - pred_energy[q][j]);  //Calculating energy difference
+                    } else {
+                        x_dist = 0;
+                        y_dist = 0;
+                        energy_diff = 0;
+                    }
+
+                    //Commenting this out for sensing the wall
+                    if ((abs(x_dist)) > (MAP_LENGTH / 2)) {
+                        temp = x_dist;
+                        x_dist = MAP_LENGTH - abs(x_dist);
+
+                        if (temp > 0)
+                            x_dist = 0 - x_dist;
+                    }
+
+                    if ((abs(y_dist)) > (MAP_HEIGHT / 2)) {
+                        temp = y_dist;
+                        y_dist = MAP_HEIGHT - abs(y_dist);
+
+                        if (temp > 0)
+                            y_dist = 0 - y_dist;
+                    }
+                    temp_input.push_back(x_dist);
+                    temp_input.push_back(y_dist);
+                    team[p][count]->activate(temp_input, temp_output,
+                    /*num_of_prey, num_of_predators, num_teams_prey,
+                     num_teams_predator,*/inputSize_pred_combiner);
+                    count++;
+                    for (int k = 0; k < NUM_OUTPUTS; k++) {
+                        output_per_team.push_back(temp_output[k]);
+                    }
+                }
+            }
+
+            //Detecting messages from predator teammates
+            for (q = 0; q < num_teams_predator; q++) {
+                for (j = 0; j < num_of_predators; j++) {
+                    if (pred_messaging == true && q == p && i == j) {  //Don't receive one's own message
+                        continue;
+                    } else if (pred_messaging == true && q != p) {  //Don't receive messages from the members of other teams
+                        continue;
+                    } else if (pred_messaging == false) {
+                        break;
+                    }
+                    temp_input.clear();
+
+                    if (!pred_killed[q][j]) {
+                        temp_input.push_back(messages[q][j]);  //messages : sensing the message of team-mate
+                    } else {
+                        temp_input.push_back(0.0);  //messages : sensing the message of team-mate
+                    }
+                    temp_input.push_back(0);  //messages : sensing the message of team-mate
+                    team[p][count]->activate(temp_input, temp_output,
+                    /*num_of_prey, num_of_predators, num_teams_prey,
+                     num_teams_predator,*/inputSize_pred_combiner);
+                    count++;
+                    for (int k = 0; k < NUM_OUTPUTS; k++) {
+                        output_per_team.push_back(temp_output[k]);
+                    }
+                }
+            }
+            ////Adding extra neural network for sensing walls
+            //temp_input.clear();
+            //temp_input.push_back(abs(pred_x[p][i])); //X coordinate of own position
+            //temp_input.push_back(abs(pred_y[p][i])); //Y coordinate of own position
+            //temp_input.push_back(abs(pred_x[p][i] - MAP_LENGTH)); //
+            //temp_input.push_back(abs(pred_y[p][i] - MAP_LENGTH)); //
+            //team[p][count]->activate(temp_input, temp_output, num_of_prey, num_of_predators, num_teams_prey, num_teams_predator);
+            //for(int k = 0; k < NUM_OUTPUTS; k++) {
+            //        output_per_team.push_back(temp_output[k]);
+            //}
+
+        }
+        output.push_back(output_per_team);
+        output_per_team.clear();
+    }
+}
+
+void PredPreyST1::performPredAction_complex(int pred_team, int pred,
+        const vector<double>& output_single_predator)
+{
+    int predAction = 0;
+    //bool finished = false; Commented this variable because it is never used ******PADMINI
+    int old_pred_x = pred_x[pred_team][pred];
+    int old_pred_y = pred_y[pred_team][pred];
+
+    int i;  //Counter for loops ******PADMINI
+
+    IS_PREY = false;
+    if (COMBINE == 0) {
+        predAction = getMaxPos_complex(output_single_predator);
+    } else {
+        predAction = getMaxPos(output_single_predator);
+    }
+
+    if (pred_killed[pred_team][pred] == true) {
+        predAction = 4;  // Remain Idle once you are killed
+
+    }
+
+    pred_flee_factor = 1.0;
+
+    if (drand48() <= pred_flee_factor) {
+
+        if (predAction == 0) {
+            //if(pred_y[pred_team][pred] != MAP_LENGTH) {
+            pred_y[pred_team][pred]++;
+            //}
+            //else {
+            //      pred_hit_wall_times[pred_team][pred] = pred_hit_wall_times[pred_team][pred] +5;   //Hitting wall leads to loss of 5 fitness points
+            //}
+            //pred_energy[pred_team][pred]--;
+        }
+
+        else if (predAction == 1) {
+            //if(pred_x[pred_team][pred] != MAP_LENGTH) {
+            pred_x[pred_team][pred]++;
+            //}
+            //else {
+            //      pred_hit_wall_times[pred_team][pred] = pred_hit_wall_times[pred_team][pred] +5;     //Hitting wall leads to loss of 5 fitness points
+            //}
+            //pred_energy[pred_team][pred]--;
+        }
+
+        else if (predAction == 2) {
+            //if(pred_y[pred_team][pred] != 0) {
+            pred_y[pred_team][pred]--;
+            //}
+            //else {
+            //      pred_hit_wall_times[pred_team][pred] = pred_hit_wall_times[pred_team][pred] +5;     //Hitting wall leads to loss of 5 fitness points
+            //}
+            //pred_energy[pred_team][pred]--;
+        }
+
+        else if (predAction == 3) {
+            //if(pred_x[pred_team][pred] != 0) {
+            pred_x[pred_team][pred]--;
+            //}
+            //else {
+            //      pred_hit_wall_times[pred_team][pred] = pred_hit_wall_times[pred_team][pred] +5;     //Hitting wall leads to loss of 5 fitness points
+            //}
+            //pred_energy[pred_team][pred]--;
+        }
+
+        else if (predAction == 4 && pred_killed[pred_team][pred] == false) {  // Energy based fitness:: Predators lose energy even during idle (but don't once they are killed)
+            //pred_hit_wall_times[pred_team][pred]++; // Idle state leads to loss of 1 fitness points
+            //pred_energy[pred_team][pred]--;
+        }
+    }
+
+    if (pred_x[pred_team][pred] > MAP_LENGTH)
+        pred_x[pred_team][pred] -= MAP_LENGTH;
+    if (pred_y[pred_team][pred] > MAP_HEIGHT)
+        pred_y[pred_team][pred] -= MAP_HEIGHT;
+    if (pred_x[pred_team][pred] < 0)
+        pred_x[pred_team][pred] += MAP_LENGTH;
+    if (pred_y[pred_team][pred] < 0)
+        pred_y[pred_team][pred] += MAP_HEIGHT;
+
+    double color1 = 0;
+    double color2 = 0;
+    double color3 = 0;
+
+    if (SHOW) {
+        //Saving Predator-Prey location
+        if (pred_killed[pred_team][pred] == false) {
+            fprintf(fptr, "%d ", pred_x[pred_team][pred]);  // int generation
+            fprintf(fptr, " ");  //  character
+            fprintf(fptr, "%d ", pred_y[pred_team][pred]);  // int generation
+            fprintf(fptr, " ");  //  character
+        } else {
+            int x = -1;
+            fprintf(fptr, "%d ", x);  // int generation
+            fprintf(fptr, " ");  //  character
+            fprintf(fptr, "%d ", x);  // int generation
+            fprintf(fptr, " ");  //  character
+        }
+
+        // erase old pred point
+        glBegin(GL_POINTS);
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "6. Error" << endl;
+        }  //ADI
+
+        glColor3f(1.0f, 1.0f, 1.0f);
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "5. Error" << endl;
+        }  //ADI
+
+        glVertex3f(old_pred_x, old_pred_y, 0);
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "7. Error" << endl;
+        }  //ADI
+
+        void glEnd(void);
+        {
+            GLint err = glGetError();
+            if (err != GL_NO_ERROR)
+                cout << "8. Error" << endl;
+        }  //ADI
+
+        // draw new pred point
+        if (pred_killed[pred_team][pred] == false) {
+            if (pred_team == 0 && pred == 0) {
+                color1 = 1;
+            } else if (pred_team == 0 && pred == 1) {
+                color2 = 1;
+            } else if (pred_team == 0 && pred == 2) {
+                color3 = 1;
+            } else if (pred_team == 1 && pred == 0) {
+                color2 = 1;
+            } else if (pred_team == 1 && pred == 1) {
+                color3 = 0;
+            } else if (pred_team == 1 && pred == 2) {
+                color3 = 0;
+            }
+
+            glBegin(GL_POINTS);
+            {
+                GLint err = glGetError();
+                if (err != GL_NO_ERROR)
+                    cout << "10. Error" << endl;
+            }  //ADI
+
+            glColor3f(color1, color2, color3);
+            {
+                GLint err = glGetError();
+                if (err != GL_NO_ERROR)
+                    cout << "9. Error" << endl;
+            }  //ADI
+
+            glVertex3f(pred_x[pred_team][pred], pred_y[pred_team][pred], 0);
+            {
+                GLint err = glGetError();
+                if (err != GL_NO_ERROR)
+                    cout << "11. Error" << endl;
+            }  //ADI
+
+            void glEnd(void);
+            {
+                GLint err = glGetError();
+                if (err != GL_NO_ERROR)
+                    cout << "12. Error" << endl;
+            }  //ADI
+
+            glFlush();
+            {
+                GLint err = glGetError();
+                if (err != GL_NO_ERROR)
+                    cout << "13. Error" << endl;
+            }  //ADI
+        } else {
+            glBegin(GL_POINTS);
+            {
+                GLint err = glGetError();
+                if (err != GL_NO_ERROR)
+                    cout << "10. Error" << endl;
+            }  //ADI
+
+            glColor3f(1.0f, 1.0f, 1.0f);
+            {
+                GLint err = glGetError();
+                if (err != GL_NO_ERROR)
+                    cout << "9. Error" << endl;
+            }  //ADI
+
+            glVertex3f(pred_x[pred_team][pred], pred_y[pred_team][pred], 0);
+            {
+                GLint err = glGetError();
+                if (err != GL_NO_ERROR)
+                    cout << "11. Error" << endl;
+            }  //ADI
+
+            void glEnd(void);
+            {
+                GLint err = glGetError();
+                if (err != GL_NO_ERROR)
+                    cout << "12. Error" << endl;
+            }  //ADI
+
+            glFlush();
+            {
+                GLint err = glGetError();
+                if (err != GL_NO_ERROR)
+                    cout << "13. Error" << endl;
+            }  //ADI
+        }
+    }
+
+    VLOG(1)
+            << "Predator " << pred << " at \t(" << pred_x[pred_team][pred] << ", "
+                    << pred_y[pred_team][pred] << "), \tOutput: ";
+
+    for (int i = 0; i < (int) output_single_predator.size(); i++)
+        VLOG(1) << output_single_predator[i] << " ";
+
+    VLOG(1) << endl << "Action: " << predAction << endl;
+
+    // check if pred caught prey
+    /* if (pred_x[pred]==prey_x && pred_y[pred]==prey_y)
+     caught=true; */
+
+    //Changed the above to say that predators have only finished catching the prey
+    //if they've caught all the prey. Also, the same predator needn't have caught all the prey. ******PADMINI
+    for (int p = 0; p < num_teams_prey; p++) {
+        for (i = 0; i < num_of_prey; i++) {
+            if (prey_caught[p][i] == false && pred_killed[pred_team][pred] == false
+                    && pred_x[pred_team][pred] == prey_x[p][i]
+                    && pred_y[pred_team][pred] == prey_y[p][i]) {
+                if (prey_reappears == true) {
+                    reset_prey_position(p, i);
+                } else {
+                    prey_caught[p][i] = true;
+                    prey_lifetime[p][i] = steps;
+                }
+
+                pred_energy[pred_team][pred] = pred_energy[pred_team][pred] + 100;
+                if (p == 1 || (if_shared_fitness_predator && (num_teams_prey == 1))) {  //Adding override for fitness sharing experiment
+                    num_of_prey_caught[pred_team]++;  //Adding exception for zebra. The whole team gets fitness on catching a zebra
+                } else {
+                    num_of_prey_caught_individually[pred_team][pred]++;
+                }
+            }
+        }
+    }
+
+    for (int p = 0; p < num_teams_predator; p++) {
+        for (i = 0; i < num_of_predators && p != pred_team; i++) {
+            if (pred_killed[p][i] == false && pred_killed[pred_team][pred] == false
+                    && pred_x[pred_team][pred] == pred_x[p][i]
+                    && pred_y[pred_team][pred] == pred_y[p][i]) {
+                if (pred_energy[pred_team][pred] > pred_energy[p][i]) {
+                    //pred_killed[p][i] = true;
+                    //num_of_pred_kills[pred_team]++;
+                } else {
+                    //pred_killed[pred_team][pred] = true;
+                    //num_of_pred_kills[p]++;
+                }
+            }
+        }
+    }
+
+    //int sum = 0; //To count the number of prey caught ******PADMINI
+    //for(int j = 0; j < num_of_prey; j++) {
+    //        if(prey_caught[j])
+    //                sum++;
+    //}
+    //
+    //if(sum == num_of_prey) { //If all the prey are caught, the boolean 'caught' becomes true ******PADMINI
+    //  caught = true;
+    //  //num_of_preyCaught = 0;
+    //}
+
+    ////Adding temporary variable to keep track of the closest distance the predator team was to each of the prey
+    //for (i=0; i<num_of_prey; i++) {
+    //        average_nearest_distance[i]+= calc_dist (pred_x[pred], pred_y[pred], prey_x[i], prey_y[i]);
+    //}
+}
+
+void PredPreyST1::performPreyAction_complex(int prey_team, int prey,
         const vector<double>& output_single_prey)
 {  //Added the argument int prey to check which prey is being processed ******PADMINI
+//double nearestDist = calc_dist(pred_x[0], pred_y[0], prey_x[prey], prey_y[prey]); //To hold the distances of the prey from its nearest predator
     double nearestDist = MAP_LENGTH * 2 + 1;  //Big number
 
     int nearestPred = 0;  //To hold the nearest predator to the prey
@@ -691,7 +1317,6 @@ void PredPrey::performPreyAction_complex(int prey_team, int prey,
     int i;  //Counter for loops ******PADMINI
 
     double preyAction;
-    int act = 0;
 
     int old_prey_x = prey_x[prey_team][prey];
     int old_prey_y = prey_y[prey_team][prey];
@@ -699,9 +1324,22 @@ void PredPrey::performPreyAction_complex(int prey_team, int prey,
     if (prey_caught[prey_team][prey]) {
         preyAction = 4;
     } else {
+        //if (delay_pred_evolution == 1) {
         IS_PREY = true;
+        ///********Commenting out for now since prey is fixed**********************/
+        // if (COMBINE == 1) {
+        //         preyAction = getMaxPos(output_single_prey);
+        // }
+        // else {
+        //         preyAction = getMaxPos_complex (output_single_prey);
+        // }
+        ///********END Commenting out for now since prey is fixed**********************/
+        //}
+        //else { //Added !prey_caught[i] to calculate stuff for prey only if it's not been caught yet ******PADMINI
+
         // find nearest predator
 
+        /********Commenting out for now since prey is evolving**********************/
         for (int p = 0; p < num_teams_predator; p++) {
             for (i = 0; i < num_of_predators; i++) {
                 dist = calc_dist(pred_x[p][i], pred_y[p][i], prey_x[prey_team][prey],
@@ -758,6 +1396,7 @@ void PredPrey::performPreyAction_complex(int prey_team, int prey,
         }
         //  }
     }
+    /********END Commenting out for now since prey is evolving**********************/
 
     //preyAction=4; // Making the prey fixed for now (It is acting as a food)
     if (preyAction == 0) {
@@ -790,834 +1429,111 @@ void PredPrey::performPreyAction_complex(int prey_team, int prey,
 
     if (SHOW) {
 
-        showPrey(prey_team, prey, old_prey_x, old_prey_y);
-    }
-}
+        //Saving Predator-Prey location
+        if (prey_caught[prey_team][prey] == false) {
+            fprintf(fptr, "%d ", prey_x[prey_team][prey]);  // int generation
+            fprintf(fptr, " ");  //  character
+            fprintf(fptr, "%d ", prey_y[prey_team][prey]);  // int generation
+            fprintf(fptr, " ");  //  character
+        } else {
+            int x = -1;
+            fprintf(fptr, "%d ", x);  // int generation
+            fprintf(fptr, " ");  //  character
+            fprintf(fptr, "%d ", x);  // int generation
+            fprintf(fptr, " ");  //  character
+        }
 
-void PredPrey::showPrey(int prey_team, int prey, int old_prey_x, int old_prey_y)
-{
-    fprintf(fptr, "Prey");
-    //Saving Predator-Prey location
-    if (prey_caught[prey_team][prey] == false) {
-        fprintf(fptr, "%d ", prey_x[prey_team][prey]);  // int generation
-        fprintf(fptr, " ");  //  character
-        fprintf(fptr, "%d ", prey_y[prey_team][prey]);  // int generation
-        fprintf(fptr, " ");  //  character
-    } else {
-        int x = -1;
-        fprintf(fptr, "%d ", x);  // int generation
-        fprintf(fptr, " ");  //  character
-        fprintf(fptr, "%d ", x);  // int generation
-        fprintf(fptr, " ");  //  character
-    }
-
-    // erase old prey point
-    glBegin(GL_POINTS);
-    {
-        GLint err = glGetError();
-        if (err != GL_NO_ERROR)
-            cout << "15. Error" << endl;
-    }  //ADI
-
-    glColor3f(1.0f, 1.0f, 1.0f);
-    {
-        GLint err = glGetError();
-        if (err != GL_NO_ERROR)
-            cout << "14. Error" << endl;
-    }  //ADI
-
-    glVertex3f(old_prey_x, old_prey_y, 0);
-    {
-        GLint err = glGetError();
-        if (err != GL_NO_ERROR)
-            cout << "16. Error" << endl;
-    }  //ADI
-
-    void glEnd(void);
-    {
-        GLint err = glGetError();
-        if (err != GL_NO_ERROR)
-            cout << "17. Error" << endl;
-    }  //ADI
-
-    if (prey_caught[prey_team][prey] == false) {  //Added this if-else condition so that caught prey are drawn in white ******PADMINI
-
-        // draw new prey point
+        // erase old prey point
         glBegin(GL_POINTS);
         {
             GLint err = glGetError();
             if (err != GL_NO_ERROR)
-                cout << "19. Error" << endl;
-        }  //ADI
-
-        if (prey_team == 0) {
-            glColor3f(1.0f, 0.0f, 1.0f);  //trying to change the colors of different prey ******PADMINI
-        }
-        if (prey_team == 1) {
-            glColor3f(0.0f, 0.9f, 1.0f);  //trying to change the colors of different prey ******PADMINI
-        }
-
-        glVertex3f(prey_x[prey_team][prey], prey_y[prey_team][prey], 0);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "20. Error" << endl;
-        }  //ADI
-
-        glEnd();
-        //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "21. Error" <<err<<endl; } //ADI : DONT know why this is not going even after changing gl end to void
-    }
-
-    else {
-        // draw new prey point
-        glBegin(GL_POINTS);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "19. Error" << endl;
-        }  //ADI
-
-        glColor3f(1.0f, 1.0f, 1.0f);  //white color for the prey that've already been caught, i.e. they vanish ******PADMINI
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "18. Error" << endl;
-        }  //ADI
-
-        glVertex3f(prey_x[prey_team][prey], prey_y[prey_team][prey], 0);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "20. Error" << endl;
-        }  //ADI
-
-        glEnd();
-        //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "21. Error" <<err<<endl; } //ADI : DONT know why this is not going even after changing gl end to void
-    }
-
-    glFlush();
-    //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "22. Error" <<endl; } //ADI
-}
-
-void PredPrey::reset_prey_position(int prey_team, int prey)
-{
-    prey_x[prey_team][prey] = ((int) (drand48() * 100));
-    prey_y[prey_team][prey] = ((int) (drand48() * 100));
-
-}
-
-/**********************************************************************************************/
-void PredPrey::setupInput_complex_prey(int num_of_predators, vector<vector<double> >& output_prey,
-        vector<vector<Network*> >& team_prey)
-{
-    //Changed these to vectors to store the x- and y-distances of the predators from the multiple prey ******PADMINI
-    int x_dist;
-    int y_dist;
-    int energy_diff;
-    vector<double> temp_output_prey(NUM_OUTPUTS_PREY);
-    vector<double> temp_input_prey(NUM_INPUTS_PREY);
-    vector<double> output_per_team_prey;
-
-    int temp = 0;
-
-    int i, j, p, q;  //Counters for loops ******PADMINI
-
-    output_prey.clear();
-    output_per_team_prey.clear();
-    int count = 0;
-
-    IS_PREY = true;
-    for (p = 0; p < num_teams_prey; p++) {
-        count = 0;
-        for (i = 0; i < num_of_prey && !prey_caught[p][i]; i++) {
-            for (q = 0; q < num_teams_predator; q++) {
-                for (j = 0; j < num_of_predators; j++) {
-                    temp_input_prey.clear();
-                    //temp_output.clear();
-                    if (!pred_killed[q][j]) {
-                        x_dist = abs(prey_x[p][i] - pred_x[q][j]);  //The distance in x-direction between predator and prey
-                        y_dist = abs(prey_y[p][i] - pred_y[q][j]);  //The distance in y-direction between predator and prey
-                    } else {
-                        x_dist = 0;
-                        y_dist = 0;
-                    }
-
-                    //Commenting this out for sensing the wall
-                    if ((abs(x_dist)) > (MAP_LENGTH / 2)) {
-                        temp = x_dist;
-                        x_dist = MAP_LENGTH - abs(x_dist);
-
-                        if (temp > 0)
-                            x_dist = 0 - x_dist;
-                    }
-
-                    if ((abs(y_dist)) > (MAP_HEIGHT / 2)) {
-                        temp = y_dist;
-                        y_dist = MAP_HEIGHT - abs(y_dist);
-
-                        if (temp > 0)
-                            y_dist = 0 - y_dist;
-                    }
-                    temp_input_prey.push_back(x_dist);
-                    temp_input_prey.push_back(y_dist);
-                    team_prey[p][count]->activate(temp_input_prey, temp_output_prey,
-                            num_of_predators, num_of_prey, num_teams_predator, num_teams_prey,
-                            inputSize_prey_combiner);
-                    count++;
-                    for (int k = 0; k < NUM_OUTPUTS_PREY; k++) {
-                        output_per_team_prey.push_back(temp_output_prey[k]);
-                    }
-                }
-            }
-        }
-        output_prey.push_back(output_per_team_prey);
-        output_per_team_prey.clear();
-    }
-}
-
-/**********************************************************************************************/
-void PredPrey::setupInput_complex_predator(int num_of_prey, vector<vector<double> >& output,
-        vector<vector<Network*> >& team)
-{
-    //Changed these to vectors to store the x- and y-distances of the predators from the multiple prey ******PADMINI
-    int x_dist;
-    int y_dist;
-    int energy_diff;
-    vector<double> temp_output(NUM_OUTPUTS);
-    vector<double> temp_input(NUM_INPUTS);
-    vector<double> output_per_team;
-
-    int temp = 0;
-
-    int i, j, p, q;  //Counters for loops ******PADMINI
-
-    output.clear();
-    output_per_team.clear();
-    int count = 0;
-
-    IS_PREY = false;
-    for (p = 0; p < num_teams_predator; p++) {
-        count = 0;
-        for (i = 0; i < num_of_predators && !pred_killed[p][i]; i++) {
-
-            for (q = 0; q < num_teams_prey; q++) {
-                for (j = 0; j < num_of_prey; j++) {
-                    temp_input.clear();
-                    //temp_output.clear();
-                    if (!prey_caught[q][j]) {
-                        x_dist = abs(pred_x[p][i] - prey_x[q][j]);  //The distance in x-direction between predator and prey
-                        y_dist = abs(pred_y[p][i] - prey_y[q][j]);  //The distance in y-direction between predator and prey
-                    } else {
-                        x_dist = 0;
-                        y_dist = 0;
-                    }
-
-                    //Commenting this out for sensing the wall
-                    if ((abs(x_dist)) > (MAP_LENGTH / 2)) {
-                        temp = x_dist;
-                        x_dist = MAP_LENGTH - abs(x_dist);
-
-                        if (temp > 0)
-                            x_dist = 0 - x_dist;
-                    }
-
-                    if ((abs(y_dist)) > (MAP_HEIGHT / 2)) {
-                        temp = y_dist;
-                        y_dist = MAP_HEIGHT - abs(y_dist);
-
-                        if (temp > 0)
-                            y_dist = 0 - y_dist;
-                    }
-                    temp_input.push_back(x_dist);
-                    temp_input.push_back(y_dist);
-                    team[p][count]->activate(temp_input, temp_output, num_of_prey, num_of_predators,
-                            num_teams_prey, num_teams_predator, inputSize_pred_combiner);
-                    count++;
-                    for (int k = 0; k < NUM_OUTPUTS; k++) {
-                        output_per_team.push_back(temp_output[k]);
-                    }
-                }
-            }
-
-            //Detecting other predators (own teammates in case of direct communication, other teams in case of multiple teams)
-            for (q = 0; q < num_teams_predator; q++) {
-                for (j = 0; j < num_of_predators; j++) {
-                    if (pred_communication == true && q == p && i == j) {  //This for Predator communication case
-                        continue;
-                    } else if (pred_communication == false && q == p) {
-                        continue;
-                    }
-                    temp_input.clear();
-                    //temp_output.clear();
-                    if (!pred_killed[q][j]) {
-                        x_dist = (pred_x[p][i] - pred_x[q][j]);  //The distance in x-direction between predator and prey
-                        y_dist = (pred_y[p][i] - pred_y[q][j]);  //The distance in y-direction between predator and prey
-                        energy_diff = (pred_energy[p][i] - pred_energy[q][j]);  //Calculating energy difference
-                    } else {
-                        x_dist = 0;
-                        y_dist = 0;
-                        energy_diff = 0;
-                    }
-
-                    //Commenting this out for sensing the wall
-                    if ((abs(x_dist)) > (MAP_LENGTH / 2)) {
-                        temp = x_dist;
-                        x_dist = MAP_LENGTH - abs(x_dist);
-
-                        if (temp > 0)
-                            x_dist = 0 - x_dist;
-                    }
-
-                    if ((abs(y_dist)) > (MAP_HEIGHT / 2)) {
-                        temp = y_dist;
-                        y_dist = MAP_HEIGHT - abs(y_dist);
-
-                        if (temp > 0)
-                            y_dist = 0 - y_dist;
-                    }
-                    temp_input.push_back(x_dist);
-                    temp_input.push_back(y_dist);
-                    team[p][count]->activate(temp_input, temp_output, num_of_prey, num_of_predators,
-                            num_teams_prey, num_teams_predator, inputSize_pred_combiner);
-                    count++;
-                    for (int k = 0; k < NUM_OUTPUTS; k++) {
-                        output_per_team.push_back(temp_output[k]);
-                    }
-                }
-            }
-
-            for (q = 0; q < num_teams_predator; q++) {
-                            for (j = 0; j < num_of_predators; j++) {
-                                if (pred_communication == true && q == p && i == j) {  //This for Predator communication case
-                                    continue;
-                                } else if (pred_communication == false && q == p) {
-                                    continue;
-                                }
-                                temp_input.clear();
-                                //temp_output.clear();
-                                if (!pred_killed[q][j]) {
-                                    x_dist = (pred_x[p][i] - pred_x[q][j]);  //The distance in x-direction between predator and prey
-                                    y_dist = (pred_y[p][i] - pred_y[q][j]);  //The distance in y-direction between predator and prey
-                                    energy_diff = (pred_energy[p][i] - pred_energy[q][j]);  //Calculating energy difference
-                                } else {
-                                    x_dist = 0;
-                                    y_dist = 0;
-                                    energy_diff = 0;
-                                }
-
-                                //Commenting this out for sensing the wall
-                                if ((abs(x_dist)) > (MAP_LENGTH / 2)) {
-                                    temp = x_dist;
-                                    x_dist = MAP_LENGTH - abs(x_dist);
-
-                                    if (temp > 0)
-                                        x_dist = 0 - x_dist;
-                                }
-
-                                if ((abs(y_dist)) > (MAP_HEIGHT / 2)) {
-                                    temp = y_dist;
-                                    y_dist = MAP_HEIGHT - abs(y_dist);
-
-                                    if (temp > 0)
-                                        y_dist = 0 - y_dist;
-                                }
-                                temp_input.push_back(x_dist);
-                                temp_input.push_back(y_dist);
-                                team[p][count]->activate(temp_input, temp_output, num_of_prey, num_of_predators,
-                                        num_teams_prey, num_teams_predator, inputSize_pred_combiner);
-                                count++;
-                                for (int k = 0; k < NUM_OUTPUTS; k++) {
-                                    output_per_team.push_back(temp_output[k]);
-                                }
-                            }
-                        }
-
-            //Detecting hunters!
-            for (q = 0; q < num_teams_hunters; q++) {
-                for (j = 0; j < num_of_hunters; j++) {
-                    temp_input.clear();
-                    //temp_output.clear();
-                    x_dist = abs(pred_x[p][i] - hunter_x[q][j]);  //The distance in x-direction between predator and prey
-                    y_dist = abs(pred_y[p][i] - hunter_y[q][j]);  //The distance in y-direction between predator and prey
-
-                    if ((abs(x_dist)) > (MAP_LENGTH / 2)) {
-                        temp = x_dist;
-                        x_dist = MAP_LENGTH - abs(x_dist);
-
-                        if (temp > 0)
-                            x_dist = 0 - x_dist;
-                    }
-
-                    if ((abs(y_dist)) > (MAP_HEIGHT / 2)) {
-                        temp = y_dist;
-                        y_dist = MAP_HEIGHT - abs(y_dist);
-
-                        if (temp > 0)
-                            y_dist = 0 - y_dist;
-                    }
-                    temp_input.push_back(x_dist);
-                    temp_input.push_back(y_dist);
-                    team[p][count]->activate(temp_input, temp_output, num_of_prey, num_of_predators,
-                            num_teams_prey, num_teams_predator, inputSize_pred_combiner);
-                    count++;
-                    for (int k = 0; k < NUM_OUTPUTS; k++) {
-                        output_per_team.push_back(temp_output[k]);
-                    }
-                }
-            }
-
-        }
-        output.push_back(output_per_team);
-        output_per_team.clear();
-    }
-}
-
-void PredPrey::performPredAction_complex(int pred_team, int pred,
-        const vector<double>& output_single_predator)
-{
-    //cout << "Performing pred action" << endl;
-    int predAction = 0;
-    //bool finished = false; Commented this variable because it is never used ******PADMINI
-    int old_pred_x = pred_x[pred_team][pred];
-    int old_pred_y = pred_y[pred_team][pred];
-
-    int x_dist, y_dist, temp;
-    int i, j;  //Counter for loops ******PADMINI
-
-    IS_PREY = false;
-    if (COMBINE == 0) {
-        predAction = getMaxPos_complex(output_single_predator);
-    } else {
-        predAction = getMaxPos(output_single_predator);
-    }
-
-    if (pred_killed[pred_team][pred] == true || pred_hit[pred_team][pred == true]) {
-        predAction = 4;  // Remain Idle once you are killed
-    }
-
-    pred_flee_factor = 1.0;
-
-    if (drand48() <= pred_flee_factor) {
-
-        if (predAction == 0) {
-            pred_y[pred_team][pred]++;
-        }
-
-        else if (predAction == 1) {
-            pred_x[pred_team][pred]++;
-        }
-
-        else if (predAction == 2) {
-            pred_y[pred_team][pred]--;
-        }
-
-        else if (predAction == 3) {
-            pred_x[pred_team][pred]--;
-        }
-
-    }
-
-    if (pred_x[pred_team][pred] > MAP_LENGTH)
-        pred_x[pred_team][pred] -= MAP_LENGTH;
-    if (pred_y[pred_team][pred] > MAP_HEIGHT)
-        pred_y[pred_team][pred] -= MAP_HEIGHT;
-    if (pred_x[pred_team][pred] < 0)
-        pred_x[pred_team][pred] += MAP_LENGTH;
-    if (pred_y[pred_team][pred] < 0)
-        pred_y[pred_team][pred] += MAP_HEIGHT;
-
-
-
-    if (SHOW) {
-        showPred(pred_team, pred, old_pred_x, old_pred_y);
-    } // end show
-
-    if (DEBUG) {
-        cout << "Predator " << pred << " at \t(" << pred_x[pred_team][pred] << ", "
-                << pred_y[pred_team][pred] << "), \tOutput: ";
-
-        for (int i = 0; i < (int) output_single_predator.size(); i++)
-            cout << output_single_predator[i] << " ";
-
-        cout << endl << "Action: " << predAction << endl;
-    }
-
-    //Changed the above to say that predators have only finished catching the prey
-    //if they've caught all the prey. Also, the same predator needn't have caught all the prey. ******PADMINI
-    for (int p = 0; p < num_teams_prey; p++) {
-        for (i = 0; i < num_of_prey; i++) {
-            if (prey_caught[p][i] == false && pred_killed[pred_team][pred] == false && pred_hit[pred_team][pred] == false
-                    && pred_x[pred_team][pred] == prey_x[p][i]
-                    && pred_y[pred_team][pred] == prey_y[p][i]) {
-                if(DEBUG){
-                    cout << "Predator caught prey" << endl;
-                    cout << "Predator was at " << pred_x[pred_team][pred] << ", "
-                            << pred_y[pred_team][pred] << endl;
-                    cout << "Prey was at " << prey_x[p][i] << ", " << prey_y[p][i] << endl;
-                }
-                if (prey_reappears == true) {
-                    reset_prey_position(p, i);
-                } else {
-                    prey_caught[p][i] = true;
-                    prey_lifetime[p][i] = steps;
-                }
-
-                pred_energy[pred_team][pred] = pred_energy[pred_team][pred] + 100;
-                if (p == 1 || (if_shared_fitness_predator && (num_teams_prey == 1))) {  //Adding override for fitness sharing experiment
-                    num_of_prey_caught[pred_team]++;  //Adding exception for zebra. The whole team gets fitness on catching a zebra
-                } else {
-                    num_of_prey_caught_individually[pred_team][pred]++;
-                }
-            }
-        }
-    }
-
-    // Checks if the predator was killed by the hunter
-    for (int p = 0; p < num_teams_hunters; p++) {
-        for (i = 0; i < num_of_hunters; i++) {
-            if (pred_hit[pred_team][pred] == false
-                    && pred_x[pred_team][pred] == hunter_x[p][i]
-                    && pred_y[pred_team][pred] == hunter_y[p][i]) {
-                pred_hit[pred_team][pred] = true;
-                num_of_pred_hit[p]++;
-                if(DEBUG){
-                    cout << "Predator hit by hunter" << endl;
-                    cout << "Predator was at " << pred_x[pred_team][pred] << ", " << pred_y[pred_team][pred] << endl;
-                    cout << "Hunter was at " << hunter_x[p][i] << ", " << hunter_y[p][i] << endl;
-                }
-            }
-        }
-    }
-}
-
-void PredPrey::showPred(int pred_team, int pred, int old_pred_x, int old_pred_y)
-{
-    double color1 = 0;
-    double color2 = 0;
-    double color3 = 0;
-
-    fprintf(fptr, "Predator");
-
-    //Saving Predator-Prey location
-    if (pred_killed[pred_team][pred] == false || pred_hit[pred_team][pred_team] == false) {
-        fprintf(fptr, "%d ", pred_x[pred_team][pred]);  // int generation
-        fprintf(fptr, " ");  //  character
-        fprintf(fptr, "%d ", pred_y[pred_team][pred]);  // int generation
-        fprintf(fptr, " ");  //  character
-    } else {
-        int x = -1;
-        fprintf(fptr, "%d ", x);  // int generation
-        fprintf(fptr, " ");  //  character
-        fprintf(fptr, "%d ", x);  // int generation
-        fprintf(fptr, " ");  //  character
-    }
-
-    // erase old pred point
-    glBegin(GL_POINTS);
-    {
-        GLint err = glGetError();
-        if (err != GL_NO_ERROR)
-            cout << "6. Error" << endl;
-    }  //ADI
-
-    glColor3f(1.0f, 1.0f, 1.0f);
-    {
-        GLint err = glGetError();
-        if (err != GL_NO_ERROR)
-            cout << "5. Error" << endl;
-    }  //ADI
-
-    glVertex3f(old_pred_x, old_pred_y, 0);
-    {
-        GLint err = glGetError();
-        if (err != GL_NO_ERROR)
-            cout << "7. Error" << endl;
-    }  //ADI
-
-    void glEnd(void);
-    {
-        GLint err = glGetError();
-        if (err != GL_NO_ERROR)
-            cout << "8. Error" << endl;
-    }  //ADI
-
-    // draw new pred point
-    if (pred_killed[pred_team][pred] == false) {
-        if (pred_team == 0 && pred == 0) {
-            color1 = 1;
-        } else if (pred_team == 0 && pred == 1) {
-            color2 = 1;
-        } else if (pred_team == 0 && pred == 2) {
-            color3 = 1;
-        } else if (pred_team == 1 && pred == 0) {
-            color2 = 1;
-        } else if (pred_team == 1 && pred == 1) {
-            color3 = 0;
-        } else if (pred_team == 1 && pred == 2) {
-            color3 = 0;
-        }
-
-        glBegin(GL_POINTS);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "10. Error" << endl;
-        }  //ADI
-
-        glColor3f(color1, color2, color3);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "9. Error" << endl;
-        }  //ADI
-
-        glVertex3f(pred_x[pred_team][pred], pred_y[pred_team][pred], 0);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "11. Error" << endl;
-        }  //ADI
-
-        void glEnd(void);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "12. Error" << endl;
-        }  //ADI
-
-        glFlush();
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "13. Error" << endl;
-        }  //ADI
-    } else {
-        glBegin(GL_POINTS);
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "10. Error" << endl;
+                cout << "15. Error" << endl;
         }  //ADI
 
         glColor3f(1.0f, 1.0f, 1.0f);
         {
             GLint err = glGetError();
             if (err != GL_NO_ERROR)
-                cout << "9. Error" << endl;
+                cout << "14. Error" << endl;
         }  //ADI
 
-        glVertex3f(pred_x[pred_team][pred], pred_y[pred_team][pred], 0);
+        glVertex3f(old_prey_x, old_prey_y, 0);
         {
             GLint err = glGetError();
             if (err != GL_NO_ERROR)
-                cout << "11. Error" << endl;
+                cout << "16. Error" << endl;
         }  //ADI
 
         void glEnd(void);
         {
             GLint err = glGetError();
             if (err != GL_NO_ERROR)
-                cout << "12. Error" << endl;
+                cout << "17. Error" << endl;
         }  //ADI
+
+        if (prey_caught[prey_team][prey] == false) {  //Added this if-else condition so that caught prey are drawn in white ******PADMINI
+
+            // draw new prey point
+            glBegin(GL_POINTS);
+            {
+                GLint err = glGetError();
+                if (err != GL_NO_ERROR)
+                    cout << "19. Error" << endl;
+            }  //ADI
+
+            if (prey_team == 0) {
+                glColor3f(1.0f, 0.0f, 1.0f);  //trying to change the colors of different prey ******PADMINI
+            }
+            if (prey_team == 1) {
+                glColor3f(0.0f, 0.9f, 1.0f);  //trying to change the colors of different prey ******PADMINI
+            }
+
+            glVertex3f(prey_x[prey_team][prey], prey_y[prey_team][prey], 0);
+            {
+                GLint err = glGetError();
+                if (err != GL_NO_ERROR)
+                    cout << "20. Error" << endl;
+            }  //ADI
+
+            glEnd();
+            //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "21. Error" <<err<<endl; } //ADI : DONT know why this is not going even after changing gl end to void
+        }
+
+        else {
+            // draw new prey point
+            glBegin(GL_POINTS);
+            {
+                GLint err = glGetError();
+                if (err != GL_NO_ERROR)
+                    cout << "19. Error" << endl;
+            }  //ADI
+
+            glColor3f(1.0f, 1.0f, 1.0f);  //white color for the prey that've already been caught, i.e. they vanish ******PADMINI
+            {
+                GLint err = glGetError();
+                if (err != GL_NO_ERROR)
+                    cout << "18. Error" << endl;
+            }  //ADI
+
+            glVertex3f(prey_x[prey_team][prey], prey_y[prey_team][prey], 0);
+            {
+                GLint err = glGetError();
+                if (err != GL_NO_ERROR)
+                    cout << "20. Error" << endl;
+            }  //ADI
+
+            glEnd();
+            //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "21. Error" <<err<<endl; } //ADI : DONT know why this is not going even after changing gl end to void
+        }
 
         glFlush();
-        {
-            GLint err = glGetError();
-            if (err != GL_NO_ERROR)
-                cout << "13. Error" << endl;
-        }  //ADI
+        //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "22. Error" <<endl; } //ADI
     }
-}
-
-void PredPrey::performHunterAction_complex(int hunter_team, int hunter,
-        const vector<double>& output_single_prey)
-{  //Added the argument int prey to check which prey is being processed ******PADMINI
-    //double nearestDist = MAP_LENGTH * 2 + 1;  //Big number
-
-    //int nearestPred = 0;  //To hold the nearest predator to the prey
-    //int nearestPred_team = 0;
-
-    //double dist;
-
-    //int x_dist, y_dist, temp;
-
-    //int i;  //Counter for loops ******PADMINI
-
-    int hunterAction;
-    //int act = 0;
-
-    int old_hunter_x = hunter_x[hunter_team][hunter];
-    int old_hunter_y = hunter_y[hunter_team][hunter];
-
-    /*if (prey_caught[hunter_team][hunter]) {
-        hunterAction = 4;
-    } else {*/
-        //IS_PREY = true;
-    /*
-    for (int p = 0; p < num_teams_predator; p++) {
-        for (i = 0; i < num_of_predators; i++) {
-            dist = calc_dist(pred_x[p][i], pred_y[p][i], hunter_x[hunter_team][hunter],
-                    hunter_y[hunter_team][hunter]);
-            if (dist < nearestDist) {
-                nearestDist = dist;
-                nearestPred = i;
-                nearestPred_team = p;
-            }
-        }
-    }*/
-
-    // calculate predator offset with wraparound
-    /*
-    x_dist = pred_x[nearestPred_team][nearestPred] - hunter_x[hunter_team][hunter];
-
-    if ((abs(x_dist)) > (MAP_LENGTH / 2)) {
-        temp = x_dist;
-        x_dist = MAP_LENGTH - abs(x_dist);
-        if (temp > 0)
-            x_dist = 0 - x_dist;
-    }
-
-    y_dist = pred_y[nearestPred_team][nearestPred] - hunter_y[hunter_team][hunter];
-
-    if ((abs(y_dist)) > (MAP_HEIGHT / 2)) {
-        temp = y_dist;
-        y_dist = MAP_HEIGHT - abs(y_dist);
-        if (temp > 0)
-            y_dist = 0 - y_dist;
-    }*/
-
-    hunterAction = (int) (drand48() * 4.0);
-    //cout << "Hunter action is "<< hunterAction << endl;
-    /* NOTE: Can use this to make hunter move towards predators (with modifications)
-     if (y_dist < 0 && (abs(y_dist) >= abs(x_dist))) {
-     //prey_y[prey]++;
-     hunterAction = 0;
-     }
-
-     else if (x_dist < 0 && (abs(x_dist) >= abs(y_dist))) {
-     //prey_x[prey]++;
-     hunterAction = 1;
-     }
-
-     else if (y_dist > 0 && (abs(y_dist) >= abs(x_dist))) {
-     //prey_y[prey]--;
-     hunterAction = 2;
-     }
-
-     else if (x_dist > 0 && (abs(x_dist) >= abs(y_dist))) {
-     //prey_x[prey]--;
-     hunterAction = 3;
-     }
-
-     else {
-     hunterAction = 4;
-     }*/
-    //	}
-    //}
-
-    //preyAction=4; // Making the prey fixed for now (It is acting as a food)
-    if (hunterAction == 0) {
-        hunter_y[hunter_team][hunter]++;
-    }
-
-    else if (hunterAction == 1) {
-        hunter_x[hunter_team][hunter]++;
-    }
-
-    else if (hunterAction == 2) {
-        hunter_y[hunter_team][hunter]--;
-    }
-
-    else if (hunterAction == 3) {
-        hunter_x[hunter_team][hunter]--;
-    }
-
-    else if (hunterAction == 4) {
-    }
-
-    if (hunter_x[hunter_team][hunter] > MAP_LENGTH)
-        hunter_x[hunter_team][hunter] -= MAP_LENGTH;
-    if (hunter_y[hunter_team][hunter] > MAP_HEIGHT)
-        hunter_y[hunter_team][hunter] -= MAP_HEIGHT;
-    if (hunter_x[hunter_team][hunter] < 0)
-        hunter_x[hunter_team][hunter] += MAP_LENGTH;
-    if (hunter_y[hunter_team][hunter] < 0)
-        hunter_y[hunter_team][hunter] += MAP_HEIGHT;
-
-    // Code for showing simulation in UI
-    if (SHOW) {
-        showHunter(hunter_team, hunter, old_hunter_x, old_hunter_y);
-    }
-}
-
-void PredPrey::showHunter(int team, int individual, int old_x, int old_y)
-{
-    fprintf(fptr, "Hunter");
-
-    // Saving hunter location
-    fprintf(fptr, "%d ", hunter_x[team][individual]);  // int generation
-    fprintf(fptr, " ");  //  character
-    fprintf(fptr, "%d ", hunter_y[team][individual]);  // int generation
-    fprintf(fptr, " ");  //  character
-
-    // erase old prey point
-    glBegin(GL_POINTS);
-    {
-        GLint err = glGetError();
-        if (err != GL_NO_ERROR)
-            cout << "15. Error" << endl;
-    }  //ADI
-
-    glColor3f(1.0f, 1.0f, 1.0f);
-    {
-        GLint err = glGetError();
-        if (err != GL_NO_ERROR)
-            cout << "14. Error" << endl;
-    }  //ADI
-
-    glVertex3f(old_x, old_y, 0);
-    {
-        GLint err = glGetError();
-        if (err != GL_NO_ERROR)
-            cout << "16. Error" << endl;
-    }  //ADI
-
-    void glEnd(void);
-    {
-        GLint err = glGetError();
-        if (err != GL_NO_ERROR)
-            cout << "17. Error" << endl;
-    }  //ADI
-
-    // draw new prey point
-    glBegin(GL_POINTS);
-    {
-        GLint err = glGetError();
-        if (err != GL_NO_ERROR)
-            cout << "19. Error" << endl;
-    }  //ADI
-
-    if (team == 0) {
-        glColor3f(0.0f, 0.0f, 0.0f);
-    }
-
-    glVertex3f(hunter_x[team][individual], hunter_y[team][individual], 0);
-    {
-        GLint err = glGetError();
-        if (err != GL_NO_ERROR)
-            cout << "20. Error" << endl;
-    }  //ADI
-
-    glEnd();
-    //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "21. Error" <<err<<endl; } //ADI : DONT know why this is not going even after changing gl end to void
-    //}
-
-    glFlush();
-    //{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "22. Error" <<endl; } //ADI
 }
 
 // Make task harder
-void PredPrey::nextTask()
+void PredPreyST1::nextTask()
 {
 
     switch (task_number) {
@@ -1658,7 +1574,7 @@ void PredPrey::nextTask()
 }
 
 // Make task simpler
-void PredPrey::simplifyTask()
+void PredPreyST1::simplifyTask()
 {
 
     switch (task_number) {
@@ -1699,28 +1615,28 @@ void PredPrey::simplifyTask()
 
 }
 
-void PredPrey::getTaskState(double* move, double* flee, int* num)
+void PredPreyST1::getTaskState(double* move, double* flee, int* num)
 {
     *move = prey_move_factor;
     *flee = prey_flee_factor;
     *num = task_number;
 }
 
-void PredPrey::setTaskState(double* move, double* flee, int* num)
+void PredPreyST1::setTaskState(double* move, double* flee, int* num)
 {
     prey_move_factor = *move;
     prey_flee_factor = *flee;
     task_number = *num;
 }
 
-bool PredPrey::hardestTask()
+bool PredPreyST1::hardestTask()
 {
     return (task_number == 5);
 }
 
 // Calculates distance (actual distance, using pythag. thm)
 // Takes shortest distance, ie. will wrap around edges
-double PredPrey::calc_dist(int x1, int y1, int x2, int y2)
+double PredPreyST1::calc_dist(int x1, int y1, int x2, int y2)
 {
 
     int x_dist = 0;
@@ -1739,7 +1655,7 @@ double PredPrey::calc_dist(int x1, int y1, int x2, int y2)
 }
 
 // returns the position in the vector with the highest number
-int PredPrey::getMaxPos(const vector<double>& vec)
+int PredPreyST1::getMaxPos(const vector<double>& vec)
 {
 
     double max = vec[0];
@@ -1758,7 +1674,7 @@ int PredPrey::getMaxPos(const vector<double>& vec)
 }
 
 // returns the position in the vector with the highest number
-int PredPrey::getMaxPos_complex(const vector<double>& vec)
+int PredPreyST1::getMaxPos_complex(const vector<double>& vec)
 {
 
     vector<double> temp_sum_outputs;
@@ -1816,4 +1732,3 @@ int PredPrey::getMaxPos_complex(const vector<double>& vec)
     return result;
 
 }
-
