@@ -33,6 +33,8 @@ using NEAT::NNode;
 // typedefs
 typedef unsigned int uint;
 // forced to use int here as node_id in NEAT code uses int
+// note although I am storing a pointer in the Pair and using it as a key later
+// you can switch to stroing genome_id instead i.e. type int
 typedef pair< Genome*, int > PairPtrGenomeNodeId; // stands for Genome and Node Id
 typedef pair< int, PairPtrGenomeNodeId > PairIndex;
 typedef map< int, PairPtrGenomeNodeId > Index;
@@ -285,7 +287,8 @@ Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
   //      query invertedIndex and get new node id for outgoing node
   //      create new link using new node ids
   //      insert new link inside New Genome
-
+  
+  VPGene vPtrGenesNew; vPtrGenesNew.clear();
   counter = 1; // note: counter defined and used earlier
   for ( VPGI itG = vPtrGenome.begin(); itG != vPtrGenome.end(); ++itG ) { 
     VPGene& vGenes = (*itG)->genes;
@@ -293,11 +296,39 @@ Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
       Gene& gene = **itGene;
       Link& link = *( gene.lnk );
       // get new node id for incoming node from invertedIndex
-      PairInvertedIndex pairII = make_pair( (*itG), 
-      InvertedIndexI itII = invertedIndex.find( 
-
+      PairInvertedIndex pairII = make_pair( (*itG), link.in_node->node_id ); 
+      InvertedIndexI itII = invertedIndex.find( pairII ); 
+      if ( invertedIndex.end() == itII ) {
+        cerr << "Houston we have a problem :P" << endl;
+        cerr << "<Genome: " << (*itG)->genome_id << ", ";
+        cerr << "Node Id: " << link.in_node->node_id;
+        cerr << "> being searched for not found in inverted index" << endl;
+        throw 1; // throw something meaningful later
+      }
+      NNode* ptrNodeIn = itII->second;
+      // get new node id for outgoing node from invertedIndex
+      pairII = make_pair( (*itG), link.out_node->node_id ); 
+      itII = invertedIndex.find( pairII ); 
+      if ( invertedIndex.end() == itII ) {
+        cerr << "Houston we have a problem :P" << endl;
+        cerr << "<Genome: " << (*itG)->genome_id << ", ";
+        cerr << "Node Id: " << link.out_node->node_id;
+        cerr << "> being searched for not found in inverted index" << endl;
+        throw 1; // throw something meaningful later
+      }
+      NNode* ptrNodeOut = itII->second;
+      // create new gene
+      Gene* ptrGeneNew = new Gene( *itGene, ptrTraitNew, ptrNodeIn, ptrNodeOut );
+      vPtrGenesNew.push_back( ptrGeneNew );
     }
   }
+
+  // TEST vPtrGenes
+  cout << "Test vPtrGenes " << endl;
+  for ( VPGeneI itGene = vPtrGenesNew.begin(); itGene != vPtrGenesNew.end(); ++itGene ) {
+    (*itGene)->print_to_file( cout );
+  }
+
   //Genome* ptrGenomeNew = new Genome( 1, vTraits, vNodes, vLinks );
   //Genome* ptrGenomeNew = new Genome( 1, vTraits, vNodes, vGenes );
   return NULL; // FIXME change to proper variable later
