@@ -10,8 +10,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
-// typedefs
-typedef unsigned int uint;
+#include <map>
 // using
 // std
 using std::ifstream;
@@ -20,16 +19,29 @@ using std::cerr;
 using std::endl;
 using std::cout;
 using std::vector;
+using std::pair;
+using std::map;
 // NEAT
 using NEAT::Genome;
 using NEAT::Gene;
 using NEAT::Organism;
 using NEAT::Network;
+// typedefs
+typedef unsigned int uint;
+// forced to use int here as node_id in NEAT code uses int
+typedef pair< Genome, int > GenomeNodeId; // stands for Genome and Node Id
+typedef map< int, GenomeNodeId > Index;
+typedef map< GenomeNodeId, int > InvertedIndex;
 // declarations
 void convertToGraphVizFormat( Genome* ptrGenome );
 Genome* extractGenome( const string& pathFileGenome );
 bool areCompatible( vector<Genome*>& vPtrGenome );
-Genome* aggregateGenomes( vector<Genome*>& vPtrGenome );
+void aggregateGenomes( 
+    vector<Genome*>& vPtrGenome,
+    Genome** ptrDblGenome,
+    Index** ptrDblIndex,
+    InvertedIndex** ptrDblInvertedIndex
+  );
 // main
 int main( int argc, char* argv[] ) {
   if ( argc < 2 ) {
@@ -154,8 +166,16 @@ void populateIndex( InvertedIndex* ptrIndex, Genome* ptrGenome ) {
 }
 */
 
+//void aggregateGenomes( 
+    //vector<Genome*>& vPtrGenome,
+    //Genome** ptrDblGenome,
+    //Index** ptrDblIndex,
+    //InvertedIndex** ptrDblInvertedIndex
+  //) {
 Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
   using NEAT::NNode;
+  using NEAT::OUTPUT;
+  using NEAT::HIDDEN;
   typedef vector<Genome*> VG;
   typedef vector<Genome*>::iterator VGI;
   typedef vector<NNode*> VN;
@@ -180,12 +200,24 @@ Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
   //      update index and invertedIndex
   //    }
   // }
-  Genome* ptrGenome = new Genome(); // FIXME add plain Genome() constructor in genome.cpp
+  int counter = 1;
+  //Index* ptrIndex = 
+  //InvertedIndex* ptrInvertedIndex =  
   for ( VGI itG = vPtrGenome.begin(); itG != vPtrGenome.end(); ++itG ) { 
     VN& vNodes = (*itG)->nodes;
     for ( VNI itN = vNodes.begin(); itN != vNodes.end(); ++itN ) {
+      NNode* ptrNNodeNew = new NNode( *( *itN ) );
+      ptrNNodeNew->node_id = counter;
+      if ( ptrNNodeNew->gen_node_label = OUTPUT ) {
+        ptrNNodeNew->gen_node_label = HIDDEN;
+      }
+      // insert NNode inside ptrGenomeNew
+      // update index
+      // update invertedIndex
+      counter++;
     }
   }
-  return NULL; // TODO return something meaningful later
+  //Genome* ptrGenomeNew = new Genome( 1, vTraits, vNodes, vLinks );
+  //Genome* ptrGenomeNew = new Genome( 1, vTraits, vNodes, vGenes );
 }
 
