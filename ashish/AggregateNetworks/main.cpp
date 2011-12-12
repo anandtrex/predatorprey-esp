@@ -5,6 +5,8 @@
 #include "organism.h"
 #include "network.h"
 #include "nnode.h"
+#include "trait.h"
+#include "link.h"
 // std
 #include <iostream>
 #include <fstream>
@@ -176,20 +178,30 @@ Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
   using NEAT::NNode;
   using NEAT::OUTPUT;
   using NEAT::HIDDEN;
-  typedef vector<Genome*> VG;
-  typedef vector<Genome*>::iterator VGI;
-  typedef vector<NNode*> VN;
-  typedef VN::iterator VNI;
+  using NEAT::Trait;
+  using NEAT::Link;
+  typedef vector<Genome*> VPG;
+  typedef VPG::iterator VPGI;
+  typedef vector<NNode*> VPN;
+  typedef VPN::iterator VPNI;
+  typedef vector<Trait*> VPT; 
+  typedef VPT::iterator VPTI;
+  typedef vector<Link*> VPL;
+  typedef VPL::iterator VPLI;
   if ( vPtrGenome.size() < 1 ) {
     cerr << "You gave me an empty vector dumb ass." << endl;
     throw 1; // throw something meaningful later
   }
+
   // 0. check compatibility of genomes
+  
   bool compatible = areCompatible( vPtrGenome ); 
   if ( !compatible ) {
     cerr << "genome files are not compatible" << endl;
     throw 1; // throw something meaningful later
   }
+
+  // Algorithm
   // 1. {
   //  Genome NG; # new genome 
   //  foreach Genome g : Genomes
@@ -200,18 +212,29 @@ Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
   //      update index and invertedIndex
   //    }
   // }
+
+  // create indices for referring to the corresponding old node and new node 
+  Index index; 
+  InvertedIndex InvertedIndex;
+  // create a vector of traits for creating new genome
+	// create a dummy trait
+	Trait* ptrTraitNew = new Trait( 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 ); // note: trait_id is 1
+  VPT vPtrTraitsNew; vPtrTraitsNew.clear();
+	vPtrTraitsNew.push_back( ptrTraitNew );
+  // create a vector of nodes for creating new genome
+  VPN vPtrNodesNew; vPtrNodesNew.clear();
   int counter = 1;
-  //Index* ptrIndex = 
-  //InvertedIndex* ptrInvertedIndex =  
-  for ( VGI itG = vPtrGenome.begin(); itG != vPtrGenome.end(); ++itG ) { 
-    VN& vNodes = (*itG)->nodes;
-    for ( VNI itN = vNodes.begin(); itN != vNodes.end(); ++itN ) {
-      NNode* ptrNNodeNew = new NNode( *( *itN ) );
+  for ( VPGI itG = vPtrGenome.begin(); itG != vPtrGenome.end(); ++itG ) { 
+    VPN& vNodes = (*itG)->nodes;
+    for ( VPNI itN = vNodes.begin(); itN != vNodes.end(); ++itN ) {
+      // node pointed to by ptrNNodeNew will be ultimately deleted by the Genome pointed to by ptrGenomeNew
+      NNode* ptrNNodeNew = new NNode( *itN, ptrTraitNew );
       ptrNNodeNew->node_id = counter;
       if ( ptrNNodeNew->gen_node_label = OUTPUT ) {
         ptrNNodeNew->gen_node_label = HIDDEN;
       }
-      // insert NNode inside ptrGenomeNew
+      // insert NNode inside vPtrNodesNew which will be added to the new Genome
+      vPtrNodesNew.push_back( ptrNNodeNew ); 
       // update index
       // update invertedIndex
       counter++;
