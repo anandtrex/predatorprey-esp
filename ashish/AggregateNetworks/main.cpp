@@ -23,27 +23,30 @@ using std::cout;
 using std::vector;
 using std::pair;
 using std::map;
+using std::make_pair;
 // NEAT
 using NEAT::Genome;
 using NEAT::Gene;
 using NEAT::Organism;
 using NEAT::Network;
+using NEAT::NNode;
 // typedefs
 typedef unsigned int uint;
 // forced to use int here as node_id in NEAT code uses int
-typedef pair< Genome, int > GenomeNodeId; // stands for Genome and Node Id
-typedef map< int, GenomeNodeId > Index;
-typedef map< GenomeNodeId, int > InvertedIndex;
+typedef pair< Genome*, int > PairPtrGenomeNodeId; // stands for Genome and Node Id
+typedef pair< int, PairPtrGenomeNodeId > PairIndex;
+typedef map< int, PairPtrGenomeNodeId > Index;
+typedef Index::iterator IndexI;
+typedef Index::const_iterator IndexCI;
+typedef pair< PairPtrGenomeNodeId, NNode* > PairInvertedIndex;
+typedef map< PairPtrGenomeNodeId, NNode* > InvertedIndex;
+typedef InvertedIndex::iterator InvertedIndexI;
+typedef InvertedIndex::const_iterator InvertedIndexCI;
 // declarations
 void convertToGraphVizFormat( Genome* ptrGenome );
 Genome* extractGenome( const string& pathFileGenome );
 bool areCompatible( vector<Genome*>& vPtrGenome );
-void aggregateGenomes( 
-    vector<Genome*>& vPtrGenome,
-    Genome** ptrDblGenome,
-    Index** ptrDblIndex,
-    InvertedIndex** ptrDblInvertedIndex
-  );
+Genome* aggregateGenomes( vector<Genome*>& vPtrGenome );
 // main
 int main( int argc, char* argv[] ) {
   if ( argc < 2 ) {
@@ -80,7 +83,13 @@ int main( int argc, char* argv[] ) {
     cout << "Displaying Genome: " << ptrGenome->genome_id << endl; 
     ptrGenome->print_to_file( cout ); // print to console
   }
+  
+  // TESTING compatible
   areCompatible( vPtrGenome );
+  
+  // TESTING aggregateNetworks
+  aggregateGenomes( vPtrGenome );
+  
   //Organism* ptrOrganism = new Organism( 0, ptrGenome, 1 );
   //cout << "Organism" << endl;
   //ptrOrganism->write_to_file( cout );
@@ -184,10 +193,11 @@ Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
   typedef VPG::iterator VPGI;
   typedef vector<NNode*> VPN;
   typedef VPN::iterator VPNI;
+  typedef VPN::const_iterator VPNCI;
   typedef vector<Trait*> VPT; 
   typedef VPT::iterator VPTI;
-  typedef vector<Link*> VPL;
-  typedef VPL::iterator VPLI;
+  typedef vector<Gene*> VPGene;
+  typedef VPGene::iterator VPGeneI;
   if ( vPtrGenome.size() < 1 ) {
     cerr << "You gave me an empty vector dumb ass." << endl;
     throw 1; // throw something meaningful later
@@ -214,8 +224,8 @@ Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
   // }
 
   // create indices for referring to the corresponding old node and new node 
-  Index index; 
-  InvertedIndex InvertedIndex;
+  Index index; index.clear(); 
+  InvertedIndex invertedIndex; invertedIndex.clear();
   // create a vector of traits for creating new genome
 	// create a dummy trait
 	Trait* ptrTraitNew = new Trait( 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 ); // note: trait_id is 1
@@ -230,17 +240,66 @@ Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
       // node pointed to by ptrNNodeNew will be ultimately deleted by the Genome pointed to by ptrGenomeNew
       NNode* ptrNNodeNew = new NNode( *itN, ptrTraitNew );
       ptrNNodeNew->node_id = counter;
-      if ( ptrNNodeNew->gen_node_label = OUTPUT ) {
+      if ( OUTPUT == ptrNNodeNew->gen_node_label  ) {
         ptrNNodeNew->gen_node_label = HIDDEN;
       }
       // insert NNode inside vPtrNodesNew which will be added to the new Genome
       vPtrNodesNew.push_back( ptrNNodeNew ); 
       // update index
+      PairPtrGenomeNodeId pairPtrGenomeNodeId = make_pair( *itG, (*itN)->node_id );
+      PairIndex pairIndex = make_pair( ptrNNodeNew->node_id, pairPtrGenomeNodeId );
+      index.insert( pairIndex );
       // update invertedIndex
+      PairInvertedIndex pairInvertedIndex = make_pair( pairPtrGenomeNodeId, ptrNNodeNew ); 
+      invertedIndex.insert( pairInvertedIndex );
       counter++;
+    }
+  }
+
+  // TESTING
+  // display all nodes in vPtrNodesNew
+  cout << "TESTING VPN " << endl;
+  for ( VPNI it = vPtrNodesNew.begin(); it != vPtrNodesNew.end(); ++it ) {
+    (*it)->print_to_file( cout );
+  }
+
+  // display index
+  cout << "TESTING Index " << endl;
+  for ( IndexI it = index.begin(); it != index.end(); ++it ) {
+    cout << it->first << ", <" << it->second.first->genome_id << ", ";
+    cout << it->second.second << ">" << endl;
+  }
+
+  // display invertedIndex
+  cout << "TESTING InvertedIndex " << endl;
+  for ( InvertedIndexI it = invertedIndex.begin(); it != invertedIndex.end(); ++it ) {
+    cout << "<" << it->first.first->genome_id << ", " << it->first.second << ">, ";
+    cout << it->second->node_id << endl;
+  }
+
+  // Algorithm
+  // 2. {
+  //  foreach Genome g : Genomes
+  //    foreach Link l : Links
+  //      query invertedIndex and get new node id for incoming node
+  //      query invertedIndex and get new node id for outgoing node
+  //      create new link using new node ids
+  //      insert new link inside New Genome
+
+  counter = 1; // note: counter defined and used earlier
+  for ( VPGI itG = vPtrGenome.begin(); itG != vPtrGenome.end(); ++itG ) { 
+    VPGene& vGenes = (*itG)->genes;
+    for ( VPGeneI itGene = vGenes.begin(); itGene != vGenes.end(); ++itGene ) {
+      Gene& gene = **itGene;
+      Link& link = *( gene.lnk );
+      // get new node id for incoming node from invertedIndex
+      PairInvertedIndex pairII = make_pair( (*itG), 
+      InvertedIndexI itII = invertedIndex.find( 
+
     }
   }
   //Genome* ptrGenomeNew = new Genome( 1, vTraits, vNodes, vLinks );
   //Genome* ptrGenomeNew = new Genome( 1, vTraits, vNodes, vGenes );
+  return NULL; // FIXME change to proper variable later
 }
 
