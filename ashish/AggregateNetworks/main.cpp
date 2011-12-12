@@ -90,8 +90,10 @@ int main( int argc, char* argv[] ) {
   areCompatible( vPtrGenome );
   
   // TESTING aggregateNetworks
-  aggregateGenomes( vPtrGenome );
-  
+  Genome* ptrGenomeAggregate = aggregateGenomes( vPtrGenome );
+  cout << "Genome Aggregate: " << endl;
+  ptrGenomeAggregate->print_to_file( cout ); 
+
   //Organism* ptrOrganism = new Organism( 0, ptrGenome, 1 );
   //cout << "Organism" << endl;
   //ptrOrganism->write_to_file( cout );
@@ -200,13 +202,20 @@ Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
   typedef VPT::iterator VPTI;
   typedef vector<Gene*> VPGene;
   typedef VPGene::iterator VPGeneI;
+  
+  // empty vector
   if ( vPtrGenome.size() < 1 ) {
     cerr << "You gave me an empty vector dumb ass." << endl;
     throw 1; // throw something meaningful later
   }
+  // only one genome in vector => do nothing
+  if ( 1 == vPtrGenome.size() ) {
+    cout << "[Warning] you passed only a single genome file. ";
+    cout << "I am returning the same genome as is!" << endl;
+    return vPtrGenome.at( 0 );
+  }
 
   // 0. check compatibility of genomes
-  
   bool compatible = areCompatible( vPtrGenome ); 
   if ( !compatible ) {
     cerr << "genome files are not compatible" << endl;
@@ -296,8 +305,8 @@ Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
       Gene& gene = **itGene;
       Link& link = *( gene.lnk );
       // get new node id for incoming node from invertedIndex
-      PairInvertedIndex pairII = make_pair( (*itG), link.in_node->node_id ); 
-      InvertedIndexI itII = invertedIndex.find( pairII ); 
+      PairPtrGenomeNodeId pairPtrGenomeNodeId = make_pair( (*itG), link.in_node->node_id ); 
+      InvertedIndexI itII = invertedIndex.find( pairPtrGenomeNodeId ); 
       if ( invertedIndex.end() == itII ) {
         cerr << "Houston we have a problem :P" << endl;
         cerr << "<Genome: " << (*itG)->genome_id << ", ";
@@ -307,8 +316,8 @@ Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
       }
       NNode* ptrNodeIn = itII->second;
       // get new node id for outgoing node from invertedIndex
-      pairII = make_pair( (*itG), link.out_node->node_id ); 
-      itII = invertedIndex.find( pairII ); 
+      pairPtrGenomeNodeId = make_pair( (*itG), link.out_node->node_id ); 
+      itII = invertedIndex.find( pairPtrGenomeNodeId ); 
       if ( invertedIndex.end() == itII ) {
         cerr << "Houston we have a problem :P" << endl;
         cerr << "<Genome: " << (*itG)->genome_id << ", ";
@@ -319,6 +328,9 @@ Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
       NNode* ptrNodeOut = itII->second;
       // create new gene
       Gene* ptrGeneNew = new Gene( *itGene, ptrTraitNew, ptrNodeIn, ptrNodeOut );
+      // reset the innovation number
+      ptrGeneNew->innovation_num = counter;
+      counter++;
       vPtrGenesNew.push_back( ptrGeneNew );
     }
   }
@@ -329,8 +341,7 @@ Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
     (*itGene)->print_to_file( cout );
   }
 
-  //Genome* ptrGenomeNew = new Genome( 1, vTraits, vNodes, vLinks );
-  //Genome* ptrGenomeNew = new Genome( 1, vTraits, vNodes, vGenes );
-  return NULL; // FIXME change to proper variable later
+  Genome* ptrGenomeNew = new Genome( 1, vPtrTraitsNew, vPtrNodesNew, vPtrGenesNew );
+  return ptrGenomeNew; // FIXME change to proper variable later
 }
 
