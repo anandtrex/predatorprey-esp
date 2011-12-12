@@ -171,26 +171,12 @@ bool areCompatible( vector<Genome*>& vPtrGenome ) {
   return true;
 }
 
-/*
-void populateInvertedIndex( InvertedIndex* ptrInvertedIndex, Genome* ptrGenome ) {
-
-}
-
-void populateIndex( InvertedIndex* ptrIndex, Genome* ptrGenome ) {
-
-}
-*/
-
-//void aggregateGenomes( 
-    //vector<Genome*>& vPtrGenome,
-    //Genome** ptrDblGenome,
-    //Index** ptrDblIndex,
-    //InvertedIndex** ptrDblInvertedIndex
-  //) {
 Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
   using NEAT::NNode;
   using NEAT::OUTPUT;
   using NEAT::HIDDEN;
+  using NEAT::INPUT;
+  using NEAT::BIAS;
   using NEAT::Trait;
   using NEAT::Link;
   typedef vector<Genome*> VPG;
@@ -339,6 +325,128 @@ Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
   cout << "Test vPtrGenes " << endl;
   for ( VPGeneI itGene = vPtrGenesNew.begin(); itGene != vPtrGenesNew.end(); ++itGene ) {
     (*itGene)->print_to_file( cout );
+  }
+
+  // 3. Algorithm {
+  //  Add another layer consisting of only outputs
+  //  foreach Node n : OutputNodes in Genomes
+  //    query invertedIndex to get corresponding node in new Genome
+  //    for each Node o : OutputNodes of GenomeNew
+  //      add gene connectiong old output node (new id) and new output node
+  //  foreach Genome g : Genomes
+  //    foreach Node n : InputNodes in Original Genomes
+  //      query invertedIndex and get new node id in new Genome
+  //      for each Node o : OutputNodes of GenomeNew
+  //        be careful to add only one bias
+  //        add gene connecting input node (new id) to the output node
+  // }  
+
+  // add another layer of nodes 
+  // as the output layer of each genome is compatible. using only the first in
+  // the list to set the number of output nodes
+  // we could have used the counter value from algorithm 2 but why take the
+  // risk. anyhow this will ensure that the value is right. 
+  counter = vPtrNodesNew.size() + 1; // for assigning new node_id
+  VPN vNodesFirstGenome = vPtrGenome.at(0)->nodes; 
+  for ( VPNI itN = vNodesFirstGenome.begin(); itN != vNodesFirstGenome.end(); ++itN ) {
+    if ( OUTPUT != (*itN)->gen_node_label ) {
+      continue;
+    }
+    NNode* ptrNNodeNew = new NNode( *itN, ptrTraitNew );
+    ptrNNodeNew->node_id = counter;
+    // insert NNode inside vPtrNodesNew which will be added to the new Genome
+    vPtrNodesNew.push_back( ptrNNodeNew ); 
+    counter++;
+  } 
+
+  // add connections from old output neurons to new output neurons
+  counter = vPtrGenesNew.size() + 1; // the counter is for gene innovation numbers now
+  for ( VPGI itG = vPtrGenome.begin(); itG != vPtrGenome.end(); ++itG ) { 
+    VPN& vNodes = (*itG)->nodes;
+    for ( VPNI itN = vNodes.begin(); itN != vNodes.end(); ++itN ) {
+      if ( OUTPUT != (*itN)->gen_node_label ) {
+        continue;
+      }
+      PairPtrGenomeNodeId pairPtrGenomeNodeId = make_pair( (*itG), ( *itN )->node_id ); 
+      InvertedIndexI itII = invertedIndex.find( pairPtrGenomeNodeId ); 
+      if ( invertedIndex.end() == itII ) {
+        cerr << "Houston we have a problem :P" << endl;
+        cerr << "<Genome: " << (*itG)->genome_id << ", ";
+        cerr << "Node Id: " << ( *itN )->node_id;
+        cerr << "> being searched for not found in inverted index" << endl;
+        throw 1; // throw something meaningful later
+      }
+      NNode* ptrNodeIn = itII->second;
+      // iterate over all Output nodes in the new genome
+      for ( VPNI itNO = vPtrNodesNew.begin(); itNO != vPtrNodesNew.end(); ++itNO ) {
+        if ( OUTPUT != (*itNO)->gen_node_label ) { // be careful about itNO and itN
+          continue;
+        }
+        // add a new gene to the genome 
+        // local variables -- let the compiler optimize
+        double weight, mutation_num;
+        weight = mutation_num = 0.0;
+        bool recur = false;
+        Gene* ptrGeneNew = new Gene( 
+            ptrTraitNew,
+            weight,
+            ptrNodeIn,   // incoming node
+            *itNO,       // outgoing node
+            recur,
+            counter,
+            mutation_num // equal to weight node 
+        ); 
+        vPtrGenesNew.push_back( ptrGeneNew );
+        counter++;
+      }
+    }
+  }
+
+  // add connections from new input neurons to new output neurons in the new
+  // genome 
+  // create a new vector of nodes which will just be inputs
+  VPN vPtrNodesNewInputs; vPtrNodesNewInputs.clear();
+  for ( VPNI itN = vPtrNodesNew.begin(); itN != vPtrNodesNew.end(); ++itN ) {
+    if ( INPUT == (*itN)->gen_node_label ) { 
+      vPtrNodesNewInputs.push_back( *itN );
+    }
+  }
+  // add one bias node as well
+  for ( VPNI itN = vPtrNodesNew.begin(); itN != vPtrNodesNew.end(); ++itN ) {
+    if ( BIAS == (*itN)->gen_node_label ) { 
+      vPtrNodesNewInputs.push_back( *itN );
+      break;
+    }
+  }
+  // create a new vector of nodes which will just be outputs
+  VPN vPtrNodesNewOutputs; vPtrNodesNewOutputs.clear();
+  for ( VPNI itN = vPtrNodesNew.begin(); itN != vPtrNodesNew.end(); ++itN ) {
+    if ( OUTPUT == (*itN)->gen_node_label ) { 
+      vPtrNodesNewOutputs.push_back( *itN );
+    }
+  }
+  // reset the counter value just to be sure although the previous value should
+  // be good
+  counter = vPtrGenesNew.size() + 1; // innovation number
+  for ( VPNI itNI = vPtrNodesNewInputs.begin(); itNI != vPtrNodesNewInputs.end(); ++itNI ) {
+    for ( VPNI itNO = vPtrNodesNewOutputs.begin(); itNO != vPtrNodesNewOutputs.end(); ++itNO ) {
+      // add a new gene to the genome 
+      // local variables -- let the compiler optimize
+      double weight, mutation_num;
+      weight = mutation_num = 0.0;
+      bool recur = false;
+      Gene* ptrGeneNew = new Gene( 
+          ptrTraitNew,
+          weight,
+          *itNI,       // incoming node
+          *itNO,       // outgoing node
+          recur,
+          counter,
+          mutation_num // equal to weight node 
+      ); 
+      vPtrGenesNew.push_back( ptrGeneNew );
+      counter++;
+    }
   }
 
   Genome* ptrGenomeNew = new Genome( 1, vPtrTraitsNew, vPtrNodesNew, vPtrGenesNew );
