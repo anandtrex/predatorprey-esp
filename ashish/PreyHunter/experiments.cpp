@@ -14,6 +14,7 @@
    limitations under the License.
 */
 #include "experiments.h"
+#include "Domain.h"
 #include <cstring>
 
 //#define NO_SCREEN_OUT 
@@ -164,6 +165,38 @@ int predatorpreyhunter_epoch(Population *pop,int generation,char *filename) {
   else return 0;
 
 }
+
+double predatorpreyhunter_evaluate(Organism *org) {
+  Network *net;
+
+  int numnodes;  /* Used to figure out how many nodes
+		    should be visited during activation */
+  int thresh;  /* How many visits will be allowed before giving up 
+		  (for loop detection) */
+
+  //  int MAX_STEPS=120000;
+  int MAX_STEPS=1000; // grid size will be smaller like 10x10
+  
+  net=org->net;
+  numnodes=((org->gnome)->nodes).size();
+  thresh=numnodes*2;  //Max number of visits allowed per activation
+  
+  //Try to balance a pole now
+  double sumFitness = 0.0;
+  int MAP_WIDTH = 10;
+  int MAP_HEIGHT = 10;
+  int noTrials = 5;
+  for ( int i = 0; i < noTrials; i++ ) {
+    PredatorPreyHunter::Domain domain( MAX_STEPS, MAP_WIDTH, MAP_HEIGHT, net );   
+    sumFitness += domain.run(); 
+  }
+  org->fitness = sumFitness / noTrials;
+
+  cout<<"Org "<<(org->gnome)->genome_id<<" fitness: "<<org->fitness<<endl;
+
+  return org->fitness;
+}
+
 // PREDATOR PREY HUNTER CODE ENDS
 
 //Perform evolution on XOR, for gens generations

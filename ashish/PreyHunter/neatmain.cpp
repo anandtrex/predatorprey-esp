@@ -101,6 +101,7 @@ int main(int argc, char *argv[]) {
   cout<<"2 - 2-pole balancing, velocity info provided"<<endl;
   cout<<"3 - 2-pole balancing, no velocity info provided (non-markov)"<<endl;
   cout<<"4 - XOR"<<endl;
+  cout<<"5 - Predator Prey Hunter"<<endl;
   cout<<"Number: ";
 
   cin>>choice;
@@ -119,6 +120,8 @@ int main(int argc, char *argv[]) {
     case 4:
       p=xor_test(100);
       break;
+    case 5:
+      p = predatorpreyhunter_test(10);
     default:
       cout<<"Not an available option."<<endl;
     }
