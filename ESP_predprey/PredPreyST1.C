@@ -84,10 +84,10 @@ PredPreyST1::PredPreyST1(int num_of_predators, int num_of_prey, int num_teams_pr
         outputSize_prey_combiner = outputSize_prey_combiner + 1;  //Extra combiner output for prey messaging
     }
 
-    cout << "   inputSize per agent :  " << " Predator:: " << inputSize << " Prey:: "
+    LOG(INFO) << "   inputSize per agent :  " << " Predator:: " << inputSize << " Prey:: "
             << inputSize_prey << "  Predator Combiner:: " << inputSize_pred_combiner
             << "  Prey Combiner::  " << inputSize_prey_combiner << endl;
-    cout << "   outputSize per agent:  " << " Predator:: " << outputSize << " Prey:: "
+    LOG(INFO) << "   outputSize per agent:  " << " Predator:: " << outputSize << " Prey:: "
             << outputSize_prey << "  Predator Combiner:: " << outputSize_pred_combiner
             << "  Prey Combiner::  " << outputSize_prey_combiner << endl;
 
@@ -110,7 +110,7 @@ double PredPreyST1::count_mice_caught_6 = 0;
 // If (random) then prey starts at random location
 //             else prey starts at (prey_start_x, prey_start_y)
 vector<vector<vector<double> > > PredPreyST1::evalNet(vector<vector<Network*> >& team,
-        vector<vector<Network*> >& team_prey, int generation)  //Added number of prey to arguments ******PADMINI
+         int generation)  //Added number of prey to arguments ******PADMINI
 {
 
     if (SHOW) {
@@ -208,7 +208,7 @@ vector<vector<vector<double> > > PredPreyST1::evalNet(vector<vector<Network*> >&
         /************************************PREY*******************************************************/
 
         IS_PREY = true;
-        vector<double> temp_output_prey, temp_combiner_output_prey(NUM_OUTPUT_PREY_COMBINER);
+//        vector<double> temp_output_prey, temp_combiner_output_prey(NUM_OUTPUT_PREY_COMBINER);
         IS_COMBINER_NW = 0;
         //Commenting the below line because prey is fixed
         //setupInput_complex_prey(num_of_predators, output_prey, team_prey);
@@ -217,7 +217,7 @@ vector<vector<vector<double> > > PredPreyST1::evalNet(vector<vector<Network*> >&
         int p;
         for (p = 0; p < num_teams_prey; p++) {
             for (i = 0; i < num_of_prey; i++) {
-                temp_output_prey.clear();
+//                temp_output_prey.clear();
                 if (prey_communication == true) {
                 }
                 //***************************Commenting below else block because prey is fixed*************
@@ -250,7 +250,7 @@ vector<vector<vector<double> > > PredPreyST1::evalNet(vector<vector<Network*> >&
                 else {
 
                     if (drand48() < prey_move_probability[p]) {
-                        performPreyAction_complex(p, i, temp_combiner_output_prey);
+                        performPreyAction_complex(p, i);
                     }
 
                     else {
@@ -506,7 +506,7 @@ vector<vector<vector<double> > > PredPreyST1::evalNet(vector<vector<Network*> >&
 
 // Runs net for number of trials, returns number of times it caught prey
 vector<vector<double> > PredPreyST1::testNet(vector<vector<Network*> >& team,
-        vector<vector<Network*> >& team_prey, int trials)
+        /*vector<vector<Network*> >& team_prey,*/ int trials)
 {
 
     vector<vector<double> > result(num_teams_predator);  //This stores the number of prey caught and number of predators killed by each predator team
@@ -518,7 +518,7 @@ vector<vector<double> > PredPreyST1::testNet(vector<vector<Network*> >& team,
     }
 
     for (int i = 0; i < trials; i++) {
-        evalNet(team, team_prey, 1);
+        evalNet(team, /*team_prey,*/ 1);
         for (int p = 0; p < num_teams_predator; p++) {
 
             result[p][0] = result[p][0] + ((double) num_of_prey_caught[p]) / trials;
@@ -731,130 +731,130 @@ void PredPreyST1::reset_prey_position(int prey_team, int prey)
 }
 
 /**********************************************************************************************/
-void PredPreyST1::setupInput_complex_prey(int num_of_predators,
-        vector<vector<double> >& output_prey, vector<vector<Network*> >& team_prey)
-{
-    //Changed these to vectors to store the x- and y-distances of the predators from the multiple prey ******PADMINI
-    int x_dist;
-    int y_dist;
-    vector<double> temp_output_prey(NUM_OUTPUTS_PREY);
-    vector<double> temp_input_prey(NUM_INPUTS_PREY);
-    vector<double> output_per_team_prey;
-
-    int temp = 0;
-
-    int i, j, p, q;  //Counters for loops ******PADMINI
-
-    output_prey.clear();
-    output_per_team_prey.clear();
-    int count = 0;
-
-    IS_PREY = true;
-    for (p = 0; p < num_teams_prey; p++) {
-        count = 0;
-        for (i = 0; i < num_of_prey && !prey_caught[p][i]; i++) {
-            for (q = 0; q < num_teams_predator; q++) {
-                for (j = 0; j < num_of_predators; j++) {
-                    temp_input_prey.clear();
-                    //temp_output.clear();
-                    if (!pred_killed[q][j]) {
-                        x_dist = abs(prey_x[p][i] - pred_x[q][j]);  //The distance in x-direction between predator and prey
-                        y_dist = abs(prey_y[p][i] - pred_y[q][j]);  //The distance in y-direction between predator and prey
-                    } else {
-                        x_dist = 0;
-                        y_dist = 0;
-                    }
-
-                    //Commenting this out for sensing the wall
-                    if ((abs(x_dist)) > (MAP_LENGTH / 2)) {
-                        temp = x_dist;
-                        x_dist = MAP_LENGTH - abs(x_dist);
-
-                        if (temp > 0)
-                            x_dist = 0 - x_dist;
-                    }
-
-                    if ((abs(y_dist)) > (MAP_HEIGHT / 2)) {
-                        temp = y_dist;
-                        y_dist = MAP_HEIGHT - abs(y_dist);
-
-                        if (temp > 0)
-                            y_dist = 0 - y_dist;
-                    }
-                    temp_input_prey.push_back(x_dist);
-                    temp_input_prey.push_back(y_dist);
-                    //temp_input.push_back(0);  //Energy difference with Prey is zero
-                    //temp_input.push_back(0);  //Dummy input
-                    team_prey[p][count]->activate(temp_input_prey, temp_output_prey, /*num_of_predators, num_of_prey,
-                     num_teams_predator, num_teams_prey,*/
-                    inputSize_prey_combiner);
-                    count++;
-                    for (int k = 0; k < NUM_OUTPUTS_PREY; k++) {
-                        output_per_team_prey.push_back(temp_output_prey[k]);
-                    }
-                }
-            }
-            //******************************Commenting this so that Prey teams do not track each other*******************************
-            // for (q=0; q< num_teams_prey; q++) {
-            //         for(j = 0; j < num_of_prey && q!=p; j++) {
-            //                 temp_input_prey.clear();
-            //                 //temp_output.clear();
-            //                 if (!prey_caught[q][j]) {
-            //                         x_dist = (prey_x[p][i] - prey_x[q][j]); //The distance in x-direction between predator and prey
-            //                         y_dist = (prey_y[p][i] - prey_y[q][j]); //The distance in y-direction between predator and prey
-            //                         energy_diff = (prey_energy[p][i] - prey_energy[q][j]); //Calculating energy difference
-            //                 }
-            //                 else {
-            //                         x_dist = 0;
-            //                         y_dist = 0;
-            //                         energy_diff = 0;
-            //                 }
-
-            //                 //Commenting this out for sensing the wall
-            //                 if ((abs(x_dist)) > (MAP_LENGTH/2)) {
-            //                  temp = x_dist;
-            //                  x_dist = MAP_LENGTH  - abs(x_dist);
-
-            //                  if (temp > 0)
-            //                      x_dist = 0 - x_dist;
-            //                 }
-
-            //                 if ((abs(y_dist)) > (MAP_HEIGHT/2)) {
-            //                  temp = y_dist;
-            //                  y_dist = MAP_HEIGHT  - abs(y_dist);
-
-            //                  if (temp > 0)
-            //                      y_dist = 0 - y_dist;
-            //                 }
-            //                     temp_input_prey.push_back(x_dist);
-            //                     temp_input_prey.push_back(y_dist);
-            //                     //temp_input.push_back(energy_diff);  //Energy difference with Prey is zero
-            //                     //temp_input.push_back(0);  //Dummy input
-            //                     team_prey[p][count]->activate(temp_input_prey, temp_output_prey, num_of_predators, num_of_prey, num_teams_predator, num_teams_prey);
-            //                     count++;
-            //                     for(int k = 0; k < NUM_OUTPUTS_PREY; k++) {
-            //                             output_per_team_prey.push_back(temp_output_prey[k]);
-            //                     }
-            //                 }
-            // }
-            //******************************END Commenting this so that Prey teams do not track each other*******************************
-
-            ////Adding extra neural network for sensing walls
-            //temp_input.clear();
-            //temp_input.push_back(abs(pred_x[p][i])); //X coordinate of own position
-            //temp_input.push_back(abs(pred_y[p][i])); //Y coordinate of own position
-            //temp_input.push_back(abs(pred_x[p][i] - MAP_LENGTH)); //
-            //temp_input.push_back(abs(pred_y[p][i] - MAP_LENGTH)); //
-            //team[p][count]->activate(temp_input, temp_output, num_of_prey, num_of_predators, num_teams_prey, num_teams_predator);
-            //for(int k = 0; k < NUM_OUTPUTS; k++) {
-            //        output_per_team.push_back(temp_output[k]);
-            //}
-
-        }
-        output_prey.push_back(output_per_team_prey);
-        output_per_team_prey.clear();
-    }
-}
+//void PredPreyST1::setupInput_complex_prey(int num_of_predators,
+//        vector<vector<double> >& output_prey, vector<vector<Network*> >& team_prey)
+//{
+//    //Changed these to vectors to store the x- and y-distances of the predators from the multiple prey ******PADMINI
+//    int x_dist;
+//    int y_dist;
+//    vector<double> temp_output_prey(NUM_OUTPUTS_PREY);
+//    vector<double> temp_input_prey(NUM_INPUTS_PREY);
+//    vector<double> output_per_team_prey;
+//
+//    int temp = 0;
+//
+//    int i, j, p, q;  //Counters for loops ******PADMINI
+//
+//    output_prey.clear();
+//    output_per_team_prey.clear();
+//    int count = 0;
+//
+//    IS_PREY = true;
+//    for (p = 0; p < num_teams_prey; p++) {
+//        count = 0;
+//        for (i = 0; i < num_of_prey && !prey_caught[p][i]; i++) {
+//            for (q = 0; q < num_teams_predator; q++) {
+//                for (j = 0; j < num_of_predators; j++) {
+//                    temp_input_prey.clear();
+//                    //temp_output.clear();
+//                    if (!pred_killed[q][j]) {
+//                        x_dist = abs(prey_x[p][i] - pred_x[q][j]);  //The distance in x-direction between predator and prey
+//                        y_dist = abs(prey_y[p][i] - pred_y[q][j]);  //The distance in y-direction between predator and prey
+//                    } else {
+//                        x_dist = 0;
+//                        y_dist = 0;
+//                    }
+//
+//                    //Commenting this out for sensing the wall
+//                    if ((abs(x_dist)) > (MAP_LENGTH / 2)) {
+//                        temp = x_dist;
+//                        x_dist = MAP_LENGTH - abs(x_dist);
+//
+//                        if (temp > 0)
+//                            x_dist = 0 - x_dist;
+//                    }
+//
+//                    if ((abs(y_dist)) > (MAP_HEIGHT / 2)) {
+//                        temp = y_dist;
+//                        y_dist = MAP_HEIGHT - abs(y_dist);
+//
+//                        if (temp > 0)
+//                            y_dist = 0 - y_dist;
+//                    }
+//                    temp_input_prey.push_back(x_dist);
+//                    temp_input_prey.push_back(y_dist);
+//                    //temp_input.push_back(0);  //Energy difference with Prey is zero
+//                    //temp_input.push_back(0);  //Dummy input
+//                    team_prey[p][count]->activate(temp_input_prey, temp_output_prey, /*num_of_predators, num_of_prey,
+//                     num_teams_predator, num_teams_prey,*/
+//                    inputSize_prey_combiner);
+//                    count++;
+//                    for (int k = 0; k < NUM_OUTPUTS_PREY; k++) {
+//                        output_per_team_prey.push_back(temp_output_prey[k]);
+//                    }
+//                }
+//            }
+//            //******************************Commenting this so that Prey teams do not track each other*******************************
+//            // for (q=0; q< num_teams_prey; q++) {
+//            //         for(j = 0; j < num_of_prey && q!=p; j++) {
+//            //                 temp_input_prey.clear();
+//            //                 //temp_output.clear();
+//            //                 if (!prey_caught[q][j]) {
+//            //                         x_dist = (prey_x[p][i] - prey_x[q][j]); //The distance in x-direction between predator and prey
+//            //                         y_dist = (prey_y[p][i] - prey_y[q][j]); //The distance in y-direction between predator and prey
+//            //                         energy_diff = (prey_energy[p][i] - prey_energy[q][j]); //Calculating energy difference
+//            //                 }
+//            //                 else {
+//            //                         x_dist = 0;
+//            //                         y_dist = 0;
+//            //                         energy_diff = 0;
+//            //                 }
+//
+//            //                 //Commenting this out for sensing the wall
+//            //                 if ((abs(x_dist)) > (MAP_LENGTH/2)) {
+//            //                  temp = x_dist;
+//            //                  x_dist = MAP_LENGTH  - abs(x_dist);
+//
+//            //                  if (temp > 0)
+//            //                      x_dist = 0 - x_dist;
+//            //                 }
+//
+//            //                 if ((abs(y_dist)) > (MAP_HEIGHT/2)) {
+//            //                  temp = y_dist;
+//            //                  y_dist = MAP_HEIGHT  - abs(y_dist);
+//
+//            //                  if (temp > 0)
+//            //                      y_dist = 0 - y_dist;
+//            //                 }
+//            //                     temp_input_prey.push_back(x_dist);
+//            //                     temp_input_prey.push_back(y_dist);
+//            //                     //temp_input.push_back(energy_diff);  //Energy difference with Prey is zero
+//            //                     //temp_input.push_back(0);  //Dummy input
+//            //                     team_prey[p][count]->activate(temp_input_prey, temp_output_prey, num_of_predators, num_of_prey, num_teams_predator, num_teams_prey);
+//            //                     count++;
+//            //                     for(int k = 0; k < NUM_OUTPUTS_PREY; k++) {
+//            //                             output_per_team_prey.push_back(temp_output_prey[k]);
+//            //                     }
+//            //                 }
+//            // }
+//            //******************************END Commenting this so that Prey teams do not track each other*******************************
+//
+//            ////Adding extra neural network for sensing walls
+//            //temp_input.clear();
+//            //temp_input.push_back(abs(pred_x[p][i])); //X coordinate of own position
+//            //temp_input.push_back(abs(pred_y[p][i])); //Y coordinate of own position
+//            //temp_input.push_back(abs(pred_x[p][i] - MAP_LENGTH)); //
+//            //temp_input.push_back(abs(pred_y[p][i] - MAP_LENGTH)); //
+//            //team[p][count]->activate(temp_input, temp_output, num_of_prey, num_of_predators, num_teams_prey, num_teams_predator);
+//            //for(int k = 0; k < NUM_OUTPUTS; k++) {
+//            //        output_per_team.push_back(temp_output[k]);
+//            //}
+//
+//        }
+//        output_prey.push_back(output_per_team_prey);
+//        output_per_team_prey.clear();
+//    }
+//}
 
 /**********************************************************************************************/
 void PredPreyST1::setupInput_complex_predator(vector<vector<double> >& output,
@@ -1301,8 +1301,7 @@ void PredPreyST1::performPredAction_complex(int pred_team, int pred,
     //}
 }
 
-void PredPreyST1::performPreyAction_complex(int prey_team, int prey,
-        const vector<double>& output_single_prey)
+void PredPreyST1::performPreyAction_complex(int prey_team, int prey)
 {  //Added the argument int prey to check which prey is being processed ******PADMINI
 //double nearestDist = calc_dist(pred_x[0], pred_y[0], prey_x[prey], prey_y[prey]); //To hold the distances of the prey from its nearest predator
     double nearestDist = MAP_LENGTH * 2 + 1;  //Big number
@@ -1680,22 +1679,23 @@ int PredPreyST1::getMaxPos_complex(const vector<double>& vec)
     vector<double> temp_sum_outputs;
 
     if (IS_PREY) {
-        if (prey_communication == true) {  //Aditya : March 03 - Communication
-            for (int i = 0; i < NUM_OUTPUTS_PREY; i++) {
-                temp_sum_outputs.push_back(0.0);
-                for (int j = 0; j < num_of_predators + num_of_prey - 1; j++) {
-                    temp_sum_outputs[i] = temp_sum_outputs[i] + vec[NUM_OUTPUTS_PREY * j + i];
-                }
-            }
-        } else {
-            for (int i = 0; i < NUM_OUTPUTS_PREY; i++) {
-                temp_sum_outputs.push_back(0.0);
-                for (int j = 0; j < num_of_predators; j++) {
-                    temp_sum_outputs[i] = temp_sum_outputs[i] + vec[NUM_OUTPUTS_PREY * j + i];
-                }
-            }
-
-        }
+        LOG(FATAL) << "Shouldn't be here";
+//        if (prey_communication == true) {  //Aditya : March 03 - Communication
+//            for (int i = 0; i < NUM_OUTPUTS_PREY; i++) {
+//                temp_sum_outputs.push_back(0.0);
+//                for (int j = 0; j < num_of_predators + num_of_prey - 1; j++) {
+//                    temp_sum_outputs[i] = temp_sum_outputs[i] + vec[NUM_OUTPUTS_PREY * j + i];
+//                }
+//            }
+//        } else {
+//            for (int i = 0; i < NUM_OUTPUTS_PREY; i++) {
+//                temp_sum_outputs.push_back(0.0);
+//                for (int j = 0; j < num_of_predators; j++) {
+//                    temp_sum_outputs[i] = temp_sum_outputs[i] + vec[NUM_OUTPUTS_PREY * j + i];
+//                }
+//            }
+//
+//        }
     } else {
         if (pred_communication == true) {  //Aditya : March 03 - Communication
             for (int i = 0; i < NUM_OUTPUTS; i++) {

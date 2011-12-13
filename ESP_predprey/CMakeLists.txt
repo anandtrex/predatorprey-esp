@@ -20,26 +20,22 @@ set(CMAKE_CXX_FLAGS "-g -O3 -Wall")
 set(CORELIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${X11_LIBRARY} m)
 
 
-include(ExternalProject)
-ExternalProject_Add(
-	glog-0.3.1
-	URL http://google-glog.googlecode.com/files/glog-0.3.1-1.tar.gz
-	CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/glog
-	BUILD_COMMAND make -j2
-)
-ExternalProject_Add(
-	libconfig-1.4.8
-	BUILD_IN_SOURCE 1
-	URL http://www.hyperrealm.com/libconfig/libconfig-1.4.8.tar.gz
-	CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/libconfig
-	BUILD_COMMAND make -j2
-)
+#include(ExternalProject)
+#ExternalProject_Add(
+#	glog-0.3.1
+#	URL http://google-glog.googlecode.com/files/glog-0.3.1-1.tar.gz
+#	CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/glog
+#	BUILD_COMMAND make -j2
+#)
+#ExternalProject_Add(
+#	libconfig-1.4.8
+#	BUILD_IN_SOURCE 1
+#	URL http://www.hyperrealm.com/libconfig/libconfig-1.4.8.tar.gz
+#	CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/libconfig
+#	BUILD_COMMAND make -j2
+#)
 
-include_directories(${CMAKEDEMO_SOURCE_DIR}/glog/include)
-include_directories(${CMAKEDEMO_SOURCE_DIR}/libconfig/include)
 include_directories(/usr/include/x86_64-linux-gnu) # for clang
-link_directories(${CMAKEDEMO_SOURCE_DIR}/glog/lib)
-link_directories(${CMAKEDEMO_SOURCE_DIR}/libconfig/lib)
 
 file(GLOB SRCS "*.C")
 

@@ -23,6 +23,13 @@ public:
 
     virtual ~Network();
 
+    void addHiddenLayer(/*int size, */vector<neuron*> pop)
+    {
+        numNeurons2 = pop.size();
+        //pop2 = new vector<neuron*>(size)
+        pop2 = pop;
+    }
+
     void operator=(Network &n);
     void resetActivation();
     void setNeuron(neuron *n, int position);

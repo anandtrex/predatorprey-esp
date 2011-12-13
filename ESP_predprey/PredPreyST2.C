@@ -24,6 +24,7 @@ using namespace std;
 extern bool SHOW;
 
 extern int EVALTRIALS;  // number of times to call evalNet for a given team
+extern bool IS_PREY;
 
 //extern double pred_flee_factor = 1.0;
 //extern bool DEBUG = false;
@@ -43,6 +44,11 @@ PredPreyST2::PredPreyST2(int num_of_predators, int num_teams_predator, int num_o
     this->num_teams_predator = num_teams_predator;
     this->num_of_hunters = num_of_hunters;
     this->num_teams_hunters = num_teams_hunters;
+
+    inputSize_prey = 0;
+    inputSize_prey_combiner = 0;
+    outputSize_prey_combiner = 0;
+    outputSize_prey = 0;
 
     // class Environment variables
     // input and output sizes for EACH predator/prey agent
@@ -66,9 +72,9 @@ PredPreyST2::PredPreyST2(int num_of_predators, int num_teams_predator, int num_o
         outputSize_pred_combiner = outputSize_pred_combiner + 1;  //Extra combiner output for predator messaging
     }
 
-    cout << "   inputSize per agent :  " << " Predator:: " << inputSize << "  Predator Combiner:: "
+    LOG(INFO) << "   inputSize per agent :  " << " Predator:: " << inputSize << "  Predator Combiner:: "
             << inputSize_pred_combiner << endl;
-    cout << "   outputSize per agent:  " << " Predator:: " << outputSize << "  Predator Combiner:: "
+    LOG(INFO) << "   outputSize per agent:  " << " Predator:: " << outputSize << "  Predator Combiner:: "
             << outputSize_pred_combiner << endl;
 
 }
@@ -83,11 +89,11 @@ int PredPreyST2::count_trials = 0;
  * @param generation
  * @return
  */
-vector<vector<vector<double> > > PredPreyST2::evalNet(vector<vector<Network*> >& team,
-        vector<vector<Network*> >& team_prey, int generation)
-{
-    return evalNet(team, generation);
-}
+//vector<vector<vector<double> > > PredPreyST2::evalNet(vector<vector<Network*> >& team,
+//        /*vector<vector<Network*> >& team_prey,*/ int generation)
+//{
+//    return evalNet(team, generation);
+//}
 
 /**
  * To implement the Environment interface
@@ -96,11 +102,11 @@ vector<vector<vector<double> > > PredPreyST2::evalNet(vector<vector<Network*> >&
  * @param trials
  * @return
  */
-vector<vector<double> > PredPreyST2::testNet(vector<vector<Network*> >& team,
-        vector<vector<Network*> >& team_prey, int trials)
-{
-    return testNet(team, trials);
-}
+//vector<vector<double> > PredPreyST2::testNet(vector<vector<Network*> >& team,
+//        vector<vector<Network*> >& team_prey, int trials)
+//{
+//    return testNet(team, trials);
+//}
 
 // Fitness = (ave_initial_distance - ave_final_distance) / steps
 //           if prey caught then X 10
@@ -110,6 +116,7 @@ vector<vector<double> > PredPreyST2::testNet(vector<vector<Network*> >& team,
 vector<vector<vector<double> > > PredPreyST2::evalNet(vector<vector<Network*> >& team,
         int generation)  //Added number of prey to arguments ******PADMINI
 {
+    IS_PREY = false;
 
     //cout << "Starting evalNet" << endl;
 
@@ -183,6 +190,7 @@ vector<vector<vector<double> > > PredPreyST2::evalNet(vector<vector<Network*> >&
         }
 
         /************************************PREDATOR************************************************************/
+
         vector<double> temp_output, temp_combiner_output(NUM_OUTPUT_PRED_COMBINER);
         IS_COMBINER_NW = 0;
         setupInput_complex_predator(output, team);
@@ -301,9 +309,13 @@ vector<vector<vector<double> > > PredPreyST2::evalNet(vector<vector<Network*> >&
             temp_hit_wall = temp_hit_wall + pred_hit_wall_times[p][i];
             // NOTE Fitness value decreased if predator is hit by hunter
             if (pred_hit[p][i] == true) {
-                double individual_fitness_value = -300;
+                double individual_fitness_value = -300.0;
                 VLOG(1) << "Fitness decreased" << endl;
                 temp_individual_fitness.push_back(individual_fitness_value);  // This is individual fitness for Competing agents
+                //LOG(INFO) << "temp_individual_fitness[0] is " << temp_individual_fitness[0];
+            } else {
+                temp_individual_fitness.push_back(0.0);  // This is individual fitness for Competing agents
+                //LOG(INFO) << "temp_individual_fitness[0] is " << temp_individual_fitness[0];
             }
         }
         temp_team_fitness.push_back(temp_individual_fitness);
@@ -313,7 +325,7 @@ vector<vector<vector<double> > > PredPreyST2::evalNet(vector<vector<Network*> >&
 //Overall Best, Generation Best and Generation Average
     if (generation > previous_generation) {
         // Assuming there are only one team of predators
-        cout << "No. hunter hits :: " << num_of_pred_hit[0] << endl;
+//        LOG(INFO) << "No. hunter hits :: " << num_of_pred_hit[0] << endl;
     }
     count_trials++;
     if (count_trials == EVALTRIALS) {
@@ -321,10 +333,13 @@ vector<vector<vector<double> > > PredPreyST2::evalNet(vector<vector<Network*> >&
     }
 
     fitness.push_back(temp_team_fitness);
+    //LOG(INFO) << "temp_team_fitness[0][0] is " << temp_team_fitness[0][0];
     temp_team_fitness.clear();
 
     //cout << "Ending evalNet with prey caught ::  " << num_of_prey_caught[0] << " and predators hit :: " << num_of_pred_hit[0] << endl;
+    //LOG(INFO) << "Size of fitness vector is " << fitness.size();
 
+    //LOG(INFO) << "fitness[0][0][0] is " << fitness[0][0][0];
     return fitness;
 
 }  //End function

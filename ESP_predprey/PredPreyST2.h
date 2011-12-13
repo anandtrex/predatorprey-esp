@@ -23,9 +23,9 @@ public:
     vector<vector<double> > messages;  //messages
 
     virtual vector<vector<vector<double> > > evalNet(vector<vector<Network*> >& team,
-            vector<vector<Network*> >& team_prey, int generation);
+            int generation);
     virtual vector<vector<double> > testNet(vector<vector<Network*> >& team,
-            vector<vector<Network*> >& team_prey, int trials);
+             int trials);
 
     virtual void nextTask();
     virtual void simplifyTask();
@@ -56,9 +56,9 @@ private:
     void showHunter(int hunter_team, int hunter, int old_hunter_x, int old_hunter_y);
     void showPred(int pred_team, int pred, int old_pred_x, int old_pred_y);
 
-    virtual vector<vector<vector<double> > > evalNet(vector<vector<Network*> >& team,
-            int generation);
-    virtual vector<vector<double> > testNet(vector<vector<Network*> >& team, int trials);
+//    virtual vector<vector<vector<double> > > evalNet(vector<vector<Network*> >& team,
+//            int generation);
+//    virtual vector<vector<double> > testNet(vector<vector<Network*> >& team, int trials);
 
     // ---- variables ----
 

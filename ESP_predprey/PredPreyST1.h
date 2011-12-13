@@ -24,9 +24,9 @@ public:
     vector<vector<double> > messages;  //messages
 
     virtual vector<vector<vector<double> > > evalNet(vector<vector<Network*> >& team,
-            vector<vector<Network*> >& team_prey, int generation);
+             int generation);
     virtual vector<vector<double> > testNet(vector<vector<Network*> >& team,
-            vector<vector<Network*> >& team_prey, int trials);
+             int trials);
 
     virtual void nextTask();
     virtual void simplifyTask();
@@ -57,14 +57,14 @@ private:
     void init(bool preyRandom, bool predsRandom, int generation);
     void reset_prey_position(int prey_team, int prey);
     void setupInput(int, vector<double>&);
-    void setupInput_complex_prey(int, vector<vector<double> >&,
-            vector<vector<Network*> >& team_prey);
+//    void setupInput_complex_prey(int, vector<vector<double> >&,
+//            vector<vector<Network*> >& team_prey);
     void setupInput_complex_predator(/*int, */vector<vector<double> >&,
             vector<vector<Network*> >& team);
     void performPredAction(int pred, const vector<double>&);
     void performPredAction_complex(int pred_team, int pred, const vector<double>&);
     void performPreyAction(int prey, const vector<double>&);
-    void performPreyAction_complex(int prey_team, int prey, const vector<double>&);
+    void performPreyAction_complex(int prey_team, int prey);
 
     // Display functions
     void showPred(int pred_team, int pred, int old_pred_x, int old_pred_y);
