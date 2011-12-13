@@ -60,7 +60,6 @@ NNode::NNode(nodetype ntype,int nodeid, nodeplace placement) {
 
 NNode::NNode(NNode *n,Trait *t) {
 	active_flag=false;
-  activesum = 0; // added by Ashish
 	activation=0;
 	output=0;
 	last_activation=0;
@@ -68,7 +67,7 @@ NNode::NNode(NNode *n,Trait *t) {
 	type=n->type; //NEURON or SENSOR type
 	activation_count=0; //Inactive upon creation
 	node_id=n->node_id;
-	ftype=SIGMOID; // Ashish: can change to = n->ftype;
+	ftype=SIGMOID;
 	nodetrait=0;
 	gen_node_label=n->gen_node_label;
 	dup=0;

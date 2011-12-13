@@ -125,7 +125,10 @@ bool Network::outputsoff() {
 	std::vector<NNode*>::iterator curnode;
 
 	for(curnode=outputs.begin();curnode!=outputs.end();++curnode) {
-		if (((*curnode)->activation_count)==0) return true;
+		if (((*curnode)->activation_count)==0) {
+
+                    return true;
+                }
 	}
 
 	return false;
@@ -159,6 +162,10 @@ void Network::print_links_tofile(char *filename) {
 // Activates the net such that all outputs are active
 // Returns true on success;
 bool Network::activate() {
+	using std::cout;
+	using std::endl;
+	cout << "************* ACTIVATION ***************" << endl;
+	cout << "BEGINS" << endl;
 	std::vector<NNode*>::iterator curnode;
 	std::vector<Link*>::iterator curlink;
 	double add_amount;  //For adding to the activesum
@@ -172,29 +179,51 @@ bool Network::activate() {
 	// are always active)
 
 	onetime=false;
+    int x_y = 0;
 
 	while(outputsoff()||!onetime) {
 
 		++abortcount;
-
 		if (abortcount==20) {
-			return false;
-			//cout<<"Inputs disconnected from output!"<<endl;
+			for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
+				std::cout <<(*curnode)->node_id<< " :: "<<(*curnode)->active_flag ;  //This will tell us if it has any active inputs
+				if ((int)(*curnode)->incoming.size() == 0) {
+					std::cout << " NO incoming connections";
+
+				}
+				std::cout << std::endl;
+			}
+			std::cout << " Net not activating"<<std::endl;
+			std::cin>>x_y;
+
+			//return false;
+        	//cout<<"Inputs disconnected from output!"<<endl;
 		}
 		//std::cout<<"Outputs are off"<<std::endl;
 
 		// For each node, compute the sum of its incoming activation 
+		cout << "computing sum of incoming activations ..." << endl;
 		for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
+			cout << "id: " << (*curnode)->node_id << " ";
+			cout << "ty: " << (*curnode)->type << " ";
+			cout << "pl: " << (*curnode)->gen_node_label << endl;
 			//Ignore SENSORS
 
-			//cout<<"On node "<<(*curnode)->node_id<<endl;
+			if (x_y == 1) {
+
+				std::cout<<"On node "<<(*curnode)->node_id<<std::endl;
+				break;
+			}
 
 			if (((*curnode)->type)!=SENSOR) {
+				cout << "Not a sensor. Processing further ..." << endl;
 				(*curnode)->activesum=0;
 				(*curnode)->active_flag=false;  //This will tell us if it has any active inputs
 
+				cout << "Incoming nodes: ";
 				// For each incoming connection, add the activity from the connection to the activesum 
 				for(curlink=((*curnode)->incoming).begin();curlink!=((*curnode)->incoming).end();++curlink) {
+					cout << "(" << (*curlink)->in_node->node_id << ", " << (*curlink)->in_node->type << ", " << (*curlink)->in_node->gen_node_label << "); ";
 					//Handle possible time delays
 					if (!((*curlink)->time_delay)) {
 						add_amount=((*curlink)->weight)*(((*curlink)->in_node)->get_active_out());
@@ -210,15 +239,18 @@ bool Network::activate() {
 					}
 
 				} //End for over incoming links
-
+				cout << endl;
 			} //End if (((*curnode)->type)!=SENSOR) 
 
 		} //End for over all nodes
 
 		// Now activate all the non-sensor nodes off their incoming activation 
+		cout << "activating all non-sensor nodes off their incoming activations ..." << endl;
 		for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
 
 			if (((*curnode)->type)!=SENSOR) {
+
+
 				//Only activate if some active input came in
 				if ((*curnode)->active_flag) {
 					//cout<<"Activating "<<(*curnode)->node_id<<" with "<<(*curnode)->activesum<<": ";
@@ -243,16 +275,22 @@ bool Network::activate() {
 					//Increment the activation_count
 					//First activation cannot be from nothing!!
 					(*curnode)->activation_count++;
+					cout << "[NOT a sensor] ";
+					cout << "id: " << (*curnode)->node_id << " ";
+					cout << "ty: " << (*curnode)->type << " ";
+					cout << "pl: " << (*curnode)->gen_node_label << endl;
+					cout << "activation: " << (*curnode)->activation << "; activation_count: " << (*curnode)->activation_count << endl;
 				}
 			}
 		}
 
 		onetime=true;
 	}
+    //std::cout <<abortcount <<std::endl;
 
 	if (adaptable) {
 
-	  //std::cout << "ADAPTING" << std:endl;
+	  cout << "ADAPTING" << endl;
 
 	  // ADAPTATION:  Adapt weights based on activations 
 	  for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
@@ -297,7 +335,7 @@ bool Network::activate() {
 	  }
 	  
 	} //end if (adaptable)
-
+	cout << "ENDS" << endl;
 	return true;  
 }
 
@@ -348,6 +386,8 @@ void Network::show_activation() {
 }
 
 void Network::show_input() {
+	using std::cout;
+	using std::endl;
 	std::vector<NNode*>::iterator curnode;
 	int count;
 
@@ -355,9 +395,18 @@ void Network::show_input() {
 	//  cout<<"Network "<<name<<" with id "<<net_id<<" inputs: (";
 	//else cout<<"Network id "<<net_id<<" outputs: (";
 
+//	count=1;
+//	for(curnode=inputs.begin();curnode!=inputs.end();++curnode) {
+//		//cout<<"[Input #"<<count<<": "<<(*curnode)<<"] ";
+//		count++;
+//	}
 	count=1;
 	for(curnode=inputs.begin();curnode!=inputs.end();++curnode) {
-		//cout<<"[Input #"<<count<<": "<<(*curnode)<<"] ";
+		cout << "[Input #" << count << "] ";
+		cout << "id: " << (*curnode)->node_id << " ";
+		cout << "ty: " << (*curnode)->type << " ";
+		cout << "pl: " << (*curnode)->gen_node_label << " ";
+		cout << endl;
 		count++;
 	}
 
@@ -376,6 +425,10 @@ void Network::add_output(NNode *out_node) {
 
 // Takes an array of sensor values and loads it into SENSOR inputs ONLY
 void Network::load_sensors(double *sensvals) {
+	using std::cout;
+	using std::endl;
+	cout << "************** LOADING SENSORS *******************" << endl;
+	cout << "BEGINS" << endl;
 	//int counter=0;  //counter to move through array
 	std::vector<NNode*>::iterator sensPtr;
 
@@ -383,9 +436,14 @@ void Network::load_sensors(double *sensvals) {
 		//only load values into SENSORS (not BIASes)
 		if (((*sensPtr)->type)==SENSOR) {
 			(*sensPtr)->sensor_load(*sensvals);
+			cout << "ID: " << (*sensPtr)->node_id
+				 << "\tVALUE: " << (*sensPtr)->activation
+				 << "\tACTIVATION COUNT: " << (*sensPtr)->activation_count
+				 << endl;
 			sensvals++;
 		}
 	}
+	cout << "ENDS" << endl;
 }
 
 void Network::load_sensors(const std::vector<float> &sensvals) {
@@ -618,70 +676,4 @@ int Network::max_depth() {
   return max;
 
 }
-
-// write the connections to a file in dot format; weight support to be added
-void Network::writeToDotFile(char* filename) {
-	using std::cerr;
-  using std::endl;
-	std::vector<NNode*>::iterator curnode;
-	std::vector<Link*>::iterator curlink;
-
-    std::ofstream oFile(filename);
-
-	//Make sure it worked
-	if (!oFile) {
-		cerr<<"Can't open "<<filename<<" for output" << endl;
-		throw -1; // throw something meaningful later
-	}
-  std::string indentation = "\t";
-  std::string terminate = ";\n";
-	oFile<<"digraph G {\n";
-  oFile<<indentation<<"rankdir=BT"<<terminate;
-  oFile<<indentation<<"node [shape=circle weight=bold fontsize=10 color=black fontcolor=black]"<<terminate;
-  oFile<<indentation<<"edge [color=black fontsize=9 fontcolor=black, decorate = true ]"<<terminate;
-  // output nodes
-  std::cout << "output nodes:" << std::endl;
-	for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
-    std::cout << (*curnode)->node_id << ": " << (*curnode)->gen_node_label << std::endl; 
-    if (OUTPUT==((*curnode)->gen_node_label)) {
-      oFile<<indentation<<(*curnode)->node_id<<" [ shape=ellipse, label=\"O"<<(*curnode)->node_id<<"\" ]"<<terminate; 
-    }
-  }
-  // input nodes 
-  std::cout << "input nodes:" << std::endl;
-	for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
-    std::cout << (*curnode)->node_id << ": " << (*curnode)->gen_node_label << std::endl; 
-    if (INPUT==((*curnode)->gen_node_label)) {
-      oFile<<indentation<<(*curnode)->node_id<<" [ shape=box, label=\"I"<<(*curnode)->node_id<<"\" ]"<<terminate; 
-    }
-  }
-  // bias nodes 
-  std::cout << "bias nodes:" << std::endl;
-	for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
-    std::cout << (*curnode)->node_id << ": " << (*curnode)->gen_node_label << std::endl; 
-    if (BIAS==((*curnode)->gen_node_label)) {
-      oFile<<indentation<<(*curnode)->node_id<<" [ shape=hexagon, label=\"B"<<(*curnode)->node_id<<"\" ]"<<terminate; 
-    }
-  }
-  // hidden nodes
-  std::cout << "hidden nodes:" << std::endl;
-	for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
-    std::cout << (*curnode)->node_id << ": " << (*curnode)->gen_node_label << std::endl; 
-    if (BIAS==((*curnode)->gen_node_label)) {
-      oFile<<indentation<<(*curnode)->node_id<<" [ shape=circle, label=\"H"<<(*curnode)->node_id<<"\" ]"<<terminate; 
-    }
-  }
-	for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
-		if (((*curnode)->type)!=SENSOR) {
-			for(curlink=((*curnode)->incoming).begin(); curlink!=((*curnode)->incoming).end(); ++curlink) {
-        oFile << indentation << (*curlink)->in_node->node_id << " -> " <<(*curlink)->out_node->node_id;
-        oFile << " [ label = " << (*curlink)->weight << " ] ";
-        oFile << terminate; 
-			} // end for loop on links
-		} //end if
-	} //end for loop on nodes
-
-  oFile << "}\n";
-	oFile.close();
-} //convert to dot file format
 
