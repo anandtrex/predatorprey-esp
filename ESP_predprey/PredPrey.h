@@ -12,6 +12,7 @@ public:
 			int num_teams_prey, vector<double> prey_move_probability, int num_of_hunters);
 	PredPrey(int num_of_predators, int num_of_prey, int num_teams_predator,
 	            int num_teams_prey, vector<double> prey_move_probability);
+	PredPrey(int num_of_predators, int num_teams_predator, int num_of_hunters, int num_teams_hunters);
 	int num_of_predators;
 	int num_of_prey;
 	int num_teams_predator;
@@ -27,9 +28,9 @@ public:
 
 	virtual vector<vector<vector<double> > > evalNet(
 			vector<vector<Network*> >& team,
-			vector<vector<Network*> >& team_prey, int generation);
+			 int generation);
 	virtual vector<vector<double> > testNet(vector<vector<Network*> >& team,
-			vector<vector<Network*> >& team_prey, int trials);
+			 int trials);
 
 	virtual void nextTask();
 	virtual void simplifyTask();
@@ -49,25 +50,28 @@ private:
 	static double count_generation_mice_caught;
 	static double count_mice_caught_6;
 	static int previous_generation;
+
+	double pred_flee_factor;
+
+
 	double calc_dist(int x1, int y1, int x2, int y2);
 	int getMaxPos(const vector<double>&);
 	int getMaxPos_complex(const vector<double>&);
 
 	void init(bool preyRandom, bool predsRandom, bool huntersRandom, int generation);
+	void init(bool preyRandom, bool predsRandom, int generation);
 	void reset_prey_position(int prey_team, int prey);
 	void setupInput(int, vector<double>&);
-	void setupInput_complex_prey(int, vector<vector<double> >&,
-			vector<vector<Network*> >& team_prey);
+//	void setupInput_complex_prey(int, vector<vector<double> >&,
+//			vector<vector<Network*> >& team_prey);
 	void setupInput_complex_predator(/*int, */vector<vector<double> >&,
 			vector<vector<Network*> >& team);
 	void performPredAction(int pred, const vector<double>&);
 	void performPredAction_complex(int pred_team, int pred,
 			const vector<double>&);
 	void performPreyAction(int prey, const vector<double>&);
-	void performPreyAction_complex(int prey_team, int prey,
-			const vector<double>&);
-    void performHunterAction_complex(int hunter_team, int hunter,
-            const vector<double>&);
+	void performPreyAction_complex(int prey_team, int prey);
+    void performHunterAction_complex(int hunter_team, int hunter);
 
     // Display functions
     void showHunter(int hunter_team, int hunter, int old_hunter_x, int old_hunter_y);

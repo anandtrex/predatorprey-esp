@@ -41,11 +41,11 @@ public:
 	// evaluate a team
 	virtual vector<vector<vector<double> > > evalNet(
 			vector<vector<Network*> >& team,
-			vector<vector<Network*> >& team_prey, int generation) = 0;
+			 int generation) = 0;
 
 	// test a team for numTrials times, return num succeeded
 	virtual vector<vector<double> > testNet(vector<vector<Network*> >& team,
-			vector<vector<Network*> >& team_prey, int trials) = 0;
+			 int trials) = 0;
 
 	virtual void nextTask() = 0; // transition to a harder task
 	virtual void simplifyTask() = 0; // make the current task easier

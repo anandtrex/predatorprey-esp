@@ -11,6 +11,8 @@
 #include "Environment.h"
 #include "Network.h"
 
+#include <glog/logging.h>
+
 using namespace std;
 
 extern int NUM_INPUTS;
@@ -119,6 +121,27 @@ void FeedForwardNetwork::activate(vector<double> &input, vector<double> &output,
             //}
         }
 
+        // If there is a second hidden layer
+        // NOTE FIXME Will work only if the size of both the hidden layers are the same!
+        vector<double> oldActivation = vector<double>(activation);
+        if(numNeurons2 > 0){
+            if(IS_COMBINER_NW){
+                LOG(ERROR) << "Second layer of combiner network!!";
+            }
+            //DLOG(INFO) << "pop2 size is " << pop2.size();
+            //DLOG(INFO) << "numNeurons2 is " << numNeurons2;
+            for(int i = 0; i < numNeurons2; i++){
+                activation[i] = 0.0;
+                // take the activation of each of the first layer of hidden neurons
+                //DLOG(INFO) << "pop2[" << i <<"]->weight size is " << pop2[i]->weight.size();
+                for(int j = 0; j < numNeurons2; j++){
+                    //DLOG(INFO) << "pop2[i]->weight[j] is " << pop2[i]->weight[j];
+                    activation[i] += pop2[i]->weight[j] * oldActivation[i];
+                }
+                activation[i] = sigmoid(activation[i]);
+            }
+        }
+
         output_weight_index = neuron_input_connections;
 
         if (IS_COMBINER_NW == 1) {
@@ -145,51 +168,51 @@ void FeedForwardNetwork::activate(vector<double> &input, vector<double> &output,
     }
 
     else if (IS_PREY) {
-
-        if (IS_COMBINER_NW == 1) {
-            neuron_input_connections = inputSize_combiner;  //Number of inputs to each combiner neural network
-        } else {
-            neuron_input_connections = 2;  //Number of inputs to each sensory neural network
-        }
-        // evaluate hidden/output layer
-        for (i = 0; i < numNeurons; ++i) {  //for each hidden unit
-            //if(!pop[i]->lesioned){
-            activation[i] = 0.0;
-            for (j = 0; j < neuron_input_connections; ++j) {
-                activation[i] += pop[i]->weight[j] * input[j];
-                //printf("%f\n", activation[i]);
-            }
-            //inner_product(pop[i]->weight.begin(),
-            //	  pop[i]->weight.end(),
-            //	  input.begin(), 0.0);
-            activation[i] = sigmoid(activation[i]);
-            //printf("%f\n", activation[i]);
-            //}
-        }
-
-        output_weight_index = neuron_input_connections;
-
-        if (IS_COMBINER_NW == 1) {
-            for (i = 0; i < NUM_OUTPUT_PREY_COMBINER; ++i) {
-                output[i] = 0.0;
-                for (j = 0; j < numNeurons; ++j) {
-                    output[i] += activation[j] * pop[j]->weight[output_weight_index];
-                }
-                output[i] = sigmoid(output[i]);
-                output_weight_index++;
-            }
-        }
-
-        else {
-            for (i = 0; i < NUM_OUTPUTS_PREY; ++i) {
-                output[i] = 0.0;
-                for (j = 0; j < numNeurons; ++j) {
-                    output[i] += activation[j] * pop[j]->weight[output_weight_index];
-                }
-                output[i] = sigmoid(output[i]);
-                output_weight_index++;
-            }
-        }
+        LOG(FATAL) << "Shouldn't be here";
+//        if (IS_COMBINER_NW == 1) {
+//            neuron_input_connections = inputSize_combiner;  //Number of inputs to each combiner neural network
+//        } else {
+//            neuron_input_connections = 2;  //Number of inputs to each sensory neural network
+//        }
+//        // evaluate hidden/output layer
+//        for (i = 0; i < numNeurons; ++i) {  //for each hidden unit
+//            //if(!pop[i]->lesioned){
+//            activation[i] = 0.0;
+//            for (j = 0; j < neuron_input_connections; ++j) {
+//                activation[i] += pop[i]->weight[j] * input[j];
+//                //printf("%f\n", activation[i]);
+//            }
+//            //inner_product(pop[i]->weight.begin(),
+//            //	  pop[i]->weight.end(),
+//            //	  input.begin(), 0.0);
+//            activation[i] = sigmoid(activation[i]);
+//            //printf("%f\n", activation[i]);
+//            //}
+//        }
+//
+//        output_weight_index = neuron_input_connections;
+//
+//        if (IS_COMBINER_NW == 1) {
+//            for (i = 0; i < NUM_OUTPUT_PREY_COMBINER; ++i) {
+//                output[i] = 0.0;
+//                for (j = 0; j < numNeurons; ++j) {
+//                    output[i] += activation[j] * pop[j]->weight[output_weight_index];
+//                }
+//                output[i] = sigmoid(output[i]);
+//                output_weight_index++;
+//            }
+//        }
+//
+//        else {
+//            for (i = 0; i < NUM_OUTPUTS_PREY; ++i) {
+//                output[i] = 0.0;
+//                for (j = 0; j < numNeurons; ++j) {
+//                    output[i] += activation[j] * pop[j]->weight[output_weight_index];
+//                }
+//                output[i] = sigmoid(output[i]);
+//                output_weight_index++;
+//            }
+//        }
 
     }
 

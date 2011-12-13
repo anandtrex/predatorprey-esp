@@ -168,6 +168,8 @@
 #include "signal-handler.h"
 #include "Environment.h"
 #include "PredPrey.h"
+#include "PredPreyST1.h"
+#include "PredPreyST2.h"
 #include "Network.h"
 #include "Esp.h"
 #include <fstream>
@@ -183,17 +185,17 @@
 
 int SIMU_TRIALS = 5;
 int NUM_INPUTS_PRED_COMBINER;
-int NUM_INPUTS_PREY_COMBINER;
+//int NUM_INPUTS_PREY_COMBINER;
 int NUM_OUTPUT_PRED_COMBINER;
-int NUM_OUTPUT_PREY_COMBINER;
+//int NUM_OUTPUT_PREY_COMBINER;
 int NUM_INPUTS;  // number of input units; includes recurrent input EVOLVE_PREY
-int NUM_INPUTS_PREY;  // number of input units; includes recurrent input EVOLVE_PREY
+//int NUM_INPUTS_PREY;  // number of input units; includes recurrent input EVOLVE_PREY
 int NUM_OUTPUTS;  // number of output units EVOLVE_PREY
-int NUM_OUTPUTS_PREY;  // number of output units EVOLVE_PREY
+//int NUM_OUTPUTS_PREY;  // number of output units EVOLVE_PREY
 int GENE_SIZE_PRED_NW;  // number of weights each neuron has (in & out) EVOLVE_PREY
-int GENE_SIZE_PREY_NW;  // number of weights each neuron has (in & out) EVOLVE_PREY
+//int GENE_SIZE_PREY_NW;  // number of weights each neuron has (in & out) EVOLVE_PREY
 int GENE_SIZE_PRED_COMBINER_NW;  // number of weights each neuron has (in & out) EVOLVE_PREY
-int GENE_SIZE_PREY_COMBINER_NW;  // number of weights each neuron has (in & out) EVOLVE_PREY
+//int GENE_SIZE_PREY_COMBINER_NW;  // number of weights each neuron has (in & out) EVOLVE_PREY
 int SKIP = 0;  // skip recombination; EVOLVE_PREY
 int MIN = 0;  // 0 means higher fitness better, 1 otherwise
 double MUT_RATE = 0.4;  // mutation rate in %  EVOLVE_PREY
@@ -208,7 +210,6 @@ int BURST_MUTATE = 0;  //EVOLVE_PREY
 int BURST_MUTATE_PREY = 0;  //EVOLVE_PREY
 
 int IS_COMBINER_NW = 0;
-// QUE What is combine?
 int COMBINE = 1;
 
 //int total_prey_networks_per_team = 2; //number of prey ******PADMINI //ADITYA
@@ -240,7 +241,7 @@ struct minimize_fit: public binary_function<neuron*, neuron*, bool>
 };
 
 vector<vector<vector<Network*> > > Esp::hall_of_fame_pred;  //Static members need to be defined outside the class (besides their declaration inside the class)
-vector<vector<vector<Network*> > > Esp::hall_of_fame_prey;  //Static members need to be defined outside the class (besides their declaration inside the class)
+//vector<vector<vector<Network*> > > Esp::hall_of_fame_prey;  //Static members need to be defined outside the class (besides their declaration inside the class)
 
 //*************************Parameters Read from the Config file**********************
 int start_generation;  // Specify the generation number from which we start the esp (if greater than one, then should have a corresponding .bin file to load from)
@@ -257,6 +258,8 @@ vector<double> prey_move_probability;  // Prey speed relative to the predator sp
 bool prey_communication;  // 1 - Direct communication in prey teams, 0 - No direct communication in prey teams
 bool prey_messaging;  //  1 - Broadcast Messaging in prey teams, 0 - No Broadcast Messaging in prey teams
 //*************************END Parameters Read from the Config file**********************
+
+string file_prefix;
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -283,13 +286,14 @@ neuron::neuron()
                 weight.push_back(0.0);  //fill weight vector with zeros
         }
     } else {
-        if (IS_COMBINER_NW == 1) {
-            for (int i = 0; i < GENE_SIZE_PREY_COMBINER_NW; ++i)
-                weight.push_back(0.0);  //fill weight vector with zeros
-        } else {
-            for (int i = 0; i < GENE_SIZE_PREY_NW; ++i)
-                weight.push_back(0.0);  //fill weight vector with zeros
-        }
+        LOG(FATAL) << "NOt suupposed to be here";
+//        if (IS_COMBINER_NW == 1) {
+//            for (int i = 0; i < GENE_SIZE_PREY_COMBINER_NW; ++i)
+//                weight.push_back(0.0);  //fill weight vector with zeros
+//        } else {
+//            for (int i = 0; i < GENE_SIZE_PREY_NW; ++i)
+//                weight.push_back(0.0);  //fill weight vector with zeros
+//        }
     }
 }
 
@@ -308,8 +312,9 @@ void neuron::perturb(const neuron &n, double(*randFn)(double), double coeff)
         for (int i = 0; i < GENE_SIZE_PRED_NW; ++i)
             weight[i] = n.weight[i] + (randFn)(coeff);
     } else {
-        for (int i = 0; i < GENE_SIZE_PREY_NW; ++i)
-            weight[i] = n.weight[i] + (randFn)(coeff);
+        LOG(FATAL) << "NOt suupposed to be here";
+//        for (int i = 0; i < GENE_SIZE_PREY_NW; ++i)
+//            weight[i] = n.weight[i] + (randFn)(coeff);
     }
 }
 
@@ -327,8 +332,9 @@ neuron* neuron::perturb()
         for (int i = 0; i < GENE_SIZE_PRED_NW; ++i)
             n->weight[i] = weight[i] + rndCauchy(0.3);
     } else {
-        for (int i = 0; i < GENE_SIZE_PREY_NW; ++i)
-            n->weight[i] = weight[i] + rndCauchy(0.3);
+        LOG(FATAL) << "NOt suupposed to be here";
+//        for (int i = 0; i < GENE_SIZE_PREY_NW; ++i)
+//            n->weight[i] = weight[i] + rndCauchy(0.3);
     }
 
     return n;
@@ -356,13 +362,14 @@ void neuron::create()
                 weight[i] = (drand48() * 12.0) - 6.0;
         }
     } else {
-        if (IS_COMBINER_NW == 1) {
-            for (i = 0; i < GENE_SIZE_PREY_COMBINER_NW; ++i)
-                weight[i] = (drand48() * 12.0) - 6.0;
-        } else {
-            for (i = 0; i < GENE_SIZE_PREY_NW; ++i)
-                weight[i] = (drand48() * 12.0) - 6.0;
-        }
+        LOG(FATAL) << "Shouldn't be here";
+//        if (IS_COMBINER_NW == 1) {
+//            for (i = 0; i < GENE_SIZE_PREY_COMBINER_NW; ++i)
+//                weight[i] = (drand48() * 12.0) - 6.0;
+//        } else {
+//            for (i = 0; i < GENE_SIZE_PREY_NW; ++i)
+//                weight[i] = (drand48() * 12.0) - 6.0;
+//        }
     }
 
 }
@@ -375,10 +382,11 @@ void neuron::create()
 
 // subPop constructor
 subPop::subPop(int size) :
-        pop(size)  // What is happening here ??
+        pop(size), pop2(0)  // What is happening here ??
 {
     evolvable = true;
     numNeurons = size;
+    numNeurons2 = 0;
     numBreed = (int) numNeurons / 4;
     // We leave subPop::create to actually create the neurons.
     // This way neurons are not created when we initially
@@ -460,10 +468,12 @@ void subPop::average()
 // sort the neurons in each subpop using quicksort.
 void subPop::qsortNeurons()
 {
+    //DLOG(INFO) << "Entering qsortNeurons()";
     if (MIN)
         sort(pop.begin(), pop.end(), minimize_fit());
     else
         sort(pop.begin(), pop.end(), maximize_fit());
+    //DLOG(INFO) << "Done with qsortNeurons()";
 }
 
 //----------------------------------------------------------------------
@@ -481,11 +491,23 @@ void subPop::recombine()
 // recombine neurons with members of their subpop using crossover. EVOLVE_PREY
 void subPop::recombine_hall_of_fame(int pred_or_prey_team, int pred_or_prey_number, int pop_number)
 {
+    //DLOG(INFO) << "Entering recombine_hall_of_fame";
+
     int i = 0;
     for (; i < numBreed - 5; ++i) {
         crossover(pop[i]->weight, pop[findMate(i)]->weight, pop[numNeurons - (1 + i * 2)]->weight,
                 pop[numNeurons - (2 + i * 2)]->weight);
     }
+
+    //DLOG(INFO) << "recombine_hall_of_fame check1";
+//    DLOG(INFO) << "Size of Esp::hall_of_fame_pred[drand48() * (Esp::hall_of_fame_pred.size() - 1)] is " << Esp::hall_of_fame_pred[drand48() * (Esp::hall_of_fame_pred.size() - 1)].size();
+//    DLOG(INFO) << "Size of Esp::hall_of_fame_pred[drand48() * (Esp::hall_of_fame_pred.size() - 1)][pred_or_prey_team] is " << Esp::hall_of_fame_pred[drand48() * (Esp::hall_of_fame_pred.size() - 1)][pred_or_prey_team].size();
+//    DLOG(INFO)
+//            << "Esp::hall_of_fame_pred[drand48() * (Esp::hall_of_fame_pred.size() - 1)][pred_or_prey_team][pred_or_prey_number]->pop[pop_number]->weight size "
+//            << Esp::hall_of_fame_pred[drand48() * (Esp::hall_of_fame_pred.size() - 1)][pred_or_prey_team][pred_or_prey_number]->pop[pop_number]->weight.size();
+//    DLOG(INFO)
+//            << "Esp::hall_of_fame_pred[drand48() * (Esp::hall_of_fame_pred.size() - 1)][pred_or_prey_team][pred_or_prey_number]->pop[pop_number]->weight[0] is "
+//            << Esp::hall_of_fame_pred[drand48() * (Esp::hall_of_fame_pred.size() - 1)][pred_or_prey_team][pred_or_prey_number]->pop[pop_number]->weight[0];
 
     if (!IS_PREY) {
         for (; i < numBreed; ++i) {
@@ -494,14 +516,17 @@ void subPop::recombine_hall_of_fame(int pred_or_prey_team, int pred_or_prey_numb
                     Esp::hall_of_fame_pred[drand48() * (Esp::hall_of_fame_pred.size() - 1)][pred_or_prey_team][pred_or_prey_number]->pop[pop_number]->weight,
                     pop[numNeurons - (1 + i * 2)]->weight, pop[numNeurons - (2 + i * 2)]->weight);
         }
+        //DLOG(INFO) << "recombine_hall_of_fame check2";
     } else {
-        for (; i < numBreed; ++i) {
-            crossover(
-                    pop[i]->weight,
-                    Esp::hall_of_fame_prey[drand48() * (Esp::hall_of_fame_prey.size() - 1)][pred_or_prey_team][pred_or_prey_number]->pop[pop_number]->weight,
-                    pop[numNeurons - (1 + i * 2)]->weight, pop[numNeurons - (2 + i * 2)]->weight);
-        }
+        LOG(FATAL) << "Not supposed to be here!";
+//        for (; i < numBreed; ++i) {
+//            crossover(
+//                    pop[i]->weight,
+//                    Esp::hall_of_fame_prey[drand48() * (Esp::hall_of_fame_prey.size() - 1)][pred_or_prey_team][pred_or_prey_number]->pop[pop_number]->weight,
+//                    pop[numNeurons - (1 + i * 2)]->weight, pop[numNeurons - (2 + i * 2)]->weight);
+//        }
     }
+    //DLOG(INFO) << "Done with recombine_hall_of_fame";
 }
 
 //----------------------------------------------------------------------
@@ -519,15 +544,16 @@ void subPop::mutate()
                     pop[i]->weight[lrand48() % GENE_SIZE_PRED_NW] += rndCauchy(0.3);
         }
     } else {
-        if (IS_COMBINER_NW == 1) {
-            for (int i = numBreed * 2; i < numNeurons; ++i)
-                if (drand48() < MUT_RATE_PREY)
-                    pop[i]->weight[lrand48() % GENE_SIZE_PREY_COMBINER_NW] += rndCauchy(0.3);
-        } else {
-            for (int i = numBreed * 2; i < numNeurons; ++i)
-                if (drand48() < MUT_RATE_PREY)
-                    pop[i]->weight[lrand48() % GENE_SIZE_PREY_NW] += rndCauchy(0.3);
-        }
+        LOG(FATAL) << "NOt suupposed to be here";
+//        if (IS_COMBINER_NW == 1) {
+//            for (int i = numBreed * 2; i < numNeurons; ++i)
+//                if (drand48() < MUT_RATE_PREY)
+//                    pop[i]->weight[lrand48() % GENE_SIZE_PREY_COMBINER_NW] += rndCauchy(0.3);
+//        } else {
+//            for (int i = numBreed * 2; i < numNeurons; ++i)
+//                if (drand48() < MUT_RATE_PREY)
+//                    pop[i]->weight[lrand48() % GENE_SIZE_PREY_NW] += rndCauchy(0.3);
+//        }
     }
 }
 
@@ -546,15 +572,16 @@ void subPop::burstMutate()
                     pop[i]->weight[lrand48() % GENE_SIZE_PRED_NW] += rndCauchy(0.3);
         }
     } else {
-        if (IS_COMBINER_NW == 1) {
-            for (int i = 0; i < numNeurons; ++i)
-                if (drand48() < MUT_RATE_PREY)
-                    pop[i]->weight[lrand48() % GENE_SIZE_PREY_COMBINER_NW] += rndCauchy(0.3);
-        } else {
-            for (int i = 0; i < numNeurons; ++i)
-                if (drand48() < MUT_RATE_PREY)
-                    pop[i]->weight[lrand48() % GENE_SIZE_PREY_NW] += rndCauchy(0.3);
-        }
+        LOG(FATAL) << "NOt suupposed to be here";
+//        if (IS_COMBINER_NW == 1) {
+//            for (int i = 0; i < numNeurons; ++i)
+//                if (drand48() < MUT_RATE_PREY)
+//                    pop[i]->weight[lrand48() % GENE_SIZE_PREY_COMBINER_NW] += rndCauchy(0.3);
+//        } else {
+//            for (int i = 0; i < numNeurons; ++i)
+//                if (drand48() < MUT_RATE_PREY)
+//                    pop[i]->weight[lrand48() % GENE_SIZE_PREY_NW] += rndCauchy(0.3);
+//        }
     }
 }
 
@@ -576,6 +603,10 @@ int subPop::findMate(int num)
 void subPop::crossover(const vector<double> &parent1, const vector<double> &parent2,
         vector<double> &child1, vector<double> &child2)
 {
+//    DLOG(INFO) << "Entering crossover";
+    //DLOG(INFO) << "GENE_SIZE_PRED_COMBINER_NW is " << GENE_SIZE_PRED_COMBINER_NW;
+    //DLOG(INFO) << "GENE_SIZE_PRED_COMBINER_NW is " << GENE_SIZE_PRED_COMBINER_NW;
+//    DLOG(INFO) << "Sizes of parent1, parent2, child1, child2 are " << parent1.size() << ", " << parent2.size() << ", " << child1.size() << ", " << child2.size();
     int cross1;
     //find crossover point
     if (!IS_PREY) {
@@ -585,15 +616,19 @@ void subPop::crossover(const vector<double> &parent1, const vector<double> &pare
             cross1 = lrand48() % GENE_SIZE_PRED_NW;
         }
     } else {
-        if (IS_COMBINER_NW == 1) {
-            cross1 = lrand48() % GENE_SIZE_PREY_COMBINER_NW;
-        } else {
-            cross1 = lrand48() % GENE_SIZE_PREY_NW;
-        }
+        LOG(FATAL) << "Not supposed to be here!";
+//        if (IS_COMBINER_NW == 1) {
+//            cross1 = lrand48() % GENE_SIZE_PREY_COMBINER_NW;
+//        } else {
+//            cross1 = lrand48() % GENE_SIZE_PREY_NW;
+//        }
     }
+//    DLOG(INFO) << "crossover check 1";
     child1 = parent2;
     child2 = parent1;
     swap_ranges(child1.begin(), child1.begin() + cross1, child2.begin());
+//    DLOG(INFO) << "crossover check 2";
+//    DLOG(INFO) << "Leaving crossover";
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -604,45 +639,45 @@ void subPop::crossover(const vector<double> &parent1, const vector<double> &pare
 
 // Esp constructor -- constructs a new ESP
 Esp::Esp(int num_of_predators, int num_of_prey, int num_teams_predator, int num_teams_prey,
-        int num_teams_hunters, int num_of_hunters, int nPops /* num hidden neurons */, int nSize, Environment &e, int netTp =
-                FF) :
+        int num_teams_hunters, int num_of_hunters, int nPops /* num hidden neurons */, int nSize,
+        Environment &e, int netTp = FF) :
         Envt(e)
 {
-    google::InitGoogleLogging("");
+    hall_of_fame_pred = vector<vector<vector<Network*> > >();
+
+    this->sub_hall_of_fame_pred = vector<vector<vector<vector<Network*> > > >();
 
     generation = 0;  // start at generation 0
 
-    // QUE Shouldn't this be equal to the number of predators?
-    total_predator_networks_per_team =
-            num_of_predators
-                    * (num_of_prey * num_teams_prey /* total no. of prey */
-                            + num_of_hunters * num_teams_hunters /* total num of hunters */
-                            + num_of_predators * (num_teams_predator - 1) /* total number of predators in the other teams */
-                      )
-                    + COMBINE * num_of_predators;  //Total Predator Networks in a team
+    total_predator_networks_per_team = num_of_predators * (num_of_prey * num_teams_prey /* total no. of prey */
+    + num_of_hunters * num_teams_hunters /* total num of hunters */
+    + num_of_predators * (num_teams_predator - 1) /* total number of predators in the other teams */
+    ) + COMBINE * num_of_predators;  //Total Predator Networks in a team
 
-    total_prey_networks_per_team = num_of_prey * (num_of_predators * num_teams_predator)
-            + COMBINE * num_of_prey;  //Total Prey Networks in a team
+    LOG(INFO) << "total_predator_networks_per_team is " << total_predator_networks_per_team;
+
+//    total_prey_networks_per_team = num_of_prey * (num_of_predators * num_teams_predator)
+//            + COMBINE * num_of_prey;  //Total Prey Networks in a team
 
     if (pred_communication == true) {
         total_predator_networks_per_team = total_predator_networks_per_team
                 + num_of_predators * (num_of_predators - 1);  //Extra NNs for predator direct communication
     }
 
-    if (prey_communication == true) {
-        total_prey_networks_per_team = total_prey_networks_per_team
-                + num_of_prey * (num_of_prey - 1);  //Extra NNs for prey direct communication
-    }
+//    if (prey_communication == true) {
+//        total_prey_networks_per_team = total_prey_networks_per_team
+//                + num_of_prey * (num_of_prey - 1);  //Extra NNs for prey direct communication
+//    }
 
     if (pred_messaging == true) {
         total_predator_networks_per_team = total_predator_networks_per_team
                 + num_of_predators * (num_of_predators - 1);  //Extra NNs for predator messaging
     }
 
-    if (prey_messaging == true) {
-        total_prey_networks_per_team = total_prey_networks_per_team
-                + num_of_prey * (num_of_prey - 1);  //Extra NNs for prey direct communication
-    }
+//    if (prey_messaging == true) {
+//        total_prey_networks_per_team = total_prey_networks_per_team
+//                + num_of_prey * (num_of_prey - 1);  //Extra NNs for prey direct communication
+//    }
 
     for (int i = 0; i < total_predator_networks_per_team; i++) {
         num_hidden_neurons.push_back(nPops);  // set the number of subpops
@@ -652,17 +687,17 @@ Esp::Esp(int num_of_predators, int num_of_prey, int num_teams_predator, int num_
     TOTAL_EVALUATIONS = numTrials * EVALTRIALS;  // 6000 for now
     netType = netTp;  // set the network type (FF,SRN,2ndOrder)
     NUM_INPUTS_PRED_COMBINER = Envt.inputSize_pred_combiner;  // network in/out dimensions
-    NUM_INPUTS_PREY_COMBINER = Envt.inputSize_prey_combiner;  // network in/out dimensions
+//    NUM_INPUTS_PREY_COMBINER = Envt.inputSize_prey_combiner;  // network in/out dimensions
     NUM_OUTPUT_PRED_COMBINER = Envt.outputSize_pred_combiner;
-    NUM_OUTPUT_PREY_COMBINER = Envt.outputSize_prey_combiner;
+//    NUM_OUTPUT_PREY_COMBINER = Envt.outputSize_prey_combiner;
     NUM_INPUTS = Envt.inputSize;  // network in/out dimensions
-    NUM_INPUTS_PREY = Envt.inputSize_prey;  // network in/out dimensions //EVOLVE_PREY
+//    NUM_INPUTS_PREY = Envt.inputSize_prey;  // network in/out dimensions //EVOLVE_PREY
     NUM_OUTPUTS = Envt.outputSize;  //    specified in the Environment
-    NUM_OUTPUTS_PREY = Envt.outputSize_prey;  //    specified in the Environment
+//    NUM_OUTPUTS_PREY = Envt.outputSize_prey;  //    specified in the Environment
     setupNetDimensions(num_of_predators, num_of_prey);  // calculate the input layer size and gene size
 
     vector<Network*> temp_overall_best_teams;
-    vector<Network*> temp_overall_best_teams_prey;
+//    vector<Network*> temp_overall_best_teams_prey;
 
     IS_PREY = false;
     for (int j = 0; j < num_teams_predator; j++) {
@@ -683,22 +718,22 @@ Esp::Esp(int num_of_predators, int num_of_prey, int num_teams_predator, int num_
     }
 
     IS_PREY = true;
-    for (int j = 0; j < num_teams_prey; j++) {
-        IS_COMBINER_NW = 0;
-        for (int i = 0; i < total_prey_networks_per_team - COMBINE * num_of_prey; i++) {
-            temp_overall_best_teams_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));  // generate new net
-            temp_overall_best_teams_prey[i]->create();  // create net
-        }
-        IS_COMBINER_NW = 1;
-        for (int i = total_prey_networks_per_team - COMBINE * num_of_prey;
-                i < total_prey_networks_per_team; i++) {
-            temp_overall_best_teams_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));  // generate new net
-            temp_overall_best_teams_prey[i]->create();  // create net
-        }
-        overall_best_teams_prey_sum_individual_fitness.push_back(0.0);
-        overall_best_teams_prey.push_back(temp_overall_best_teams_prey);
-        temp_overall_best_teams_prey.clear();
-    }
+//    for (int j = 0; j < num_teams_prey; j++) {
+//        IS_COMBINER_NW = 0;
+//        for (int i = 0; i < total_prey_networks_per_team - COMBINE * num_of_prey; i++) {
+//            temp_overall_best_teams_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));  // generate new net
+//            temp_overall_best_teams_prey[i]->create();  // create net
+//        }
+//        IS_COMBINER_NW = 1;
+//        for (int i = total_prey_networks_per_team - COMBINE * num_of_prey;
+//                i < total_prey_networks_per_team; i++) {
+//            temp_overall_best_teams_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));  // generate new net
+//            temp_overall_best_teams_prey[i]->create();  // create net
+//        }
+//        overall_best_teams_prey_sum_individual_fitness.push_back(0.0);
+//        overall_best_teams_prey.push_back(temp_overall_best_teams_prey);
+//        temp_overall_best_teams_prey.clear();
+//    }
 
     vector<subPop*>* temp;
     vector<vector<subPop*> > team_hidden_neuron_populations;  // num_predators x num_teams
@@ -720,84 +755,79 @@ Esp::Esp(int num_of_predators, int num_of_prey, int num_teams_predator, int num_
 
     IS_PREY = true;
     // construct total_predator_networks_per_team number of subpop vectors
-    for (int k = 0; k < num_teams_prey; k++) {
-        team_hidden_neuron_populations.clear();
-        for (int i = 0; i < total_prey_networks_per_team; i++) {
-            temp = new vector<subPop*>;
-            for (int j = 0; j < num_hidden_neurons[0]; j++) {
-                temp->push_back(new subPop(nSize));  //Creating a (pointer to the) population of 100 neurons for each hidden neuron
-            }
-            team_hidden_neuron_populations.push_back(*temp);  //Should we clear/delete temp or not?. What is this line doing?
-        }
-        hidden_neuron_populations_prey.push_back(team_hidden_neuron_populations);
-    }
+//    for (int k = 0; k < num_teams_prey; k++) {
+//        team_hidden_neuron_populations.clear();
+//        for (int i = 0; i < total_prey_networks_per_team; i++) {
+//            temp = new vector<subPop*>;
+//            for (int j = 0; j < num_hidden_neurons[0]; j++) {
+//                temp->push_back(new subPop(nSize));  //Creating a (pointer to the) population of 100 neurons for each hidden neuron
+//            }
+//            team_hidden_neuron_populations.push_back(*temp);  //Should we clear/delete temp or not?. What is this line doing?
+//        }
+//        hidden_neuron_populations_prey.push_back(team_hidden_neuron_populations);
+//    }
 
     create(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey);  // create the neurons.
-    cout << " ESP Constructor Done " << endl;
+    LOG(INFO) << " ESP Constructor Done " << endl;
 
 }
 
-// ----------------------------------------------------------------------
-//New Function for Loading weights from file
-Esp::Esp(char* fname, int num_of_predators, int num_of_prey, int num_teams_predator,
-        int num_teams_prey, int num_teams_hunters, int num_of_hunters, int nPops, int nSize,
-        Environment &e, int netTp = FF) :
+// Esp constructor -- constructs a new ESP for a combination of subtasks
+Esp::Esp(vector<vector<vector<vector<Network*> > > > sub_hall_of_fame_pred, int num_of_predators,
+        int num_of_prey, int num_teams_predator, int num_teams_prey, int num_teams_hunters,
+        int num_of_hunters, int nPops /* num hidden neurons */, int nSize, Environment &e,
+        int netTp = FF) :
         Envt(e)
-
 {
+    hall_of_fame_pred = vector<vector<vector<Network*> > >();
+    this->sub_hall_of_fame_pred = sub_hall_of_fame_pred;
 
-    vector<subPop*>* tempVec;
-    double tempDouble;
-    FILE *fptr;
+    generation = 0;  // start at generation 0
 
-    if ((fptr = fopen(fname, "r")) == NULL) {
-        cout << endl << "Error - cannot open " << fname << endl;
-        exit(1);
-    }
+    // QUE Shouldn't this be equal to the number of predators?
+    total_predator_networks_per_team = num_of_predators * (num_of_prey * num_teams_prey /* total no. of prey */
+    + num_of_hunters * num_teams_hunters /* total num of hunters */
+    + num_of_predators * (num_teams_predator - 1) /* total number of predators in the other teams */
+    ) + COMBINE * num_of_predators;  //Total Predator Networks in a team
 
-    fread(&generation, 4, 1, fptr);  // generation
-
-    total_predator_networks_per_team = num_of_predators
-            * (num_of_prey * num_teams_prey + num_teams_hunters * num_of_hunters
-                    + num_of_predators * (num_teams_predator - 1)) + COMBINE * num_of_predators;  //Total Predator Networks in a team
-
-    total_prey_networks_per_team = num_of_prey * (num_of_predators * num_teams_predator)
-            + COMBINE * num_of_prey;  //Total Prey Networks in a team
+//    total_prey_networks_per_team = num_of_prey * (num_of_predators * num_teams_predator)
+//            + COMBINE * num_of_prey;  //Total Prey Networks in a team
 
     if (pred_communication == true) {
         total_predator_networks_per_team = total_predator_networks_per_team
                 + num_of_predators * (num_of_predators - 1);  //Extra NNs for predator direct communication
     }
 
-    if (prey_communication == true) {
-        total_prey_networks_per_team = total_prey_networks_per_team
-                + num_of_prey * (num_of_prey - 1);  //Extra NNs for prey direct communication
-    }
+//    if (prey_communication == true) {
+//        total_prey_networks_per_team = total_prey_networks_per_team
+//                + num_of_prey * (num_of_prey - 1);  //Extra NNs for prey direct communication
+//    }
 
     if (pred_messaging == true) {
         total_predator_networks_per_team = total_predator_networks_per_team
                 + num_of_predators * (num_of_predators - 1);  //Extra NNs for predator messaging
     }
 
-    if (prey_messaging == true) {
-        total_prey_networks_per_team = total_prey_networks_per_team
-                + num_of_prey * (num_of_prey - 1);  //Extra NNs for prey direct communication
-    }
+//    if (prey_messaging == true) {
+//        total_prey_networks_per_team = total_prey_networks_per_team
+//                + num_of_prey * (num_of_prey - 1);  //Extra NNs for prey direct communication
+//    }
 
-    for (int i = 0; i < total_predator_networks_per_team; i++)
+    for (int i = 0; i < total_predator_networks_per_team; i++) {
         num_hidden_neurons.push_back(nPops);  // set the number of subpops
+    }
 
     numTrials = nSize * 10;  // # of trials ~10/neuron
     TOTAL_EVALUATIONS = numTrials * EVALTRIALS;  // 6000 for now
     netType = netTp;  // set the network type (FF,SRN,2ndOrder)
     NUM_INPUTS_PRED_COMBINER = Envt.inputSize_pred_combiner;  // network in/out dimensions
-    NUM_INPUTS_PREY_COMBINER = Envt.inputSize_prey_combiner;  // network in/out dimensions
+//    NUM_INPUTS_PREY_COMBINER = Envt.inputSize_prey_combiner;  // network in/out dimensions
     NUM_OUTPUT_PRED_COMBINER = Envt.outputSize_pred_combiner;
-    NUM_OUTPUT_PREY_COMBINER = Envt.outputSize_prey_combiner;
+//    NUM_OUTPUT_PREY_COMBINER = Envt.outputSize_prey_combiner;
     NUM_INPUTS = Envt.inputSize;  // network in/out dimensions
-    NUM_INPUTS_PREY = Envt.inputSize_prey;  // network in/out dimensions //EVOLVE_PREY
+//    NUM_INPUTS_PREY = Envt.inputSize_prey;  // network in/out dimensions //EVOLVE_PREY
     NUM_OUTPUTS = Envt.outputSize;  //    specified in the Environment
-    NUM_OUTPUTS_PREY = Envt.outputSize_prey;  //    specified in the Environment
+//    NUM_OUTPUTS_PREY = Envt.outputSize_prey;  //    specified in the Environment
     setupNetDimensions(num_of_predators, num_of_prey);  // calculate the input layer size and gene size
 
     vector<Network*> temp_overall_best_teams;
@@ -822,22 +852,165 @@ Esp::Esp(char* fname, int num_of_predators, int num_of_prey, int num_teams_preda
     }
 
     IS_PREY = true;
-    for (int j = 0; j < num_teams_prey; j++) {
+//    for (int j = 0; j < num_teams_prey; j++) {
+//        IS_COMBINER_NW = 0;
+//        for (int i = 0; i < total_prey_networks_per_team - COMBINE * num_of_prey; i++) {
+//            temp_overall_best_teams_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));  // generate new net
+//            temp_overall_best_teams_prey[i]->create();  // create net
+//        }
+//        IS_COMBINER_NW = 1;
+//        for (int i = total_prey_networks_per_team - COMBINE * num_of_prey;
+//                i < total_prey_networks_per_team; i++) {
+//            temp_overall_best_teams_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));  // generate new net
+//            temp_overall_best_teams_prey[i]->create();  // create net
+//        }
+//        overall_best_teams_prey_sum_individual_fitness.push_back(0.0);
+//        overall_best_teams_prey.push_back(temp_overall_best_teams_prey);
+//        temp_overall_best_teams_prey.clear();
+//    }
+
+    vector<subPop*>* temp;
+    vector<vector<subPop*> > team_hidden_neuron_populations;  // num_predators x num_teams
+
+    IS_PREY = false;
+    // construct total_predator_networks_per_team number of subpop vectors\
+    // for every team, for each network, for
+    for (int k = 0; k < num_teams_predator; k++) {
+        team_hidden_neuron_populations.clear();
+        for (int i = 0; i < total_predator_networks_per_team; i++) {
+            temp = new vector<subPop*>;
+            for (int j = 0; j < num_hidden_neurons[i]; j++) {
+                temp->push_back(new subPop(nSize));  //nSize = 100
+            }
+            team_hidden_neuron_populations.push_back(*temp);
+        }
+        hidden_neuron_populations.push_back(team_hidden_neuron_populations);
+    }
+
+    IS_PREY = true;
+    // construct total_predator_networks_per_team number of subpop vectors
+//    for (int k = 0; k < num_teams_prey; k++) {
+//        team_hidden_neuron_populations.clear();
+//        for (int i = 0; i < total_prey_networks_per_team; i++) {
+//            temp = new vector<subPop*>;
+//            for (int j = 0; j < num_hidden_neurons[0]; j++) {
+//                temp->push_back(new subPop(nSize));  //Creating a (pointer to the) population of 100 neurons for each hidden neuron
+//            }
+//            team_hidden_neuron_populations.push_back(*temp);  //Should we clear/delete temp or not?. What is this line doing?
+//        }
+//        hidden_neuron_populations_prey.push_back(team_hidden_neuron_populations);
+//    }
+
+    create(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey);  // create the neurons.
+    LOG(INFO) << " ESP Constructor Done " << endl;
+
+}
+
+// ----------------------------------------------------------------------
+//New Function for Loading weights from file
+Esp::Esp(char* fname, int num_of_predators, int num_of_prey, int num_teams_predator,
+        int num_teams_prey, int num_teams_hunters, int num_of_hunters, int nPops, int nSize,
+        Environment &e, int netTp = FF) :
+        Envt(e)
+
+{
+
+    hall_of_fame_pred = vector<vector<vector<Network*> > >();
+
+    this->sub_hall_of_fame_pred = vector<vector<vector<vector<Network*> > > >();
+
+    vector<subPop*>* tempVec;
+    double tempDouble;
+    FILE *fptr;
+
+    if ((fptr = fopen(fname, "r")) == NULL) {
+        LOG(FATAL) << endl << "Error - cannot open " << fname << endl;
+        //exit(1);
+    }
+
+    fread(&generation, 4, 1, fptr);  // generation
+
+    total_predator_networks_per_team = num_of_predators
+            * (num_of_prey * num_teams_prey + num_teams_hunters * num_of_hunters
+                    + num_of_predators * (num_teams_predator - 1)) + COMBINE * num_of_predators;  //Total Predator Networks in a team
+
+//    total_prey_networks_per_team = num_of_prey * (num_of_predators * num_teams_predator)
+//            + COMBINE * num_of_prey;  //Total Prey Networks in a team
+
+    if (pred_communication == true) {
+        total_predator_networks_per_team = total_predator_networks_per_team
+                + num_of_predators * (num_of_predators - 1);  //Extra NNs for predator direct communication
+    }
+
+//    if (prey_communication == true) {
+//        total_prey_networks_per_team = total_prey_networks_per_team
+//                + num_of_prey * (num_of_prey - 1);  //Extra NNs for prey direct communication
+//    }
+
+    if (pred_messaging == true) {
+        total_predator_networks_per_team = total_predator_networks_per_team
+                + num_of_predators * (num_of_predators - 1);  //Extra NNs for predator messaging
+    }
+
+//    if (prey_messaging == true) {
+//        total_prey_networks_per_team = total_prey_networks_per_team
+//                + num_of_prey * (num_of_prey - 1);  //Extra NNs for prey direct communication
+//    }
+
+    for (int i = 0; i < total_predator_networks_per_team; i++)
+        num_hidden_neurons.push_back(nPops);  // set the number of subpops
+
+    numTrials = nSize * 10;  // # of trials ~10/neuron
+    TOTAL_EVALUATIONS = numTrials * EVALTRIALS;  // 6000 for now
+    netType = netTp;  // set the network type (FF,SRN,2ndOrder)
+    NUM_INPUTS_PRED_COMBINER = Envt.inputSize_pred_combiner;  // network in/out dimensions
+//    NUM_INPUTS_PREY_COMBINER = Envt.inputSize_prey_combiner;  // network in/out dimensions
+    NUM_OUTPUT_PRED_COMBINER = Envt.outputSize_pred_combiner;
+//    NUM_OUTPUT_PREY_COMBINER = Envt.outputSize_prey_combiner;
+    NUM_INPUTS = Envt.inputSize;  // network in/out dimensions
+//    NUM_INPUTS_PREY = Envt.inputSize_prey;  // network in/out dimensions //EVOLVE_PREY
+    NUM_OUTPUTS = Envt.outputSize;  //    specified in the Environment
+//    NUM_OUTPUTS_PREY = Envt.outputSize_prey;  //    specified in the Environment
+    setupNetDimensions(num_of_predators, num_of_prey);  // calculate the input layer size and gene size
+
+    vector<Network*> temp_overall_best_teams;
+    vector<Network*> temp_overall_best_teams_prey;
+
+    IS_PREY = false;
+    for (int j = 0; j < num_teams_predator; j++) {
         IS_COMBINER_NW = 0;
-        for (int i = 0; i < total_prey_networks_per_team - COMBINE * num_of_prey; i++) {
-            temp_overall_best_teams_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));  // generate new net
-            temp_overall_best_teams_prey[i]->create();  // create net
+        for (int i = 0; i < total_predator_networks_per_team - COMBINE * num_of_predators; i++) {
+            temp_overall_best_teams.push_back(generateNetwork(netType, num_hidden_neurons[i]));  // generate new net
+            temp_overall_best_teams[i]->create();  // create net
         }
         IS_COMBINER_NW = 1;
-        for (int i = total_prey_networks_per_team - COMBINE * num_of_prey;
-                i < total_prey_networks_per_team; i++) {
-            temp_overall_best_teams_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));  // generate new net
-            temp_overall_best_teams_prey[i]->create();  // create net
+        for (int i = total_predator_networks_per_team - COMBINE * num_of_predators;
+                i < total_predator_networks_per_team; i++) {
+            temp_overall_best_teams.push_back(generateNetwork(netType, num_hidden_neurons[i]));  // generate new net
+            temp_overall_best_teams[i]->create();  // create net
         }
-        overall_best_teams_prey_sum_individual_fitness.push_back(0.0);
-        overall_best_teams_prey.push_back(temp_overall_best_teams_prey);
-        temp_overall_best_teams_prey.clear();
+        overall_best_teams_sum_individual_fitness.push_back(0.0);
+        overall_best_teams.push_back(temp_overall_best_teams);
+        temp_overall_best_teams.clear();
     }
+
+    IS_PREY = true;
+//    for (int j = 0; j < num_teams_prey; j++) {
+//        IS_COMBINER_NW = 0;
+//        for (int i = 0; i < total_prey_networks_per_team - COMBINE * num_of_prey; i++) {
+//            temp_overall_best_teams_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));  // generate new net
+//            temp_overall_best_teams_prey[i]->create();  // create net
+//        }
+//        IS_COMBINER_NW = 1;
+//        for (int i = total_prey_networks_per_team - COMBINE * num_of_prey;
+//                i < total_prey_networks_per_team; i++) {
+//            temp_overall_best_teams_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));  // generate new net
+//            temp_overall_best_teams_prey[i]->create();  // create net
+//        }
+//        overall_best_teams_prey_sum_individual_fitness.push_back(0.0);
+//        overall_best_teams_prey.push_back(temp_overall_best_teams_prey);
+//        temp_overall_best_teams_prey.clear();
+//    }
 
     vector<subPop*>* temp;
     vector<vector<subPop*> > total_hidden_neuron_populations_per_team;
@@ -858,18 +1031,18 @@ Esp::Esp(char* fname, int num_of_predators, int num_of_prey, int num_teams_preda
 
     IS_PREY = true;
     // construct total_predator_networks_per_team number of subpop vectors
-    for (int k = 0; k < num_teams_prey; k++) {
-        total_hidden_neuron_populations_per_team.clear();
-        for (int i = 0; i < total_prey_networks_per_team; i++) {
-            temp = new vector<subPop*>;
-            for (int j = 0; j < num_hidden_neurons[0]; j++) {
-                temp->push_back(new subPop(nSize));  //Creating a (pointer to the) population of 100 neurons for each hidden neuron
-
-            }
-            total_hidden_neuron_populations_per_team.push_back(*temp);  //Should we clear/delete temp or not?. What is this line doing?
-        }
-        hidden_neuron_populations_prey.push_back(total_hidden_neuron_populations_per_team);
-    }
+//    for (int k = 0; k < num_teams_prey; k++) {
+//        total_hidden_neuron_populations_per_team.clear();
+//        for (int i = 0; i < total_prey_networks_per_team; i++) {
+//            temp = new vector<subPop*>;
+//            for (int j = 0; j < num_hidden_neurons[0]; j++) {
+//                temp->push_back(new subPop(nSize));  //Creating a (pointer to the) population of 100 neurons for each hidden neuron
+//
+//            }
+//            total_hidden_neuron_populations_per_team.push_back(*temp);  //Should we clear/delete temp or not?. What is this line doing?
+//        }
+//        hidden_neuron_populations_prey.push_back(total_hidden_neuron_populations_per_team);
+//    }
 
     create(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey);  // create the neurons.
 
@@ -882,14 +1055,14 @@ Esp::Esp(char* fname, int num_of_predators, int num_of_prey, int num_teams_preda
                         fread(&tempDouble, sizeof(double), 1, fptr);
                         hidden_neuron_populations[p][i][j]->pop[k]->weight[m] = tempDouble;  // weights
                     }
-    for (int p = 0; p < num_teams_prey; p++)
-        for (int i = 0; i < total_prey_networks_per_team - (COMBINE * num_of_prey); i++)
-            for (int j = 0; j < num_hidden_neurons[0]; j++)
-                for (int k = 0; k < hidden_neuron_populations_prey[p][i][j]->numNeurons; k++)
-                    for (int m = 0; m < GENE_SIZE_PREY_NW; m++) {
-                        fread(&tempDouble, sizeof(double), 1, fptr);
-                        hidden_neuron_populations_prey[p][i][j]->pop[k]->weight[m] = tempDouble;  // weights
-                    }
+//    for (int p = 0; p < num_teams_prey; p++)
+//        for (int i = 0; i < total_prey_networks_per_team - (COMBINE * num_of_prey); i++)
+//            for (int j = 0; j < num_hidden_neurons[0]; j++)
+//                for (int k = 0; k < hidden_neuron_populations_prey[p][i][j]->numNeurons; k++)
+//                    for (int m = 0; m < GENE_SIZE_PREY_NW; m++) {
+//                        fread(&tempDouble, sizeof(double), 1, fptr);
+//                        hidden_neuron_populations_prey[p][i][j]->pop[k]->weight[m] = tempDouble;  // weights
+//                    }
 
     //if (COMBINE == 1) {
     for (int p = 0; p < num_teams_predator; p++)
@@ -902,22 +1075,24 @@ Esp::Esp(char* fname, int num_of_predators, int num_of_prey, int num_teams_preda
                         hidden_neuron_populations[p][i][j]->pop[k]->weight[m] = tempDouble;  // weights
                     }
 
-    for (int p = 0; p < num_teams_prey; p++)
-        for (int i = total_prey_networks_per_team - (COMBINE * num_of_prey);
-                i < total_prey_networks_per_team; i++)
-            for (int j = 0; j < num_hidden_neurons[0]; j++)
-                for (int k = 0; k < hidden_neuron_populations_prey[p][i][j]->numNeurons; k++)
-                    for (int m = 0; m < GENE_SIZE_PREY_COMBINER_NW; m++) {
-                        fread(&tempDouble, sizeof(double), 1, fptr);
-                        hidden_neuron_populations_prey[p][i][j]->pop[k]->weight[m] = tempDouble;  // weights
-                    }
+//    for (int p = 0; p < num_teams_prey; p++)
+//        for (int i = total_prey_networks_per_team - (COMBINE * num_of_prey);
+//                i < total_prey_networks_per_team; i++)
+//            for (int j = 0; j < num_hidden_neurons[0]; j++)
+//                for (int k = 0; k < hidden_neuron_populations_prey[p][i][j]->numNeurons; k++)
+//                    for (int m = 0; m < GENE_SIZE_PREY_COMBINER_NW; m++) {
+//                        fread(&tempDouble, sizeof(double), 1, fptr);
+//                        hidden_neuron_populations_prey[p][i][j]->pop[k]->weight[m] = tempDouble;  // weights
+//                    }
     //}
 
     fclose(fptr);
 
-    cout << "Loading from file : each predator is a separate neural net" << endl
-            << "Total Number of Predator networks: " << total_predator_networks_per_team << endl
-            << "Total Number of Prey Networks:" << total_prey_networks_per_team << endl
+    LOG(INFO) << "Loading from file : each predator is a separate neural net" << endl
+            << "Total Number of Predator networks: "
+            << total_predator_networks_per_team
+            << endl
+//            << "Total Number of Prey Networks:" << total_prey_networks_per_team << endl
             << "Initial total subpops: " << total_predator_networks_per_team * nPops << endl
             << "Incremental learning: " << INCREMENTAL_LEARNING << endl << "Burst mutation: "
             << BURST_MUTATE << endl << "EvalTrials: " << EVALTRIALS << endl << "STAG: " << STAG
@@ -943,17 +1118,17 @@ Esp::~Esp()
     hidden_neuron_populations.clear();
 
     //Freeing up memory pointed to by subpop pointers (corresponding to the new statements above)
-    size = hidden_neuron_populations_prey.size();  //This gives num_teams_prey value
-
-    for (int k = 0; k < size; k++) {
-        for (int i = 0; i < total_prey_networks_per_team; i++) {
-            for (int j = 0; j < num_hidden_neurons[0]; j++) {
-                delete hidden_neuron_populations_prey[k][i][j];
-            }
-        }
-    }
-    //Delete the pointers
-    hidden_neuron_populations_prey.clear();
+//    size = hidden_neuron_populations_prey.size();  //This gives num_teams_prey value
+//
+//    for (int k = 0; k < size; k++) {
+//        for (int i = 0; i < total_prey_networks_per_team; i++) {
+//            for (int j = 0; j < num_hidden_neurons[0]; j++) {
+//                delete hidden_neuron_populations_prey[k][i][j];
+//            }
+//        }
+//    }
+//    //Delete the pointers
+//    hidden_neuron_populations_prey.clear();
 
 }
 
@@ -963,25 +1138,32 @@ Esp::~Esp()
 //   hidden units (i.e. # of subpops)
 void Esp::setupNetDimensions(int num_of_predators, int num_of_prey)
 {
+//    DLOG(INFO) << "In setupNetDimensions";
     switch (netType) {
     case FF:
         GENE_SIZE_PRED_NW = (NUM_INPUTS * num_of_predators)
                 / (total_predator_networks_per_team - (COMBINE * num_of_predators)) + NUM_OUTPUTS;  // Gene Size per hidden neuron (excepting combiner)
-        GENE_SIZE_PREY_NW = (NUM_INPUTS_PREY * num_of_prey)
-                / (total_prey_networks_per_team - (COMBINE * num_of_prey)) + NUM_OUTPUTS_PREY;
+//        if(((total_prey_networks_per_team - (COMBINE * num_of_prey)) + NUM_OUTPUTS_PREY) == 0){
+//            GENE_SIZE_PREY_NW = 0;
+//        }
+//        else {
+//        GENE_SIZE_PREY_NW = (NUM_INPUTS_PREY * num_of_prey)
+//                / (total_prey_networks_per_team - (COMBINE * num_of_prey)) + NUM_OUTPUTS_PREY;
+//        }
         GENE_SIZE_PRED_COMBINER_NW = (NUM_INPUTS_PRED_COMBINER + NUM_OUTPUT_PRED_COMBINER);  // Gene Size per hidden neuron of a combiner network
-        GENE_SIZE_PREY_COMBINER_NW = (NUM_INPUTS_PREY_COMBINER + NUM_OUTPUT_PREY_COMBINER);
+//        GENE_SIZE_PREY_COMBINER_NW = (NUM_INPUTS_PREY_COMBINER + NUM_OUTPUT_PREY_COMBINER);
 
-        cout << "Gene size per hidden neuron of non-combiner networks: " << " predator:: "
-                << GENE_SIZE_PRED_NW << "  prey:: " << GENE_SIZE_PREY_NW << endl;
-        cout << "Gene size per hidden neuron of combiner networks: " << " predator:: "
-                << GENE_SIZE_PRED_COMBINER_NW << "  prey:: " << GENE_SIZE_PREY_COMBINER_NW << endl;
-        cout << "total networks in a team  " << " predators:: " << total_predator_networks_per_team
-                << "  prey:: " << total_prey_networks_per_team << endl;
-        cout << "FEED FORWARD\n";
+        LOG(INFO) << "Gene size per hidden neuron of non-combiner networks: " << " predator:: "
+                << GENE_SIZE_PRED_NW;  //<< "  prey:: " << GENE_SIZE_PREY_NW << endl;
+        LOG(INFO) << "Gene size per hidden neuron of combiner networks: " << " predator:: "
+                << GENE_SIZE_PRED_COMBINER_NW;  // << "  prey:: " << GENE_SIZE_PREY_COMBINER_NW << endl;
+//        LOG(INFO) << "Total networks in a team  " << " predators:: " << total_predator_networks_per_team
+//                << "  prey:: " << total_prey_networks_per_team << endl;
+        LOG(INFO) << "FEED FORWARD\n";
         break;
 
     }
+//    DLOG(INFO) << "Leaving setupNetDimensions";
 }
 
 //----------------------------------------------------------------------
@@ -1009,21 +1191,21 @@ void Esp::create(int num_of_predators, int num_of_prey, int num_teams_predator, 
 
     IS_PREY = true;
     IS_COMBINER_NW = 0;
-    for (int k = 0; k < num_teams_prey; k++) {
-        for (int i = 0; i < total_prey_networks_per_team - COMBINE * num_of_prey; i++)
-            for (int j = 0; j < num_hidden_neurons[0]; j++) {
-                hidden_neuron_populations_prey[k][i][j]->create();  // create each subpop
-            }
-    }
+//    for (int k = 0; k < num_teams_prey; k++) {
+//        for (int i = 0; i < total_prey_networks_per_team - COMBINE * num_of_prey; i++)
+//            for (int j = 0; j < num_hidden_neurons[0]; j++) {
+//                hidden_neuron_populations_prey[k][i][j]->create();  // create each subpop
+//            }
+//    }
 
     IS_COMBINER_NW = 1;
-    for (int k = 0; k < num_teams_prey; k++) {
-        for (int i = total_prey_networks_per_team - COMBINE * num_of_prey;
-                i < total_prey_networks_per_team; i++)
-            for (int j = 0; j < num_hidden_neurons[0]; j++) {
-                hidden_neuron_populations_prey[k][i][j]->create();  // create each subpop
-            }
-    }
+//    for (int k = 0; k < num_teams_prey; k++) {
+//        for (int i = total_prey_networks_per_team - COMBINE * num_of_prey;
+//                i < total_prey_networks_per_team; i++)
+//            for (int j = 0; j < num_hidden_neurons[0]; j++) {
+//                hidden_neuron_populations_prey[k][i][j]->create();  // create each subpop
+//            }
+//    }
 
 }
 
@@ -1040,13 +1222,17 @@ void Esp::create(int num_of_predators, int num_of_prey, int num_teams_predator, 
 //string PLOT_STR("plot ");
 
 void Esp::evolve(int cycles, int num_of_predators, int num_of_prey, int num_teams_predator,
-        int num_teams_prey)
+        int num_teams_prey, int num_teams_hunters, int num_of_hunters)
 // cycles: the number of generations to evolve
 {
 
     LOG(INFO) << "Starting evolve and running " << cycles << " cycles" << endl;
     while (gInterrupt == false && ++generation <= cycles) {
-        evalPop(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey);  //evaluate neurons
+        evalPop(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey,
+                num_teams_hunters, num_of_hunters);  //evaluate neurons
+//        DLOG(INFO) << "Done with evalPop()";
+//        DLOG(INFO) << "total_predator_networks_per_team is " << total_predator_networks_per_team
+//                << endl << "Should be 2";
 
         IS_PREY = false;
         IS_COMBINER_NW = 0;
@@ -1054,12 +1240,15 @@ void Esp::evolve(int cycles, int num_of_predators, int num_of_prey, int num_team
         for (int k = 0; k < num_teams_predator; k++) {
             for (int i = 0; i < total_predator_networks_per_team - COMBINE * num_of_predators;
                     i++) {
+                //DLOG(INFO) << "num_hidden_neurons[i] is " << num_hidden_neurons[i];
                 for (int j = 0; j < num_hidden_neurons[i]; j++) {
                     hidden_neuron_populations[k][i][j]->qsortNeurons();
                     hidden_neuron_populations[k][i][j]->recombine_hall_of_fame(k, i, j);  //(Hall of fame probably doesn't work for Competing agents in a single team)
                 }
             }
         }
+
+//        DLOG(INFO) << "Check1";
 
         // mutate population
         for (int k = 0; k < num_teams_predator; k++) {
@@ -1070,6 +1259,7 @@ void Esp::evolve(int cycles, int num_of_predators, int num_of_prey, int num_team
                 }
             }
         }
+//        DLOG(INFO) << "Check2";
 
         IS_COMBINER_NW = 1;
         for (int k = 0; k < num_teams_predator; k++) {
@@ -1082,6 +1272,8 @@ void Esp::evolve(int cycles, int num_of_predators, int num_of_prey, int num_team
             }
         }
 
+//        DLOG(INFO) << "Check3";
+
         // mutate population
         for (int k = 0; k < num_teams_predator; k++) {
             for (int i = total_predator_networks_per_team - COMBINE * num_of_predators;
@@ -1092,52 +1284,55 @@ void Esp::evolve(int cycles, int num_of_predators, int num_of_prey, int num_team
             }
         }
 
+        //DLOG(INFO) << "Check4";
+
         IS_PREY = true;
         IS_COMBINER_NW = 0;
-        for (int k = 0; k < num_teams_prey; k++) {
-            for (int i = 0; i < total_prey_networks_per_team - COMBINE * num_of_prey; i++) {
-                for (int j = 0; j < num_hidden_neurons[0]; j++) {
-                    hidden_neuron_populations_prey[k][i][j]->qsortNeurons();
-                    hidden_neuron_populations_prey[k][i][j]->recombine_hall_of_fame(k, i, j);  //(Hall of fame probably doesn't work for Competing agents in a single team)
-                }
-            }
-        }
+//        for (int k = 0; k < num_teams_prey; k++) {
+//            for (int i = 0; i < total_prey_networks_per_team - COMBINE * num_of_prey; i++) {
+//                for (int j = 0; j < num_hidden_neurons[0]; j++) {
+//                    hidden_neuron_populations_prey[k][i][j]->qsortNeurons();
+//                    hidden_neuron_populations_prey[k][i][j]->recombine_hall_of_fame(k, i, j);  //(Hall of fame probably doesn't work for Competing agents in a single team)
+//                }
+//            }
+//        }
 
         // mutate population
-        for (int k = 0; k < num_teams_prey; k++) {
-            for (int i = 0; i < total_prey_networks_per_team - COMBINE * num_of_prey; i++) {
-                for (int j = 0; j < num_hidden_neurons[0]; j++) {
-                    hidden_neuron_populations_prey[k][i][j]->mutate();
-                }
-            }
-        }
+//        for (int k = 0; k < num_teams_prey; k++) {
+//            for (int i = 0; i < total_prey_networks_per_team - COMBINE * num_of_prey; i++) {
+//                for (int j = 0; j < num_hidden_neurons[0]; j++) {
+//                    hidden_neuron_populations_prey[k][i][j]->mutate();
+//                }
+//            }
+//        }
 
         IS_COMBINER_NW = 1;
-        for (int k = 0; k < num_teams_prey; k++) {
-            for (int i = total_prey_networks_per_team - COMBINE * num_of_prey;
-                    i < total_prey_networks_per_team; i++) {
-                for (int j = 0; j < num_hidden_neurons[0]; j++) {
-                    hidden_neuron_populations_prey[k][i][j]->qsortNeurons();
-                    hidden_neuron_populations_prey[k][i][j]->recombine_hall_of_fame(k, i, j);  //(Hall of fame probably doesn't work for Competing agents in a single team)
-                }
-            }
-        }
+//        for (int k = 0; k < num_teams_prey; k++) {
+//            for (int i = total_prey_networks_per_team - COMBINE * num_of_prey;
+//                    i < total_prey_networks_per_team; i++) {
+//                for (int j = 0; j < num_hidden_neurons[0]; j++) {
+//                    hidden_neuron_populations_prey[k][i][j]->qsortNeurons();
+//                    hidden_neuron_populations_prey[k][i][j]->recombine_hall_of_fame(k, i, j);  //(Hall of fame probably doesn't work for Competing agents in a single team)
+//                }
+//            }
+//        }
 
         // mutate population
-        for (int k = 0; k < num_teams_prey; k++) {
-            for (int i = total_prey_networks_per_team - COMBINE * num_of_prey;
-                    i < total_prey_networks_per_team; i++) {
-                for (int j = 0; j < num_hidden_neurons[0]; j++) {
-                    hidden_neuron_populations_prey[k][i][j]->mutate();
-                }
-            }
-        }
+//        for (int k = 0; k < num_teams_prey; k++) {
+//            for (int i = total_prey_networks_per_team - COMBINE * num_of_prey;
+//                    i < total_prey_networks_per_team; i++) {
+//                for (int j = 0; j < num_hidden_neurons[0]; j++) {
+//                    hidden_neuron_populations_prey[k][i][j]->mutate();
+//                }
+//            }
+//        }
 
     }  //end while
 
     endEvolution();
 
-    cout << "Ending evolve" << endl;
+    LOG(INFO) << "Ending evolve" << endl;
+
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1149,11 +1344,13 @@ void Esp::evolve(int cycles, int num_of_predators, int num_of_prey, int num_team
 //
 //////////////////////////////////////////////////////////////////////
 
-void Esp::evalPop(int num_of_predators, int num_of_prey, int num_teams_predator, int num_teams_prey)
+void Esp::evalPop(int num_of_predators, int num_of_prey, int num_teams_predator, int num_teams_prey,
+        int num_teams_hunters, int num_of_hunters)
 {
 
     evalReset(num_teams_predator, num_teams_prey);  // reset fitness and test values of each neuron
-    performEval(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey);  // evaluate the networks
+    performEval(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey,
+            num_teams_hunters, num_of_hunters);  // evaluate the networks
     average(num_teams_predator, num_teams_prey);  // normalize neuron fitnesses
 
 }
@@ -1169,12 +1366,12 @@ void Esp::evalReset(int num_teams_predator, int num_teams_prey)
         }
     }
 
-    for (int k = 0; k < num_teams_prey; k++) {
-        for (int i = 0; i < total_prey_networks_per_team; i++) {
-            for (int j = 0; j < num_hidden_neurons[0]; j++)
-                hidden_neuron_populations_prey[k][i][j]->evalReset();
-        }
-    }
+//    for (int k = 0; k < num_teams_prey; k++) {
+//        for (int i = 0; i < total_prey_networks_per_team; i++) {
+//            for (int j = 0; j < num_hidden_neurons[0]; j++)
+//                hidden_neuron_populations_prey[k][i][j]->evalReset();
+//        }
+//    }
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1210,21 +1407,22 @@ Network* Esp::generateNetwork(int networkType, int num_hidden_neurons)
 
 //--------------------------------------------------------------------
 // evaluate the networks on the task
+// TODO Add appropriate addition of sub-task networks
 void Esp::performEval(int num_of_predators, int num_of_prey, int num_teams_predator,
-        int num_teams_prey)
+        int num_teams_prey, int num_teams_hunters, int num_of_hunters)
 {
     //cout << " Starting Perform Eval " <<endl;
 
     static int evaluations = 0;
     vector<Network*> temp_team;  // vector of current networks
-    vector<Network*> temp_team_prey;  // vector of current networks
+//    vector<Network*> temp_team_prey;  // vector of current networks
     vector<Network*> temp_bestTeam;  // vector of best networks
-    vector<Network*> temp_bestTeam_prey;  // vector of best networks
+//    vector<Network*> temp_bestTeam_prey;  // vector of best networks
 
     vector<vector<Network*> > current_teams_pred;  // vector of current pred teams
-    vector<vector<Network*> > current_teams_prey;  // vector of current prey teams
+//    vector<vector<Network*> > current_teams_prey;  // vector of current prey teams
     vector<vector<Network*> > generation_best_teams;  // vector of best pred teams in a given generation
-    vector<vector<Network*> > generation_best_teams_prey;  // vector of best prey teams in a given generation
+//    vector<vector<Network*> > generation_best_teams_prey;  // vector of best prey teams in a given generation
 
     vector<double> temp_individual_fitness;  //Temporary variable for storing predator/prey team fitness
     vector<vector<double> > temp_team_fitness;  //Temporary variable for storing predator/prey team fitness
@@ -1234,8 +1432,8 @@ void Esp::performEval(int num_of_predators, int num_of_prey, int num_teams_preda
 
     vector<double> current_teams_sum_individual_fitness;  //Sum of individual network fitnesses
     vector<double> generation_best_teams_sum_individual_fitness;  //Sum of individual network fitnesses
-    vector<double> current_teams_prey_sum_individual_fitness;  //Sum of individual network fitnesses
-    vector<double> generation_best_teams_prey_sum_individual_fitness;  //Sum of individual network fitnesses
+//    vector<double> current_teams_prey_sum_individual_fitness;  //Sum of individual network fitnesses
+//    vector<double> generation_best_teams_prey_sum_individual_fitness;  //Sum of individual network fitnesses
 
     delay_pred_evolution = 1;
     if (generation < 1) {  //EVOLVE_PREY
@@ -1267,26 +1465,26 @@ void Esp::performEval(int num_of_predators, int num_of_prey, int num_teams_preda
     }
 
     IS_PREY = true;
-    for (int k = 0; k < num_teams_prey; k++) {
-        IS_COMBINER_NW = 0;
-        temp_team_prey.clear();
-        temp_bestTeam_prey.clear();
-        for (int i = 0; i < total_prey_networks_per_team - COMBINE * num_of_prey; i++) {
-            temp_team_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));
-            temp_bestTeam_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));
-            temp_bestTeam_prey[i]->create();
-        }
-
-        IS_COMBINER_NW = 1;
-        for (int i = total_prey_networks_per_team - COMBINE * num_of_prey;
-                i < total_prey_networks_per_team; i++) {
-            temp_team_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));
-            temp_bestTeam_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));
-            temp_bestTeam_prey[i]->create();
-        }
-        current_teams_prey.push_back(temp_team_prey);
-        generation_best_teams_prey.push_back(temp_bestTeam_prey);
-    }
+//    for (int k = 0; k < num_teams_prey; k++) {
+//        IS_COMBINER_NW = 0;
+//        temp_team_prey.clear();
+//        temp_bestTeam_prey.clear();
+//        for (int i = 0; i < total_prey_networks_per_team - COMBINE * num_of_prey; i++) {
+//            temp_team_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));
+//            temp_bestTeam_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));
+//            temp_bestTeam_prey[i]->create();
+//        }
+//
+//        IS_COMBINER_NW = 1;
+//        for (int i = total_prey_networks_per_team - COMBINE * num_of_prey;
+//                i < total_prey_networks_per_team; i++) {
+//            temp_team_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));
+//            temp_bestTeam_prey.push_back(generateNetwork(netType, num_hidden_neurons[0]));
+//            temp_bestTeam_prey[i]->create();
+//        }
+//        current_teams_prey.push_back(temp_team_prey);
+//        generation_best_teams_prey.push_back(temp_bestTeam_prey);
+//    }
 
     IS_COMBINER_NW = 0;
 
@@ -1301,14 +1499,14 @@ void Esp::performEval(int num_of_predators, int num_of_prey, int num_teams_preda
 
     average_predator_prey_teams_fitness.push_back(temp_team_fitness);
     temp_team_fitness.clear();
-    for (int p = 0; p < num_teams_prey; p++) {
-        for (int q = 0; q < num_of_prey; q++) {
-            temp_individual_fitness.push_back(0.0);
-        }
-        temp_team_fitness.push_back(temp_individual_fitness);
-        temp_individual_fitness.clear();
-    }
-    average_predator_prey_teams_fitness.push_back(temp_team_fitness);
+//    for (int p = 0; p < num_teams_prey; p++) {
+//        for (int q = 0; q < num_of_prey; q++) {
+//            temp_individual_fitness.push_back(0.0);
+//        }
+//        temp_team_fitness.push_back(temp_individual_fitness);
+//        temp_individual_fitness.clear();
+//    }
+//    average_predator_prey_teams_fitness.push_back(temp_team_fitness);
     //***************END Initialize average fitness (calculated across 1000 trials) to zero********************//
 
     //**************START OF TRIALS********************************************//
@@ -1321,26 +1519,96 @@ void Esp::performEval(int num_of_predators, int num_of_prey, int num_teams_preda
         //     << endl ;
         // find random subpopulation (only for current team)
         IS_PREY = false;
-        for (int p = 0; p < num_teams_predator; p++) {
-            for (int j = 0; j < total_predator_networks_per_team; j++) {
-                for (int k = 0; k < num_hidden_neurons[j]; k++) {
-                    current_teams_pred[p][j]->setNeuron(
-                            hidden_neuron_populations[p][j][k]->selectNeuron(), k);
+
+        //DLOG(INFO) << "sub_hall_of_fame_pred size is " << sub_hall_of_fame_pred.size();
+        if ((int) sub_hall_of_fame_pred.size() == 2) {
+            //LOG(INFO) << "Using previous networks";
+            // If there are pre-existing neurons, set neurons only for the combiner network. Get other neurons from networks learnt in the sub task
+            // For the subnetwork, there will be a combiner network. So two hidden layers
+            // FIXME This will only work when the no. of prey and hunter is 1 !!
+//            DLOG(INFO) << "Check1";
+            int sub_hall_of_fame_pred_size = sub_hall_of_fame_pred[0].size();
+            for (int j = 0; j < num_teams_predator; j++) {
+//                DLOG(INFO) << "Check1.1";
+                int i;
+//                DLOG(INFO) << "sub_hall_of_fame_pred[0] size is "
+//                        << sub_hall_of_fame_pred[0].size();
+
+                int sub_total_predator_networks_per_team =
+                        sub_hall_of_fame_pred[0][sub_hall_of_fame_pred_size - 1][j].size();
+                // Takes care of prey sub networks
+                for (i = 0; i < sub_total_predator_networks_per_team;  //num_of_predators * num_teams_prey * num_of_prey /*actually, number of prey networks. Should be num_teams_prey * num_of_prey*/;
+                        i++) {
+                    if (i < num_of_predators * num_teams_prey * num_of_prey) {
+                        current_teams_pred[j][i]->setNetwork(
+                                sub_hall_of_fame_pred[0][sub_hall_of_fame_pred_size - 1][j][i]);
+                        current_teams_pred[j][i]->incrementTests();
+                    } else {
+                        for (int k = 0; k < num_of_predators * num_teams_prey * num_of_prey; k++) {
+                            current_teams_pred[j][k]->addHiddenLayer(
+                                    sub_hall_of_fame_pred[0][sub_hall_of_fame_pred_size - 1][j][i]->pop);
+                        }
+                    }
                 }
-                current_teams_pred[p][j]->incrementTests();  //Counting the number of trials for a neuron (to compute average later)
+//                DLOG(INFO) << "Check2";
+                // Takes care of hunter sub networks
+                int k;
+                i = num_of_predators * num_teams_prey * num_of_prey;
+                sub_total_predator_networks_per_team =
+                        sub_hall_of_fame_pred[1][sub_hall_of_fame_pred_size - 1][j].size();
+                for (k = i; k < i + sub_total_predator_networks_per_team;  //num_of_predators * num_teams_hunters * num_of_hunters /*actually, number of hunter networks. Should be num_teams_hunter * num_of_hunter*/;
+                        k++) {
+                    if (k < i + num_of_predators * num_teams_hunters * num_of_hunters) {
+                        current_teams_pred[j][k]->setNetwork(
+                                sub_hall_of_fame_pred[1][sub_hall_of_fame_pred_size - 1][j][k - i]);
+                        current_teams_pred[j][k]->incrementTests();
+                    } else {
+                        for (int l = 0; l < num_of_predators * num_teams_hunters * num_of_hunters;
+                                l++) {
+                            current_teams_pred[j][l]->addHiddenLayer(
+                                    sub_hall_of_fame_pred[1][sub_hall_of_fame_pred_size - 1][j][k
+                                            - i]->pop);
+                        }
+                    }
+                }
+//                DLOG(INFO) << "Check3";
+//                DLOG(INFO) << "i is " << i;
+                i = num_of_predators * num_teams_prey * num_of_prey + num_of_predators * num_teams_hunters * num_of_hunters;
+
+                // Takes care of the actual combiner layer (which is evolved)
+                for (int l = i; l < i + COMBINE * num_of_predators; l++) {
+                    for (int m = 0; m < num_hidden_neurons[l]; m++) {
+                        current_teams_pred[j][l]->setNeuron(
+                                hidden_neuron_populations[j][l][m]->selectNeuron(), m);
+                    }
+                    current_teams_pred[j][l]->incrementTests();
+                }
+//                DLOG(INFO) << "Check4";
+            }
+
+        } else {  // If there are no existing subnetworks already evolved, set neurons for all the hidden layers (including combiner network)
+
+            for (int p = 0; p < num_teams_predator; p++) {
+                for (int j = 0; j < total_predator_networks_per_team; j++) {
+                    for (int k = 0; k < num_hidden_neurons[j]; k++) {
+                        current_teams_pred[p][j]->setNeuron(
+                                hidden_neuron_populations[p][j][k]->selectNeuron(), k);
+                    }
+                    current_teams_pred[p][j]->incrementTests();  //Counting the number of trials for a neuron (to compute average later)
+                }
             }
         }
 
         IS_PREY = true;
-        for (int p = 0; p < num_teams_prey; p++) {
-            for (int j = 0; j < total_prey_networks_per_team; j++) {
-                for (int k = 0; k < num_hidden_neurons[0]; k++) {
-                    current_teams_prey[p][j]->setNeuron(
-                            hidden_neuron_populations_prey[p][j][k]->selectNeuron(), k);
-                }
-                current_teams_prey[p][j]->incrementTests();  //Counting the number of trials for a neuron (to compute average later)
-            }
-        }
+//        for (int p = 0; p < num_teams_prey; p++) {
+//            for (int j = 0; j < total_prey_networks_per_team; j++) {
+//                for (int k = 0; k < num_hidden_neurons[0]; k++) {
+//                    current_teams_prey[p][j]->setNeuron(
+//                            hidden_neuron_populations_prey[p][j][k]->selectNeuron(), k);
+//                }
+//                current_teams_prey[p][j]->incrementTests();  //Counting the number of trials for a neuron (to compute average later)
+//            }
+//        }
 
         ++evaluations;
 
@@ -1363,52 +1631,52 @@ void Esp::performEval(int num_of_predators, int num_of_prey, int num_teams_preda
 
         predator_prey_teams_fitness.push_back(temp_team_fitness);
         temp_team_fitness.clear();
-        generation_best_teams_prey_sum_individual_fitness.clear();
+//        generation_best_teams_prey_sum_individual_fitness.clear();
 
-        for (int p = 0; p < num_teams_prey; p++) {
-            for (int q = 0; q < num_of_prey; q++) {
-                temp_individual_fitness.push_back(0.0);
-            }
-            temp_team_fitness.push_back(temp_individual_fitness);
-            temp_individual_fitness.clear();
-            current_teams_prey_sum_individual_fitness.push_back(0.0);
-            generation_best_teams_prey_sum_individual_fitness.push_back(0.0);
-        }
-        predator_prey_teams_fitness.push_back(temp_team_fitness);
+//        for (int p = 0; p < num_teams_prey; p++) {
+//            for (int q = 0; q < num_of_prey; q++) {
+//                temp_individual_fitness.push_back(0.0);
+//            }
+//            temp_team_fitness.push_back(temp_individual_fitness);
+//            temp_individual_fitness.clear();
+//            current_teams_prey_sum_individual_fitness.push_back(0.0);
+//            generation_best_teams_prey_sum_individual_fitness.push_back(0.0);
+//        }
+//        predator_prey_teams_fitness.push_back(temp_team_fitness);
         //************END INITIALIZING predator_prey_teams_fitness ********************
 
         //Evalnet returns predator, prey teams fitness in a vector of vectors.
         //Vector 0 consists of fitness for Predator teams and Vector 1 consists
         //of fitness for Prey teams
         for (int p = 0; p < EVALTRIALS; p++) {
-            teams_fitness = Envt.evalNet(current_teams_pred, current_teams_prey, generation);
-            if (false) {
-                cout << "Team fitness is " << endl;
-                for (int i = 0; i < teams_fitness.size(); i++) {
-                    for (int j = 0; j < teams_fitness[i].size(); j++) {
-                        cout << teams_fitness[i][j][0] << " ";
-                    }
-                    cout << endl;
-                }
-            }
-
+            teams_fitness = Envt.evalNet(current_teams_pred, generation);
+            /*VLOG(1) << "Team fitness is " << endl;
+             for (int i = 0; i < teams_fitness.size(); i++) {
+             for (int j = 0; j < teams_fitness[i].size(); j++) {
+             LOG(INFO) << teams_fitness[i][j][0] << " ";
+             }
+             VLOG(1) << endl;
+             }*/
+//            LOG(INFO) << "Size of fitness from environment is " << teams_fitness.size();
+//            LOG(INFO) << "teams_fitness[0][0][0] from environment is " << teams_fitness[0][0][0];
+//            LOG(INFO) << "Size of predator_prey_teams_fitness is " << predator_prey_teams_fitness.size();
+//            LOG(INFO) << "predator_prey_teams_fitness[0][0][0] is " << predator_prey_teams_fitness[0][0][0];
             for (int q = 0; q < num_teams_predator; q++) {
                 for (int r = 0; r < num_of_predators; r++) {  //Individual predator fitness is used in case of competing predators
                     predator_prey_teams_fitness[0][q][r] = predator_prey_teams_fitness[0][q][r]
                             + teams_fitness[0][q][r];
                 }
             }
-            for (int q = 0; q < num_teams_prey; q++) {
-                for (int r = 0; r < num_of_prey; r++) {
-                    predator_prey_teams_fitness[1][q][r] = predator_prey_teams_fitness[1][q][r]
-                            + teams_fitness[1][q][r];
-                }
-            }
+//            for (int q = 0; q < num_teams_prey; q++) {
+//                for (int r = 0; r < num_of_prey; r++) {
+//                    predator_prey_teams_fitness[1][q][r] = predator_prey_teams_fitness[1][q][r]
+//                            + teams_fitness[1][q][r];
+//                }
+//            }
         }
 
         //Predator - Distribute fitness to each contributing neurons
         for (int q = 0; q < num_teams_predator; q++) {
-
             for (int r = 0; r < num_of_predators; r++) {
                 predator_prey_teams_fitness[0][q][r] /= EVALTRIALS;
                 average_predator_prey_teams_fitness[0][q][r] +=
@@ -1416,10 +1684,11 @@ void Esp::performEval(int num_of_predators, int num_of_prey, int num_teams_preda
 
                 for (int j = 0; j < (total_predator_networks_per_team / num_of_predators - 1);
                         j++) {
-                    current_teams_pred[q][r * (total_predator_networks_per_team / num_of_predators - 1)
-                            + j]->fitness = predator_prey_teams_fitness[0][q][r];  // distribute each predator's fitness to constituent networks
-                    current_teams_pred[q][r * (total_predator_networks_per_team / num_of_predators - 1)
-                            + j]->addFitness();  // add network fitness to its neurons
+                    current_teams_pred[q][r
+                            * (total_predator_networks_per_team / num_of_predators - 1) + j]->fitness =
+                            predator_prey_teams_fitness[0][q][r];  // distribute each predator's fitness to constituent networks
+                    current_teams_pred[q][r
+                            * (total_predator_networks_per_team / num_of_predators - 1) + j]->addFitness();  // add network fitness to its neurons
                 }
 
                 //Following two lines are for the combiner network
@@ -1453,47 +1722,47 @@ void Esp::performEval(int num_of_predators, int num_of_prey, int num_teams_preda
         }
 
         //Prey - Distribute fitness to each contributing neurons
-        for (int q = 0; q < num_teams_prey; q++) {
-
-            for (int r = 0; r < num_of_prey; r++) {
-                predator_prey_teams_fitness[1][q][r] /= EVALTRIALS;
-                average_predator_prey_teams_fitness[1][q][r] +=
-                        predator_prey_teams_fitness[1][q][r];
-
-                for (int j = 0; j < (total_prey_networks_per_team / num_of_prey - 1); j++) {
-                    current_teams_prey[q][r * (total_prey_networks_per_team / num_of_prey - 1) + j]->fitness =
-                            predator_prey_teams_fitness[1][q][r];  // distribute each prey's fitness to constituent networks
-                    current_teams_prey[q][r * (total_prey_networks_per_team / num_of_prey - 1) + j]->addFitness();  // add network fitness to its neurons
-                }
-
-                //Following two lines are for the combiner network
-                current_teams_prey[q][(total_prey_networks_per_team - num_of_prey) + r]->fitness =
-                        predator_prey_teams_fitness[1][q][r];  // distribute each prey's fitness to constituent networks
-                current_teams_prey[q][(total_prey_networks_per_team - num_of_prey) + r]->addFitness();  // add network fitness to its neurons
-            }
-
-            //Computing Generation Best - current team with highest total fitness.
-            //Note: individual prey in a team can have different fitness in
-            //case of competition. However, all networks in a individual have same fitness
-            for (int r = 0; r < num_of_prey; r++) {
-                current_teams_prey_sum_individual_fitness[q] =
-                        current_teams_prey_sum_individual_fitness[q]
-                                + current_teams_prey[q][r
-                                        * (total_prey_networks_per_team / num_of_prey - 1)]->fitness;
-            }
-            current_teams_prey_sum_individual_fitness[q] /= num_of_prey;  //Averaging over team
-
-            // if team outperforms bestTeam, set bestTeam = team  (Note: all networks in a individual have same fitness)
-            if (current_teams_prey_sum_individual_fitness[q]
-                    > generation_best_teams_prey_sum_individual_fitness[q]) {
-                generation_best_teams_prey_sum_individual_fitness[q] =
-                        current_teams_prey_sum_individual_fitness[q];
-                for (int j = 0; j < total_prey_networks_per_team; j++) {
-                    generation_best_teams_prey[q][j]->setNetwork(current_teams_prey[q][j]);
-                    generation_best_teams_prey[q][j]->fitness = current_teams_prey[q][j]->fitness;
-                }
-            }
-        }
+//        for (int q = 0; q < num_teams_prey; q++) {
+//
+//            for (int r = 0; r < num_of_prey; r++) {
+//                predator_prey_teams_fitness[1][q][r] /= EVALTRIALS;
+//                average_predator_prey_teams_fitness[1][q][r] +=
+//                        predator_prey_teams_fitness[1][q][r];
+//
+//                for (int j = 0; j < (total_prey_networks_per_team / num_of_prey - 1); j++) {
+//                    current_teams_prey[q][r * (total_prey_networks_per_team / num_of_prey - 1) + j]->fitness =
+//                            predator_prey_teams_fitness[1][q][r];  // distribute each prey's fitness to constituent networks
+//                    current_teams_prey[q][r * (total_prey_networks_per_team / num_of_prey - 1) + j]->addFitness();  // add network fitness to its neurons
+//                }
+//
+//                //Following two lines are for the combiner network
+//                current_teams_prey[q][(total_prey_networks_per_team - num_of_prey) + r]->fitness =
+//                        predator_prey_teams_fitness[1][q][r];  // distribute each prey's fitness to constituent networks
+//                current_teams_prey[q][(total_prey_networks_per_team - num_of_prey) + r]->addFitness();  // add network fitness to its neurons
+//            }
+//
+//            //Computing Generation Best - current team with highest total fitness.
+//            //Note: individual prey in a team can have different fitness in
+//            //case of competition. However, all networks in a individual have same fitness
+//            for (int r = 0; r < num_of_prey; r++) {
+//                current_teams_prey_sum_individual_fitness[q] =
+//                        current_teams_prey_sum_individual_fitness[q]
+//                                + current_teams_prey[q][r
+//                                        * (total_prey_networks_per_team / num_of_prey - 1)]->fitness;
+//            }
+//            current_teams_prey_sum_individual_fitness[q] /= num_of_prey;  //Averaging over team
+//
+//            // if team outperforms bestTeam, set bestTeam = team  (Note: all networks in a individual have same fitness)
+//            if (current_teams_prey_sum_individual_fitness[q]
+//                    > generation_best_teams_prey_sum_individual_fitness[q]) {
+//                generation_best_teams_prey_sum_individual_fitness[q] =
+//                        current_teams_prey_sum_individual_fitness[q];
+//                for (int j = 0; j < total_prey_networks_per_team; j++) {
+//                    generation_best_teams_prey[q][j]->setNetwork(current_teams_prey[q][j]);
+//                    generation_best_teams_prey[q][j]->fitness = current_teams_prey[q][j]->fitness;
+//                }
+//            }
+//        }
 
     }  // end for
 
@@ -1501,7 +1770,7 @@ void Esp::performEval(int num_of_predators, int num_of_prey, int num_teams_preda
 
     //Add the best over 1000 trials to the Hall of Fame
     hall_of_fame_pred.push_back(generation_best_teams);
-    hall_of_fame_prey.push_back(generation_best_teams_prey);
+//    hall_of_fame_prey.push_back(generation_best_teams_prey);
 
     // if generation best team (over 1000 trials) is better than overall best team (across generations) then replace
     for (int q = 0; q < num_teams_predator; q++) {
@@ -1517,23 +1786,23 @@ void Esp::performEval(int num_of_predators, int num_of_prey, int num_teams_preda
         }
     }
 
-    for (int q = 0; q < num_teams_prey; q++) {
-
-        if (generation_best_teams_prey_sum_individual_fitness[q]
-                >= overall_best_teams_prey_sum_individual_fitness[q]) {
-            overall_best_teams_prey_sum_individual_fitness[q] =
-                    generation_best_teams_prey_sum_individual_fitness[q];
-            for (int j = 0; j < total_prey_networks_per_team; j++) {
-                overall_best_teams_prey[q][j]->setNetwork(generation_best_teams_prey[q][j]);
-                overall_best_teams_prey[q][j]->fitness = generation_best_teams_prey[q][j]->fitness;
-            }
-        }
-    }
+//    for (int q = 0; q < num_teams_prey; q++) {
+//
+//        if (generation_best_teams_prey_sum_individual_fitness[q]
+//                >= overall_best_teams_prey_sum_individual_fitness[q]) {
+//            overall_best_teams_prey_sum_individual_fitness[q] =
+//                    generation_best_teams_prey_sum_individual_fitness[q];
+//            for (int j = 0; j < total_prey_networks_per_team; j++) {
+//                overall_best_teams_prey[q][j]->setNetwork(generation_best_teams_prey[q][j]);
+//                overall_best_teams_prey[q][j]->fitness = generation_best_teams_prey[q][j]->fitness;
+//            }
+//        }
+//    }
 
     /***********************START PRINTING FITNESSES FOR PREDATOR-PREY TEAMS*******************************/
     for (int q = 0; q < num_teams_predator; q++) {
         for (int r = 0; r < num_of_predators; r++) {
-            cout
+            LOG(INFO)
                     << "generation "
                     << generation
                     << ":\tPredator Team number "
@@ -1564,59 +1833,59 @@ void Esp::performEval(int num_of_predators, int num_of_prey, int num_teams_preda
     vector<vector<double> > testNet_result;  //number of prey caught by all the predators teams in each of the 20 trials
 
     //GENERATION BEST
-    testNet_result = Envt.testNet(generation_best_teams, generation_best_teams_prey, 20);
+    testNet_result = Envt.testNet(generation_best_teams, 20);
 
     for (int q = 0; q < num_teams_predator; q++) {
-        cout << "\t\tGeneration Best Predator team number " << q << " caught "
+        LOG(INFO) << "\t\tGeneration Best Predator team number " << q << " caught "
                 << testNet_result[q][0] << " prey and killed  ";
-        cout << testNet_result[q][1] << " predators on average over 20 trials ";
-        cout << endl;
+        LOG(INFO) << testNet_result[q][1] << " predators on average over 20 trials ";
+        LOG(INFO) << endl;
     }
 
-    cout << endl;
+    LOG(INFO) << endl;
 
     //OVERALL BEST
-    testNet_result = Envt.testNet(overall_best_teams, overall_best_teams_prey, 20);
+    testNet_result = Envt.testNet(overall_best_teams, 20);
 
     for (int q = 0; q < num_teams_predator; q++) {
-        cout << "\t\tOverall Best Predator team number " << q << " caught " << testNet_result[q][0]
-                << " prey and killed  ";
-        cout << testNet_result[q][1] << " predators on average over 20 trials ";
-        cout << endl;
+        LOG(INFO) << "\t\tOverall Best Predator team number " << q << " caught "
+                << testNet_result[q][0] << " prey and killed  ";
+        LOG(INFO) << testNet_result[q][1] << " predators on average over 20 trials ";
+        LOG(INFO) << endl;
     }
-    cout << endl;
+    LOG(INFO) << endl;
 
     //TYPICAL TEAM (NEURONS RANDOMLY SELECTED FROM THE POPULATION)
     // form a random net for predator teams, and test it for 20 trials
     for (int q = 0; q < num_teams_predator; q++) {
         for (int j = 0; j < total_predator_networks_per_team; j++)
             for (int k = 0; k < num_hidden_neurons[j]; k++)
-                current_teams_pred[q][j]->setNeuron(hidden_neuron_populations[q][j][k]->selectNeuron(),
-                        k);
+                current_teams_pred[q][j]->setNeuron(
+                        hidden_neuron_populations[q][j][k]->selectNeuron(), k);
     }
     // form a random net for predator teams, and test it for 20 trials
-    for (int q = 0; q < num_teams_prey; q++) {
-        for (int j = 0; j < total_prey_networks_per_team; j++)
-            for (int k = 0; k < num_hidden_neurons[0]; k++)
-                current_teams_prey[q][j]->setNeuron(
-                        hidden_neuron_populations_prey[q][j][k]->selectNeuron(), k);
-    }
+//    for (int q = 0; q < num_teams_prey; q++) {
+//        for (int j = 0; j < total_prey_networks_per_team; j++)
+//            for (int k = 0; k < num_hidden_neurons[0]; k++)
+//                current_teams_prey[q][j]->setNeuron(
+//                        hidden_neuron_populations_prey[q][j][k]->selectNeuron(), k);
+//    }
 
-    testNet_result = Envt.testNet(current_teams_pred, current_teams_prey, 20);
+    testNet_result = Envt.testNet(current_teams_pred, 20);
 
     for (int q = 0; q < num_teams_predator; q++) {
-        cout << "\t\tTypical Predator team number " << q << " caught " << testNet_result[q][0]
-                << " prey and killed  ";
-        cout << testNet_result[q][1] << " predators on average over 20 trials ";
-        cout << endl;
+        LOG(INFO) << "\t\tTypical Predator team number " << q << " caught "
+                << testNet_result[q][0] << " prey and killed  ";
+        LOG(INFO) << testNet_result[q][1] << " predators on average over 20 trials ";
+        LOG(INFO) << endl;
     }
-    cout << endl;
+    LOG(INFO) << endl;
     /***********************END PRINTING FITNESSES FOR PREDATOR-PREY TEAMS*******************************/
 
     /***********************START SIMULATION HERE*******************************/
     if (if_display) {
 
-        cout << endl << "Running benchmark" << endl;
+        LOG(INFO) << endl << "Running benchmark" << endl;
         if (generation % display_frequency == 0) {
             SHOW = 1;
         }
@@ -1635,14 +1904,14 @@ void Esp::performEval(int num_of_predators, int num_of_prey, int num_teams_preda
 
         predator_prey_teams_fitness.push_back(temp_team_fitness);
         temp_team_fitness.clear();
-        for (int p = 0; p < num_teams_prey; p++) {
-            for (int q = 0; q < num_of_prey; q++) {
-                temp_individual_fitness.push_back(0.0);
-            }
-            temp_team_fitness.push_back(temp_individual_fitness);
-            temp_individual_fitness.clear();
-        }
-        predator_prey_teams_fitness.push_back(temp_team_fitness);
+//        for (int p = 0; p < num_teams_prey; p++) {
+//            for (int q = 0; q < num_of_prey; q++) {
+//                temp_individual_fitness.push_back(0.0);
+//            }
+//            temp_team_fitness.push_back(temp_individual_fitness);
+//            temp_individual_fitness.clear();
+//        }
+//        predator_prey_teams_fitness.push_back(temp_team_fitness);
         //************END INITIALIZING predator_prey_teams_fitness ********************
 
         for (int p = 0; p < SIMU_TRIALS; p++) {
@@ -1650,8 +1919,9 @@ void Esp::performEval(int num_of_predators, int num_of_prey, int num_teams_preda
                 FILE* fptr;
                 //Saving predator-prey locations
                 if ((fptr = fopen("pred_prey_location.txt", "at")) == NULL) {
-                    cout << endl << "Error - cannot open " << "pred_prey_location.txt" << endl;
-                    exit(1);
+                    LOG(FATAL) << endl << "Error - cannot open " << "pred_prey_location.txt"
+                            << endl;
+                    //exit(1);
                 }
                 fprintf(fptr, "\n");  //  next line
                 fprintf(fptr, "\n");  //  next line
@@ -1661,39 +1931,40 @@ void Esp::performEval(int num_of_predators, int num_of_prey, int num_teams_preda
                 fclose(fptr);
             }
 
-            teams_fitness = Envt.evalNet(generation_best_teams, generation_best_teams_prey,
-                    generation);
-            cout << endl << " Simulation Trial Number:: " << p << endl;
+            teams_fitness = Envt.evalNet(generation_best_teams, generation);
+            LOG(INFO) << endl << " Simulation Trial Number:: " << p << endl;
             for (int q = 0; q < num_teams_predator; q++) {
                 for (int r = 0; r < num_of_predators; r++) {
                     predator_prey_teams_fitness[0][q][r] = predator_prey_teams_fitness[0][q][r]
                             + teams_fitness[0][q][r];
-                    cout << " Generation Best Predator Team number " << q << "  Predator Number "
-                            << r << "  fitness:: " << teams_fitness[0][q][r] << endl;
+                    LOG(INFO) << " Generation Best Predator Team number " << q
+                            << "  Predator Number " << r << "  fitness:: " << teams_fitness[0][q][r]
+                            << endl;
                 }
             }
-            for (int q = 0; q < num_teams_prey; q++) {
-                for (int r = 0; r < num_of_prey; r++) {
-                    predator_prey_teams_fitness[1][q][r] = predator_prey_teams_fitness[1][q][r]
-                            + teams_fitness[1][q][r];
-                    cout << " Generation Best Prey Team number " << q << "  Prey Number " << r
-                            << "  fitness:: " << teams_fitness[1][q][r] << endl;
-                }
-            }
+//            for (int q = 0; q < num_teams_prey; q++) {
+//                for (int r = 0; r < num_of_prey; r++) {
+//                    predator_prey_teams_fitness[1][q][r] = predator_prey_teams_fitness[1][q][r]
+//                            + teams_fitness[1][q][r];
+//                    LOG(INFO) << " Generation Best Prey Team number " << q << "  Prey Number " << r
+//                            << "  fitness:: " << teams_fitness[1][q][r] << endl;
+//                }
+//            }
         }
 
         for (int q = 0; q < num_teams_predator; q++) {
             for (int r = 0; r < num_of_predators; r++) {
-                cout << "Average fitness for Predator Team Number " << q << " Predator Number " << r
-                        << ":: " << predator_prey_teams_fitness[0][q][r] / SIMU_TRIALS << endl;
+                LOG(INFO) << "Average fitness for Predator Team Number " << q
+                        << " Predator Number " << r << ":: "
+                        << predator_prey_teams_fitness[0][q][r] / SIMU_TRIALS << endl;
             }
         }
-        for (int q = 0; q < num_teams_prey; q++) {
-            for (int r = 0; r < num_of_prey; r++) {
-                cout << "Average fitness for Prey Team Number " << q << " Prey Number " << r
-                        << ":: " << predator_prey_teams_fitness[1][q][r] / SIMU_TRIALS << endl;
-            }
-        }
+//        for (int q = 0; q < num_teams_prey; q++) {
+//            for (int r = 0; r < num_of_prey; r++) {
+//                LOG(INFO) << "Average fitness for Prey Team Number " << q << " Prey Number " << r
+//                        << ":: " << predator_prey_teams_fitness[1][q][r] / SIMU_TRIALS << endl;
+//            }
+//        }
         SHOW = 0;
     }
 
@@ -1835,18 +2106,19 @@ void Esp::newDeltaPhase(int pred)
 // get average fitness level.  
 void Esp::average(int num_teams_predator, int num_teams_prey)
 {
+    //DLOG(INFO) << "IN average";
     for (int k = 0; k < num_teams_predator; k++) {
         for (int i = 0; i < total_predator_networks_per_team; i++)
             for (int j = 0; j < num_hidden_neurons[i]; j++)
                 hidden_neuron_populations[k][i][j]->average();
     }
 
-    for (int k = 0; k < num_teams_prey; k++) {
-        for (int i = 0; i < total_prey_networks_per_team; i++)
-            for (int j = 0; j < num_hidden_neurons[0]; j++)
-                hidden_neuron_populations_prey[k][i][j]->average();
-    }
-
+//    for (int k = 0; k < num_teams_prey; k++) {
+//        for (int i = 0; i < total_prey_networks_per_team; i++)
+//            for (int j = 0; j < num_hidden_neurons[0]; j++)
+//                hidden_neuron_populations_prey[k][i][j]->average();
+//    }
+    //DLOG(INFO) << "End average()";
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -1854,7 +2126,7 @@ void Esp::average(int num_teams_predator, int num_teams_prey)
 // ESP I/O fns
 void Esp::printNeurons()
 {
-    cout << "ESP::printNeurons() is commented out" << endl;
+    LOG(INFO) << "ESP::printNeurons() is commented out" << endl;
     /*  char filename[50];
      sprintf(filename, "./%u_%d_%d.pop",     //3-6-00: %u used to be %lu
      getpid(), numPops, generation);
@@ -1875,7 +2147,7 @@ void Esp::printNeurons()
 //
 void Esp::loadSeedNet(char *filename)
 {
-    cout << "ESP::loadSeedNet (char* filename) is commented out" << endl;
+    LOG(INFO) << "ESP::loadSeedNet (char* filename) is commented out" << endl;
     /*  netType = SCDORDER;  //change this to read the type from the filename;
      numPops = bestNetwork->load(filename);
      printf("NUM_POPS %d\n", numPops);
@@ -1887,9 +2159,10 @@ void Esp::save(char* fname, int num_of_predators, int num_of_prey, int num_teams
         int num_teams_prey)
 {
     FILE* fptr;
+    fname = (char*) file_prefix.append(fname).c_str();
     if ((fptr = fopen(fname, "wb")) == NULL) {
-        cout << endl << "Error - cannot open " << fname << endl;
-        exit(1);
+        LOG(FATAL) << endl << "Error - cannot open " << fname << endl;
+        //exit(1);
     }
 
     fwrite(&generation, 4, 1, fptr);  // int generation
@@ -1903,14 +2176,14 @@ void Esp::save(char* fname, int num_of_predators, int num_of_prey, int num_teams
                                 sizeof(double), 1, fptr);
                     }
 
-    for (int p = 0; p < num_teams_prey; p++)
-        for (int i = 0; i < total_prey_networks_per_team - (COMBINE * num_of_prey); i++)
-            for (int j = 0; j < num_hidden_neurons[0]; j++)
-                for (int k = 0; k < hidden_neuron_populations_prey[p][i][j]->numNeurons; k++)
-                    for (int m = 0; m < GENE_SIZE_PREY_NW; m++) {  // weights
-                        fwrite(&(hidden_neuron_populations_prey[p][i][j]->pop[k]->weight[m]),
-                                sizeof(double), 1, fptr);
-                    }
+//    for (int p = 0; p < num_teams_prey; p++)
+//        for (int i = 0; i < total_prey_networks_per_team - (COMBINE * num_of_prey); i++)
+//            for (int j = 0; j < num_hidden_neurons[0]; j++)
+//                for (int k = 0; k < hidden_neuron_populations_prey[p][i][j]->numNeurons; k++)
+//                    for (int m = 0; m < GENE_SIZE_PREY_NW; m++) {  // weights
+//                        fwrite(&(hidden_neuron_populations_prey[p][i][j]->pop[k]->weight[m]),
+//                                sizeof(double), 1, fptr);
+//                    }
 
     for (int p = 0; p < num_teams_predator; p++)
         for (int i = total_predator_networks_per_team - (COMBINE * num_of_predators);
@@ -1922,24 +2195,24 @@ void Esp::save(char* fname, int num_of_predators, int num_of_prey, int num_teams
                                 sizeof(double), 1, fptr);
                     }
 
-    for (int p = 0; p < num_teams_prey; p++)
-        for (int i = total_prey_networks_per_team - (COMBINE * num_of_prey);
-                i < total_prey_networks_per_team; i++)
-            for (int j = 0; j < num_hidden_neurons[0]; j++)
-                for (int k = 0; k < hidden_neuron_populations_prey[p][i][j]->numNeurons; k++)
-                    for (int m = 0; m < GENE_SIZE_PREY_COMBINER_NW; m++) {  // weights
-                        fwrite(&(hidden_neuron_populations_prey[p][i][j]->pop[k]->weight[m]),
-                                sizeof(double), 1, fptr);
-                    }
+//    for (int p = 0; p < num_teams_prey; p++)
+//        for (int i = total_prey_networks_per_team - (COMBINE * num_of_prey);
+//                i < total_prey_networks_per_team; i++)
+//            for (int j = 0; j < num_hidden_neurons[0]; j++)
+//                for (int k = 0; k < hidden_neuron_populations_prey[p][i][j]->numNeurons; k++)
+//                    for (int m = 0; m < GENE_SIZE_PREY_COMBINER_NW; m++) {  // weights
+//                        fwrite(&(hidden_neuron_populations_prey[p][i][j]->pop[k]->weight[m]),
+//                                sizeof(double), 1, fptr);
+//                    }
 
     fclose(fptr);
 
-    cout << endl << "Saved to " << fname << endl << endl;
+    LOG(INFO) << endl << "Saved to " << fname << endl << endl;
 }
 
 void Esp::findChampion()
 {
-    cout << "ESP::findChampion() is commented out" << endl;
+    LOG(INFO) << "ESP::findChampion() is commented out" << endl;
     /*
      int j,l;
      double fitness, best=-999999;
@@ -1982,13 +2255,13 @@ void Esp::endEvolution()
 {
     //save ("end.bin", num_of_predators, num_of_prey);
     printStats();
-    cout << "BYE!\n";
-    exit(0);
+    LOG(INFO) << "Done with evolution";
+    //exit(0);
 }
 
 void Esp::printStats()
 {
-    cout << "ESP::printStats() is commented out" << endl;
+    LOG(INFO) << "ESP::printStats() is commented out" << endl;
 //  printf("\nTotal number of network evaluations : %d\n", generation*numTrials);
 }
 
@@ -2019,10 +2292,11 @@ void subPop::removeConnection(int locus)
                 pop[i]->weight.erase(pop[i]->weight.begin() + locus);
             }
     } else {
-        if (locus < GENE_SIZE_PREY_NW)
-            for (int i = 0; i < numNeurons; ++i) {
-                pop[i]->weight.erase(pop[i]->weight.begin() + locus);
-            }
+        LOG(FATAL) << "NOt suupposed to be here";
+//        if (locus < GENE_SIZE_PREY_NW)
+//            for (int i = 0; i < numNeurons; ++i) {
+//                pop[i]->weight.erase(pop[i]->weight.begin() + locus);
+//            }
     }
 
 }
@@ -2261,7 +2535,7 @@ static void parseArgs(int argc, char *argv[], int *numPops, int *popSize, int *s
 static void checkArgs(int numPops, int popSize)
 {
     if (MIN)
-        cout << "MINIMIZING\n";
+        LOG(INFO) << "MINIMIZING\n";
 }
 
 //--------------------------------------------------------------------
@@ -2279,6 +2553,7 @@ static int sAttribList[] = { GLX_RGBA, GLX_RED_SIZE, 1, GLX_GREEN_SIZE, 1, GLX_B
 int main(int argc, char *argv[])
 {
     libconfig::Config cfg;
+    google::InitGoogleLogging("");
 
     cfg.readFile("esp_predprey.cfg");
 
@@ -2333,8 +2608,8 @@ int main(int argc, char *argv[])
     //cout << "Num hunters in main is "<<num_of_hunters<<endl;
 
     if (if_evolve_prey) {
-        cout << " Prey evolution is not supported now." << endl;
-        exit(0);
+        LOG(FATAL) << " Prey evolution is not supported now." << endl;
+        //exit(0);
     }
     //*******************************END Reading parameters from config file*************************
 
@@ -2342,10 +2617,10 @@ int main(int argc, char *argv[])
     parseArgs(argc, argv, &num_hidden_neurons, &popSize, &seed, &netType, &analyze, &seedNet);
     checkArgs(num_hidden_neurons, popSize);
     reseed(seed);
-    PredPrey predprey(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey,
-            prey_move_probability, num_of_hunters);  // this is our environment.
+    //PredPrey predprey(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey,
+    //        prey_move_probability, num_of_hunters);  // this is our environment.
 
-    cout << "  ESP.C :: number of predator teams:: " << num_teams_predator
+    LOG(INFO) << "  ESP.C :: number of predator teams:: " << num_teams_predator
             << " number of prey teams:: " << num_teams_prey
             << " number of predators in each team:: " << num_of_predators
             << " num of prey in each team:: " << num_of_prey << " num of hunter teams:: " << 1
@@ -2366,7 +2641,7 @@ int main(int argc, char *argv[])
         {
             GLint err = glGetError();
             if (err != GL_NO_ERROR)
-                cout << "Error" << endl;
+                LOG(ERROR) << "Error" << endl;
         }  //ADI
 
         dpy = XOpenDisplay(0);
@@ -2374,7 +2649,7 @@ int main(int argc, char *argv[])
         {
             GLint err = glGetError();
             if (err != GL_NO_ERROR)
-                cout << "Error" << endl;
+                LOG(ERROR) << "Error" << endl;
         }  //ADI
         if ((vi = glXChooseVisual(dpy, DefaultScreen(dpy), sAttribList)) == NULL) {
             fprintf(stderr, "ERROR: Can't find suitable visual!\n");
@@ -2403,17 +2678,60 @@ int main(int argc, char *argv[])
 
     // --- Construct a new ESP ---
     if (start_generation == 1) {
-        Esp esp(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey,
-                1 /*num_teams_hunters*/, num_of_hunters, num_hidden_neurons /*nPops*/,
-                popSize/*nSize*/, predprey/*environment*/, netType);
+        file_prefix = "st1_";
+        // Sub-task 1
+        PredPreyST1 *predprey_st1 = new PredPreyST1(num_of_predators, num_of_prey,
+                num_teams_predator, num_teams_prey, prey_move_probability);  // this is our environment.
+        Esp *esp1 = new Esp(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey,
+                0 /*num_teams_hunters*/, 0, num_hidden_neurons /*nPops*/, popSize/*nSize*/,
+                *predprey_st1/*environment*/, netType);
+        esp1->evolve(maxGenerations, num_of_predators, num_of_prey, num_teams_predator,
+                num_teams_prey, 0, 0);  // evolve
+        vector<vector<vector<Network*> > > hall_of_fame_pred_1 = esp1->hall_of_fame_pred;
+//        LOG(INFO) << "Freeing memory";
+        //delete predprey_st1;
+        //delete esp1;
+        LOG(INFO) << "Done with subtask one" << endl << endl;
 
-        if (analyze) {
-            esp.findChampion();
-            exit(1);
-        }
+        file_prefix = "st2_";
+        // Sub-task 1
+        PredPreyST2 *predprey_st2 = new PredPreyST2(num_of_predators, num_teams_predator,
+                num_of_hunters, 1);  // this is our environment.
+        Esp *esp2 = new Esp(num_of_predators, 0, num_teams_predator, 0, 1 /*num_teams_hunters*/,
+                num_of_hunters, num_hidden_neurons /*nPops*/, popSize/*nSize*/,
+                *predprey_st2/*environment*/, netType);
+        esp2->evolve(maxGenerations, num_of_predators, 0, num_teams_predator, 0, 1, num_of_hunters);  // evolve
+        vector<vector<vector<Network*> > > hall_of_fame_pred_2 = esp2->hall_of_fame_pred;
+//        LOG(INFO) << "Freeing memory";
+//        delete predprey_st2;
+//        delete esp2;
+        LOG(INFO) << "Done with subtask two" << endl << endl;
 
-        esp.evolve(maxGenerations, num_of_predators, num_of_prey, num_teams_predator,
-                num_teams_prey);  // evolve
+        file_prefix = "ot_";
+        vector<vector<vector<vector<Network*> > > > hall_of_fame_pred_both = vector<
+                vector<vector<vector<Network*> > > >();
+        hall_of_fame_pred_both.push_back(hall_of_fame_pred_1);
+        hall_of_fame_pred_both.push_back(hall_of_fame_pred_2);
+
+        // Overall task
+        PredPrey *predprey = new PredPrey(num_of_predators, num_of_prey, num_teams_predator,
+                num_teams_prey, prey_move_probability, num_of_hunters);  // this is our environment.
+        Esp *esp = new Esp(hall_of_fame_pred_both, num_of_predators, num_of_prey,
+                num_teams_predator, num_teams_prey, 1 /*num_teams_hunters*/, num_of_hunters,
+                num_hidden_neurons /*nPops*/, popSize/*nSize*/, *predprey/*environment*/, netType);
+        esp->evolve(maxGenerations, num_of_predators, num_of_prey, num_teams_predator,
+                num_teams_prey, 1, num_of_hunters);  // evolve
+//        LOG(INFO) << "Freeing memory";
+//        delete predprey;
+//        delete esp;
+        LOG(INFO) << "Done with overall task";
+
+        /*
+         if (analyze) {
+         esp.findChampion();
+         exit(1);
+         }
+         */
 
     }
     // --- Load an old ESP from file ---
@@ -2427,17 +2745,19 @@ int main(int argc, char *argv[])
         strcat(filename, "out_");
         strcat(filename, a);
         strcat(filename, ".bin");
+        PredPrey predprey(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey,
+                prey_move_probability, num_of_hunters);  // this is our environment.
         Esp esp(filename, num_of_predators, num_of_prey, num_teams_predator, num_teams_prey,
                 1 /*num_teams_hunters*/, num_of_hunters, num_hidden_neurons, popSize, predprey,
                 netType);
 
         if (analyze) {
             esp.findChampion();
-            exit(1);
+            //exit(1);
         }
 
         esp.evolve(maxGenerations, num_of_predators, num_of_prey, num_teams_predator,
-                num_teams_prey);  // evolve
+                num_teams_prey, 1, num_of_hunters);  // evolve
     }
 
 }
