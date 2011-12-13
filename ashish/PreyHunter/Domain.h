@@ -3,6 +3,9 @@
 
 #include "Basic.h"
 #include "GridWorld.h"
+#include "Predator.h"
+#include "Prey.h"
+#include "Hunter.h"
 #include <string>
 
 namespace PredatorPreyHunter {
@@ -10,9 +13,9 @@ namespace PredatorPreyHunter {
   protected:
     uint maxSteps;
     GridWorld* ptrGridWorld;
-    //Predator* ptrPredator;
-    //Hunter* ptrHunter;
-    //Prey* ptrPrey;
+    Predator* ptrPredator;
+    Hunter* ptrHunter;
+    Prey* ptrPrey;
   public:
     enum Caught { 
       NONE_CAUGHT = 0, 

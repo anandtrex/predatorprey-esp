@@ -533,7 +533,7 @@ vector<double> predprey_domain(Organism *org1,int max_steps,int thresh) {
        			glBegin (GL_POINTS);
        			{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "19. Error" <<endl; } //ADI
 
-
+                   // YELLOW for the prey
                    glColor3f (1.0f, 1.0f, 0.0f); //trying to change the colors of different prey ******PADMINI
 
 
@@ -610,6 +610,7 @@ vector<double> predprey_domain(Organism *org1,int max_steps,int thresh) {
 
                in[1] = ( (double) x_dist ) / MAP_LENGTH; // dist(prey, predator); earlier in[k]
                in[2] = ( (double) y_dist ) / MAP_LENGTH; // dist(prey, predator); earlier in[k+1]
+               in[3] = 0.0; // 0 => PREY
                //cout << "SENSOR INPUT: " << in[k] << "\t" << in[k+1] << endl;
 
            } //End of prey distance loop
@@ -640,8 +641,9 @@ vector<double> predprey_domain(Organism *org1,int max_steps,int thresh) {
                if (temp > 0)
                    y_dist = 0 - y_dist;
            }
-           in[3] = ( (double) x_dist ) / MAP_LENGTH; // dist(predator, hunter); earlier in[k]
-           in[4] = ( (double) y_dist ) / MAP_LENGTH; // dist(predator, hunter); earlier in[k+1]
+           in[4] = ( (double) x_dist ) / MAP_LENGTH; // dist(predator, hunter); earlier in[k]
+           in[5] = ( (double) y_dist ) / MAP_LENGTH; // dist(predator, hunter); earlier in[k+1]
+           in[6] = 1.0; // designates => HUNTER
            in[0] = 1.0; // BIAS
 
            if(i == 0) { //Predator 1
@@ -786,7 +788,7 @@ vector<double> predprey_domain(Organism *org1,int max_steps,int thresh) {
        		// draw new pred point
 
        		        if (i==0) {
-       		        	color1 = 1;
+       		        	color1 = 1; // COLOR is RED
                                }
        		        else if (i==1) {
        		        	color2 = 1;
@@ -892,7 +894,7 @@ vector<double> predprey_domain(Organism *org1,int max_steps,int thresh) {
 			glBegin (GL_POINTS);
 			{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "19. Error" <<endl; } //ADI
 
-
+      // COLOR is GREY
 			glColor3f (0.0f, 0.5f, 0.5f); //trying to change the colors of different hunters ******ASHU
 
 

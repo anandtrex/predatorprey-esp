@@ -16,6 +16,7 @@ namespace PredatorPreyHunter {
     Agent( const GridWorld* ptrGridWorld, const uint& agentId, const Position& p );
     virtual Position move( const std::vector<AgentInformation>& vAgentInformation ) = 0;
     AgentInformation getAgentInformation();
+    Position getPosition() { return position; }
   };
 }
 

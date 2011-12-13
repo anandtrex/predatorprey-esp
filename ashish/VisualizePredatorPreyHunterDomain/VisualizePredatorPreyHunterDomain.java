@@ -33,9 +33,12 @@ public class VisualizePredatorPreyHunterDomain {
           frameVisualizeAgents.setVisible( true );
           GridWorld gridWorld = new GridWorld( 100, 100 );
           try {
+        	  counter = 1;
 	          for ( AgentPositions agentPositions : alAgentPositions ) {
+	        	  System.out.println( "STEP " + counter );
 	        	  agentCanvas.drawNext( gridWorld, agentPositions );
 	        	  Thread.sleep( 500 );
+	        	  counter++;
 	          }
           } catch ( InterruptedException ie ) {
         	  System.out.println( "ERROR: for loop interrupted" );
@@ -106,8 +109,8 @@ class AgentCanvas extends Canvas {
 	}
 	public void drawNext( GridWorld gridWorld, AgentPositions agentPositions ) {
 		this.agentPositions = agentPositions;
-		System.out.println( "Width: " + getWidth() );
-		System.out.println( "Height: " + getHeight() );
+		System.out.println( "Width: " + getWidth() + ", Height: " + getHeight() );
+		System.out.println( agentPositions );
 		int stepX, stepY;
 		stepX = getWidth() / gridWorld.width;
 		stepY = getHeight() / gridWorld.height;

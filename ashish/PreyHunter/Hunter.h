@@ -5,8 +5,9 @@
 
 namespace PredatorPreyHunter {
   class Hunter : public Agent {
+      double moveProbability;
     public:
-      Hunter( const GridWorld* ptrGridWorld, const uint& agentId, const TypeAgent& typeAgent, const Position& p ); 
+      Hunter( const GridWorld* ptrGridWorld, const uint& agentId, const Position& p ); 
       Position move( const std::vector<AgentInformation>& vAgentInformation );
   };
 }

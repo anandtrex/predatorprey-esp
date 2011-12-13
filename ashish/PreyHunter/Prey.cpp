@@ -1,5 +1,6 @@
 #include "Prey.h"
 #include <iostream>
+#include <stdlib.h> // for drand48(): note unix only
 #include <cstdlib>
 
 namespace PredatorPreyHunter {
@@ -7,11 +8,17 @@ namespace PredatorPreyHunter {
   using std::cerr;
   using std::endl;
   using std::abs;
-  Prey::Prey( const GridWorld* ptrGridWorld, const uint& agentId, const TypeAgent& typeAgent, const Position& p ) : Agent( ptrGridWorld, agentId, p ) {
-    this->typeAgent = typeAgent;
+  Prey::Prey( const GridWorld* ptrGridWorld, const uint& agentId, const Position& p ) : Agent( ptrGridWorld, agentId, p ) {
+    this->typeAgent = PREY;
+    moveProbability = 0.9; // fetch this using a constructor later
   }
   Position Prey::move( const std::vector<AgentInformation>& vAgentInformation ) {
     typedef vector<AgentInformation>::const_iterator VAICI;
+    // if the random number between 0 and 1 is greater than the moveProbability
+    // then don't move
+    if ( fetchRandomNumber() > moveProbability ) { 
+      return this->position;
+    }
     const int BIG_DISTANCE = ptrGridWorld->getWidth() + ptrGridWorld->getHeight();
     // find the closest predator
     int distMin, dist;

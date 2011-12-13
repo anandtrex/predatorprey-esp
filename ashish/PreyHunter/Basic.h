@@ -24,6 +24,7 @@ namespace PredatorPreyHunter {
     TypeAgent typeAgent;
     Position position;
   };
+  double fetchRandomNumber();
 }
 
 #endif // PPH_BASIC_H

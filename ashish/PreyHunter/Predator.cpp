@@ -7,8 +7,8 @@ namespace PredatorPreyHunter {
   using std::cerr;
   using std::endl;
   using std::abs;
-  Predator::Predator( const GridWorld* ptrGridWorld, const uint& agentId, const TypeAgent& typeAgent, const Position& p ) : Agent( ptrGridWorld, agentId, p ) {
-    this->typeAgent = typeAgent;
+  Predator::Predator( const GridWorld* ptrGridWorld, const uint& agentId, const Position& p ) : Agent( ptrGridWorld, agentId, p ) {
+    this->typeAgent = PREDATOR;
   }
   Position Predator::move( const std::vector<AgentInformation>& vAgentInformation ) {
     Action predatorAction = NORTH;

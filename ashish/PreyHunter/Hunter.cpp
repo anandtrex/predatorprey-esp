@@ -7,11 +7,17 @@ namespace PredatorPreyHunter {
   using std::cerr;
   using std::endl;
   using std::abs;
-  Hunter::Hunter( const GridWorld* ptrGridWorld, const uint& agentId, const TypeAgent& typeAgent, const Position& p ) : Agent( ptrGridWorld, agentId, p ) {
-    this->typeAgent = typeAgent;
+  Hunter::Hunter( const GridWorld* ptrGridWorld, const uint& agentId, const Position& p ) : Agent( ptrGridWorld, agentId, p ) {
+    this->typeAgent = HUNTER;
+    moveProbability = 0.9;
   }
   Position Hunter::move( const std::vector<AgentInformation>& vAgentInformation ) {
     typedef vector<AgentInformation>::const_iterator VAICI;
+    // if the random number between 0 and 1 is greater than the moveProbability
+    // then don't move
+    if ( fetchRandomNumber() > moveProbability ) { 
+      return this->position;
+    }
     const int BIG_DISTANCE = ptrGridWorld->getWidth() + ptrGridWorld->getHeight();
     // find the closest predator
     int distMin, dist;
