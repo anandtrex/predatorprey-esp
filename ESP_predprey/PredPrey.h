@@ -1,8 +1,5 @@
 #include "Environment.h"
 
-#define MAP_LENGTH 100
-#define MAP_HEIGHT 100
-
 /**
  * Defines the Predator-Prey environment
  */
