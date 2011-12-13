@@ -137,8 +137,10 @@ namespace PredatorPreyHunter {
         break;
       case 4:
         predatorAction = STAY;
+        break;
       default:
         cerr << "Predator::move() predatorAction is not within 0 to 4. Implies more than 5 outputs" << endl;
+        cerr << "mostActive: " << mostActive << endl;
         throw 1; // throw something meaningful later
     }
     this->position = ptrGridWorld->move( this->position, predatorAction ); 

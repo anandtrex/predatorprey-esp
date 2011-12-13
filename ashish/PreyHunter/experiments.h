@@ -38,8 +38,9 @@ using namespace NEAT;
 
 // PredatorPreyHunter routines ***************************************
 Population* predatorpreyhunter_test( int gens );
-int predatorpreyhunter_epoch( Population* pop, int generation, char* filename );
+double predatorpreyhunter_epoch( Population* pop, int generation, char* filename );
 double predatorpreyhunter_evaluate( Organism* org );
+double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathFile );
 
 //The XOR evolution routines *****************************************
 Population *xor_test(int gens);

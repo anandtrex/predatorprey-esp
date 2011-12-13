@@ -32,14 +32,14 @@ Population *predatorpreyhunter_test(int gens) {
     int gen;
 
     int expcount;
-    int status;
-    int runs[NEAT::num_runs];
+    double status; // store the fitness of the champ of each epoch
+    int runs[NEAT::num_runs]; // change runs to double later
     int totalevals;
     int samples;  //For averaging
 
     memset (runs, 0, NEAT::num_runs * sizeof(int));
 
-    ifstream iFile("predatorpreyhunterstartgenes",ios::in);
+    ifstream iFile("singlepreyhunter_startgenes",ios::in);
 
     cout<<"START SINGLE PREDATOR PREY HUNTER EVOLUTION"<<endl;
 
@@ -80,8 +80,9 @@ Population *predatorpreyhunter_test(int gens) {
         status=predatorpreyhunter_epoch(pop,gen,temp);
         //status=(pole1_epoch(pop,gen,fnamebuf->str()));
 	
-        if (status) {
-          runs[expcount]=status;
+        if (status > 0) { // if we had some success i.e. no negative fitness
+          // change runs to double later
+          runs[expcount]=static_cast<int> (status);
           gen=gens+1;
         }
 	
@@ -111,7 +112,7 @@ Population *predatorpreyhunter_test(int gens) {
 
 }
 
-int predatorpreyhunter_epoch(Population *pop,int generation,char *filename) {
+double predatorpreyhunter_epoch(Population *pop,int generation,char *filename) {
   vector<Organism*>::iterator curorg;
   vector<Species*>::iterator curspecies;
   //char cfilename[100];
@@ -123,10 +124,29 @@ int predatorpreyhunter_epoch(Population *pop,int generation,char *filename) {
   int winnernum;
 
   //Evaluate each organism on a test
-  for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
-    if (predatorpreyhunter_evaluate(*curorg)) win=true;
+  //store the iterator of the organism with the greatest fitness
+  curorg=(pop->organisms).begin();
+  double fitnessGreatest = predatorpreyhunter_evaluate(*curorg); // get the fitness of the first organism
+  vector<Organism*>::iterator itPtrOrgChamp = curorg;
+  ++curorg; // move to the next organism
+  for( ;curorg!=(pop->organisms).end(); ++curorg) {
+    double fitnessOrganism = predatorpreyhunter_evaluate(*curorg);
+    cout << "FITNESS: " << fitnessOrganism << endl;
+    if ( fitnessGreatest < fitnessOrganism ) { // if fitness of current organism greater than the best make it the champ
+      fitnessGreatest = fitnessOrganism; 
+      itPtrOrgChamp = curorg;
+    }
   }
   
+  // run the evaluation again but just once and store the performance to a file
+  if ( itPtrOrgChamp == (pop->organisms).end() ) {
+    cerr << "predatorpreyhunter_epoch(): itPtrOrgChamp is null!" << endl;
+    throw 1; // throw something meaningful later
+  }
+  string pathFile = string( filename ) + ".champ.txt";
+  double fitnessOrganism = predatorpreyhunter_evaluate_storeperformance( *itPtrOrgChamp, pathFile ); 
+  // TODO store the champ organism itself to file
+
   //Average and max their fitnesses for dumping to file and snapshot
   for(curspecies=(pop->species).begin();curspecies!=(pop->species).end();++curspecies) {
 
@@ -145,25 +165,23 @@ int predatorpreyhunter_epoch(Population *pop,int generation,char *filename) {
   //  pop->snapshot();
 
   //Only print to file every print_every generations
-  if  (win||
-       ((generation%(NEAT::print_every))==0))
+  if  ( ( generation % ( NEAT::print_every ) )==0 ) {
     pop->print_to_file_by_species(filename);
-
-  if (win) {
-    for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
-      if ((*curorg)->winner) {
-        winnernum=((*curorg)->gnome)->genome_id;
-        cout<<"WINNER IS #"<<((*curorg)->gnome)->genome_id<<endl;
-      }
-    }    
   }
+
+  //if (win) {
+    //for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
+      //if ((*curorg)->winner) {
+        //winnernum=((*curorg)->gnome)->genome_id;
+        //cout<<"WINNER IS #"<<((*curorg)->gnome)->genome_id<<endl;
+      //}
+    //}    
+  //}
 
   //Create the next generation
   pop->epoch(generation);
 
-  if (win) return ((generation-1)*NEAT::pop_size+winnernum);
-  else return 0;
-
+  return fitnessGreatest; 
 }
 
 double predatorpreyhunter_evaluate(Organism *org) {
@@ -191,6 +209,34 @@ double predatorpreyhunter_evaluate(Organism *org) {
     sumFitness += domain.run(); 
   }
   org->fitness = sumFitness / noTrials;
+
+  cout<<"Org "<<(org->gnome)->genome_id<<" fitness: "<<org->fitness<<endl;
+
+  return org->fitness;
+}
+
+double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathFile ) {
+  Network *net;
+
+  int numnodes;  /* Used to figure out how many nodes
+		    should be visited during activation */
+  int thresh;  /* How many visits will be allowed before giving up 
+		  (for loop detection) */
+
+  //  int MAX_STEPS=120000;
+  int MAX_STEPS=1000; // grid size will be smaller like 10x10
+  
+  net=org->net;
+  numnodes=((org->gnome)->nodes).size();
+  thresh=numnodes*2;  //Max number of visits allowed per activation
+  
+  //Try to balance a pole now
+  double fitnessOrganism = 0.0;
+  int MAP_WIDTH = 10;
+  int MAP_HEIGHT = 10;
+  PredatorPreyHunter::Domain domain( MAX_STEPS, MAP_WIDTH, MAP_HEIGHT, net );   
+  fitnessOrganism = domain.run( pathFile ); 
+  org->fitness = fitnessOrganism; 
 
   cout<<"Org "<<(org->gnome)->genome_id<<" fitness: "<<org->fitness<<endl;
 

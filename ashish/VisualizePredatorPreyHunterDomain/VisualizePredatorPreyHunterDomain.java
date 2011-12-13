@@ -24,14 +24,14 @@ public class VisualizePredatorPreyHunterDomain {
 			counter++;
 		  }
           FrameVisualizeAgents frameVisualizeAgents = new FrameVisualizeAgents( "Visualize Agents" );
-          frameVisualizeAgents.setSize( 600, 600 );
+          frameVisualizeAgents.setSize( 200, 200 );
           Container contentPane = frameVisualizeAgents.getContentPane();
           AgentCanvas agentCanvas = new AgentCanvas();
           contentPane.add( agentCanvas );
-          agentCanvas.setMinimumSize( new Dimension( 500, 500 ) );
-          agentCanvas.setPreferredSize( new Dimension( 500, 500 ) );
+          agentCanvas.setMinimumSize( new Dimension( 100, 100 ) );
+          agentCanvas.setPreferredSize( new Dimension( 100, 100 ) );
           frameVisualizeAgents.setVisible( true );
-          GridWorld gridWorld = new GridWorld( 100, 100 );
+          GridWorld gridWorld = new GridWorld( 10, 10 );
           try {
         	  counter = 1;
 	          for ( AgentPositions agentPositions : alAgentPositions ) {
