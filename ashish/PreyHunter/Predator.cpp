@@ -121,7 +121,7 @@ namespace PredatorPreyHunter {
       count++; ++itPtrNNode;
     }
     Action predatorAction;
-    int choice = static_cast<int> ( fetchRandomNumber() * 5 );
+    int choice = static_cast<int> ( mostActive ); // there is no need for this variable but I am not changing code now
     switch( choice ) {
       case 0:
         predatorAction = NORTH;
@@ -135,8 +135,11 @@ namespace PredatorPreyHunter {
       case 3:
         predatorAction = WEST;
         break;
-      default:
+      case 4:
         predatorAction = STAY;
+      default:
+        cerr << "Predator::move() predatorAction is not within 0 to 4. Implies more than 5 outputs" << endl;
+        throw 1; // throw something meaningful later
     }
     this->position = ptrGridWorld->move( this->position, predatorAction ); 
     return this->position;
