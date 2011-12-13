@@ -1,4 +1,4 @@
-#include "Prey.h"
+#include "Hunter.h"
 #include <iostream>
 #include <cstdlib>
 
@@ -7,10 +7,10 @@ namespace PredatorPreyHunter {
   using std::cerr;
   using std::endl;
   using std::abs;
-  Prey::Prey( const GridWorld* ptrGridWorld, const uint& agentId, const TypeAgent& typeAgent, const Position& p ) : Agent( ptrGridWorld, agentId, p ) {
+  Hunter::Hunter( const GridWorld* ptrGridWorld, const uint& agentId, const TypeAgent& typeAgent, const Position& p ) : Agent( ptrGridWorld, agentId, p ) {
     this->typeAgent = typeAgent;
   }
-  Position Prey::move( const std::vector<AgentInformation>& vAgentInformation ) {
+  Position Hunter::move( const std::vector<AgentInformation>& vAgentInformation ) {
     typedef vector<AgentInformation>::const_iterator VAICI;
     const int BIG_DISTANCE = ptrGridWorld->getWidth() + ptrGridWorld->getHeight();
     // find the closest predator
@@ -28,7 +28,7 @@ namespace PredatorPreyHunter {
     }
     if ( BIG_DISTANCE == distMin || vAgentInformation.end() == itPredatorClosest ) {
       cerr << "Houston, we have a problem" << endl;
-      cerr << "Prey::move could not find the nearest predator." << endl;
+      cerr << "Hunter::move could not find the nearest predator." << endl;
       throw 1; // throw something meaningful later
     }
     // move away from the closest predator
@@ -36,7 +36,7 @@ namespace PredatorPreyHunter {
     // uses the same conventions
     const int MAP_LENGTH = ptrGridWorld->getWidth();
     const int MAP_HEIGHT = ptrGridWorld->getHeight();
-    int x_dist = itPredatorClosest->position.x - this->position.x; // NOTE: Predator - Prey
+    int x_dist = itPredatorClosest->position.x - this->position.x; // NOTE: Predator - Hunter
     int temp;
     if ( ( abs( x_dist ) ) > ( MAP_LENGTH / 2 ) ) { // account for the toroid
         temp = x_dist;
@@ -45,30 +45,30 @@ namespace PredatorPreyHunter {
           x_dist = 0 - x_dist;         // account for who is behind who
     }
     // do the same thing for y
-    int y_dist = itPredatorClosest->position.y - this->position.y; // NOTE: Predator - Prey
+    int y_dist = itPredatorClosest->position.y - this->position.y; // NOTE: Predator - Hunter
     if ( ( abs( y_dist ) ) > ( MAP_HEIGHT / 2 ) ) {
         temp = y_dist;
         y_dist = MAP_HEIGHT  - abs(y_dist);
         if (temp > 0)
             y_dist = 0 - y_dist;
     }
-    Action preyAction;
+    Action hunterAction;
     if (y_dist<0 && (abs(y_dist)>=abs(x_dist))) {		
-        preyAction = NORTH;
+        hunterAction = SOUTH; // NOTE: opposite of prey movement
     }
     else if (x_dist<0 && (abs(x_dist)>=abs(y_dist))) {
-        preyAction = EAST;
+        hunterAction = WEST;
     }
     else if (y_dist>0 && (abs(y_dist)>=abs(x_dist))) {
-        preyAction = SOUTH;
+        hunterAction = NORTH;
     }
     else if (x_dist>0 && (abs(x_dist)>=abs(y_dist))) {
-        preyAction = WEST;
+        hunterAction = EAST;
     }
     else {
-        preyAction = STAY;
+        hunterAction = STAY;
     }
-    this->position = ptrGridWorld->move( this->position, preyAction ); 
+    this->position = ptrGridWorld->move( this->position, hunterAction ); 
   }
 }
 
