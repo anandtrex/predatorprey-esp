@@ -395,10 +395,14 @@ vector<vector<vector<double> > > PredPreyST1::evalNet(vector<vector<Network*> >&
             }
             temp_hit_wall = temp_hit_wall + pred_hit_wall_times[p][i];
             if (num_teams_prey == 1) {
-                temp_individual_fitness.push_back(
-                        num_of_prey_caught_individually[p][i] * reward_prey_team[0]
-                                + num_of_prey_caught[p] * reward_prey_team[0]);  // This is individual fitness for Competing agents
+                if(num_of_prey_caught_individually[p][i] > 0)
+                    temp_individual_fitness.push_back( 10 * (maxSteps - steps));
+                else
+                    temp_individual_fitness.push_back(0.0);
+//                        num_of_prey_caught_individually[p][i] * reward_prey_team[0]
+//                                + num_of_prey_caught[p] * reward_prey_team[0]);  // This is individual fitness for Competing agents
             } else if (num_teams_prey == 2) {
+                LOG(FATAL) << "Shouldn't be here";
                 temp_individual_fitness.push_back(
                         num_of_prey_caught_individually[p][i] * reward_prey_team[0]
                                 + num_of_prey_caught[p] * reward_prey_team[1]);  // This is individual fitness for Competing agents
@@ -419,24 +423,24 @@ vector<vector<vector<double> > > PredPreyST1::evalNet(vector<vector<Network*> >&
         if (count_generation_best_mice_caught > count_overall_best_mice_caught) {
             count_overall_best_mice_caught = count_generation_best_mice_caught;
         }
-        cout << " Generation Number :: " << previous_generation
-                << " Overall Best Number of Zebra Caught :  " << count_overall_best_zebra_caught
-                << endl;
-        cout << " Generation Number :: " << previous_generation
-                << " Generation Best Number of Zebra Caught :  "
-                << count_generation_best_zebra_caught << endl;
-        cout << " Generation Number :: " << previous_generation
-                << " Generation Average Number of Zebra Caught :  "
-                << count_generation_zebra_caught / TOTAL_EVALUATIONS << endl;
-        cout << " Generation Number :: " << previous_generation
-                << " Overall Best Number of Mice Caught :  " << count_overall_best_mice_caught
-                << endl;
-        cout << " Generation Number :: " << previous_generation
-                << " Generation Best Number of Mice Caught :  " << count_generation_best_mice_caught
-                << endl;
-        cout << " Generation Number :: " << previous_generation
-                << " Generation Average Number of Mice Caught :  "
-                << count_generation_mice_caught / TOTAL_EVALUATIONS << endl;
+//        cout << " Generation Number :: " << previous_generation
+//                << " Overall Best Number of Zebra Caught :  " << count_overall_best_zebra_caught
+//                << endl;
+//        cout << " Generation Number :: " << previous_generation
+//                << " Generation Best Number of Zebra Caught :  "
+//                << count_generation_best_zebra_caught << endl;
+//        cout << " Generation Number :: " << previous_generation
+//                << " Generation Average Number of Zebra Caught :  "
+//                << count_generation_zebra_caught / TOTAL_EVALUATIONS << endl;
+//        cout << " Generation Number :: " << previous_generation
+//                << " Overall Best Number of Mice Caught :  " << count_overall_best_mice_caught
+//                << endl;
+//        cout << " Generation Number :: " << previous_generation
+//                << " Generation Best Number of Mice Caught :  " << count_generation_best_mice_caught
+//                << endl;
+//        cout << " Generation Number :: " << previous_generation
+//                << " Generation Average Number of Mice Caught :  "
+//                << count_generation_mice_caught / TOTAL_EVALUATIONS << endl;
         count_generation_best_zebra_caught = 0;
         count_generation_zebra_caught = num_of_prey_caught[0];
         count_generation_best_mice_caught = 0;
@@ -608,8 +612,8 @@ void PredPreyST1::init(bool preyRandom, bool predsRandom, int generation)
     if (preyRandom) {
         for (int k = 0; k < num_teams_prey; k++) {
             for (int i = 0; i < num_of_prey; i++) {
-                temp_x.push_back((int) (drand48() * 100));
-                temp_y.push_back((int) (drand48() * 100));
+                temp_x.push_back((int) (drand48() * MAP_LENGTH));
+                temp_y.push_back((int) (drand48() * MAP_HEIGHT));
                 temp_energy.push_back(1000);
             }
             prey_x.push_back(temp_x);
@@ -725,8 +729,8 @@ void PredPreyST1::init(bool preyRandom, bool predsRandom, int generation)
 
 void PredPreyST1::reset_prey_position(int prey_team, int prey)
 {
-    prey_x[prey_team][prey] = ((int) (drand48() * 100));
-    prey_y[prey_team][prey] = ((int) (drand48() * 100));
+    prey_x[prey_team][prey] = ((int) (drand48() * MAP_LENGTH));
+    prey_y[prey_team][prey] = ((int) (drand48() * MAP_HEIGHT));
 
 }
 
@@ -1038,7 +1042,7 @@ void PredPreyST1::performPredAction_complex(int pred_team, int pred,
 
     pred_flee_factor = 1.0;
 
-    if (drand48() <= pred_flee_factor) {
+    //if (drand48() <= pred_flee_factor) {
 
         if (predAction == 0) {
             //if(pred_y[pred_team][pred] != MAP_LENGTH) {
@@ -1084,7 +1088,7 @@ void PredPreyST1::performPredAction_complex(int pred_team, int pred,
             //pred_hit_wall_times[pred_team][pred]++; // Idle state leads to loss of 1 fitness points
             //pred_energy[pred_team][pred]--;
         }
-    }
+    //}
 
     if (pred_x[pred_team][pred] > MAP_LENGTH)
         pred_x[pred_team][pred] -= MAP_LENGTH;
@@ -1268,21 +1272,21 @@ void PredPreyST1::performPredAction_complex(int pred_team, int pred,
         }
     }
 
-    for (int p = 0; p < num_teams_predator; p++) {
-        for (i = 0; i < num_of_predators && p != pred_team; i++) {
-            if (pred_killed[p][i] == false && pred_killed[pred_team][pred] == false
-                    && pred_x[pred_team][pred] == pred_x[p][i]
-                    && pred_y[pred_team][pred] == pred_y[p][i]) {
-                if (pred_energy[pred_team][pred] > pred_energy[p][i]) {
-                    //pred_killed[p][i] = true;
-                    //num_of_pred_kills[pred_team]++;
-                } else {
-                    //pred_killed[pred_team][pred] = true;
-                    //num_of_pred_kills[p]++;
-                }
-            }
-        }
-    }
+//    for (int p = 0; p < num_teams_predator; p++) {
+//        for (i = 0; i < num_of_predators && p != pred_team; i++) {
+//            if (pred_killed[p][i] == false && pred_killed[pred_team][pred] == false
+//                    && pred_x[pred_team][pred] == pred_x[p][i]
+//                    && pred_y[pred_team][pred] == pred_y[p][i]) {
+//                if (pred_energy[pred_team][pred] > pred_energy[p][i]) {
+//                    //pred_killed[p][i] = true;
+//                    //num_of_pred_kills[pred_team]++;
+//                } else {
+//                    //pred_killed[pred_team][pred] = true;
+//                    //num_of_pred_kills[p]++;
+//                }
+//            }
+//        }
+//    }
 
     //int sum = 0; //To count the number of prey caught ******PADMINI
     //for(int j = 0; j < num_of_prey; j++) {
@@ -1352,7 +1356,7 @@ void PredPreyST1::performPreyAction_complex(int prey_team, int prey)
         }
 
         // calculate predator offset with wraparound
-        x_dist = pred_x[nearestPred_team][nearestPred] - prey_x[prey_team][prey];
+        x_dist = pred_x[0][0] - prey_x[0][0];
 
         if ((abs(x_dist)) > (MAP_LENGTH / 2)) {
             temp = x_dist;
@@ -1361,7 +1365,7 @@ void PredPreyST1::performPreyAction_complex(int prey_team, int prey)
                 x_dist = 0 - x_dist;
         }
 
-        y_dist = pred_y[nearestPred_team][nearestPred] - prey_y[prey_team][prey];
+        y_dist = pred_y[0][0] - prey_y[0][0];
 
         if ((abs(y_dist)) > (MAP_HEIGHT / 2)) {
             temp = y_dist;
@@ -1418,13 +1422,13 @@ void PredPreyST1::performPreyAction_complex(int prey_team, int prey)
     }
 
     if (prey_x[prey_team][prey] > MAP_LENGTH)
-        prey_x[prey_team][prey] -= MAP_LENGTH;
+        prey_x[prey_team][prey] = 0;//-= MAP_LENGTH;
     if (prey_y[prey_team][prey] > MAP_HEIGHT)
-        prey_y[prey_team][prey] -= MAP_HEIGHT;
+        prey_y[prey_team][prey] = 0;//-= MAP_HEIGHT;
     if (prey_x[prey_team][prey] < 0)
-        prey_x[prey_team][prey] += MAP_LENGTH;
+        prey_x[prey_team][prey] = 0;//+= MAP_LENGTH;
     if (prey_y[prey_team][prey] < 0)
-        prey_y[prey_team][prey] += MAP_HEIGHT;
+        prey_y[prey_team][prey] = 0;//+= MAP_HEIGHT;
 
     if (SHOW) {
 

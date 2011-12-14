@@ -6,7 +6,7 @@
 
 #include <vector>
 //#include <deque.h>
-//#include <fstream.h>
+#include <fstream>
 
 #ifndef _ESP_
 #define _ESP_
@@ -161,6 +161,8 @@ private:
     vector<vector<Network*> > bestNetwork;
     //vector<vector<Network*> > bestNetwork_prey;
     int generation;
+
+    ofstream fout_champfitness;
 
     Esp(const Esp &);  // just for safety
     Esp &operator=(const Esp &);

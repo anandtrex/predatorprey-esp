@@ -1,0 +1,839 @@
+%% $Id: nnmacros.tex,v 1.28 2005/09/28 21:18:37 jbednar Exp $
+%%
+%% Standard set of LaTeX macros and declarations for the NN group
+%%
+%% Originally based on risto's com.tex
+%%
+%% Because of \usepackage{hyperref}, this file should be included
+%% *after* all other packages.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Add ability to check for PDFTeX
+
+\newif\ifpdf
+\ifx\pdfoutput\undefined
+  \pdffalse
+\else
+  \pdfoutput=1
+  \pdftrue
+\fi
+
+%% Macro useful for figuring out if a TeX command has been defined
+%%
+\def\ifundefined#1{\expandafter\ifx\csname#1\endcsname\relax}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Packages required
+
+
+% Because of this call, the "graphics" interface can't be used in
+% conjunction with this file.  
+%
+\ifpdf\PassOptionsToPackage{pdftex}{graphicx}\fi
+\usepackage{graphicx}
+
+%% If you want to supply options to the hyperref package, you can add :
+%% 
+%% \PassOptionsToPackage{...}{hyperref} 
+%%
+%% in your source file before any \usepackage commands.  To turn
+%% off hyperlinks altogether, you can use: 
+%%
+%% \PassOptionsToPackage{draft}{hyperref} %% Turn off hyperref links
+%%
+\ifpdf
+%% Highlights links in PDF files
+\usepackage{hyperref}
+%% Highlights bibliography links
+\newcommand{\biblink}[2]{\htmladdnormallink{#1}{#2}}
+\fi
+
+% From the LaTeX2HTML distribution.
+%\usepackage{html}%   
+%
+% If you don't have or want LaTeX2HTML when running this at home, just
+% copy /u/nn/tex/latex2html/texinputs/html.sty to somewhere   
+% in your TEXINPUTS path and ignore the rest of LaTeX2HTML.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% From risto's com.tex:
+
+%%% Generates a \tt quotation without indentation
+%\def\quotation{\list{}{\listparindent 0.0em
+%    \setlength{\parindent}{0.0in}
+%    \renewcommand{\baselinestretch}{1}\small\normalsize\tt
+%    \renewcommand{\arraystretch}{1}
+%%    \itemindent\listparindent
+%    \setlength{\leftmargin}{0.0in}
+%    \parsep 0pt plus 1pt}\item[]}
+%\let\endquotation=\endlist
+
+%% I like to tighten up my captions and tables
+\newcommand{\mycapdefs}{\renewcommand{\baselinestretch}{1}\small}
+\newcommand{\mytabdefs}{\renewcommand{\arraystretch}{1}\small}
+
+%% Get it?
+\hyphenation{Miik-ku-lai-nen}
+
+%% I don't like pages with only figures on them
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\floatpagefraction}{0.8}
+\renewcommand{\dbltopfraction}{0.9}
+\renewcommand{\dblfloatpagefraction}{0.8}
+\renewcommand{\textfraction}{.15}
+
+%% Simple PostScript picture inclusion macros using the graphicx package
+%%
+%% These three commands have been provided for backwards compatibility
+%% only.  You should not use them in new documents, because the 
+%% non-standard argument format causes trouble with packages that expect
+%% LaTeX-style  arguments, such as AucTeX, emacs font-lock, and
+%% LaTeX2HTML.  Instead use the \pspic or \pdfpic macros (below).
+%%
+\begin{latexonly}
+\def\putpicture   #1 (#2)\centerline{\includegraphics[totalheight=#2]ps/#1.ps}
+\def\hputpicture  #1 (#2){\centerline{\includegraphics[width=#2]{ps/#1.ps}}}
+\def\hvputpicture #1 (#2 by #3){\centerline{\includegraphics[width=#2,totalheight=#3]{ps/#1.ps}}}
+\end{latexonly}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% \scribbledraft: Provides a single-column mode with lots of space
+%% to write comments on, e.g. for giving to a coauthor.
+%%
+%% To use, add \scribbledraft before \begin{document} but after
+%% all your \usepackage commands.
+%%
+%% Tips:
+%%
+%% If the formatting doesn't look right, you may have to comment out
+%% your document style (e.g. \usepackage{<confname>}) and instead use
+%% \usepackage{nntwocolumn}.  Usually it will only be the first 
+%% page that has problems, though; that's where style files usually
+%% mess with the page widths and lengths.
+%%
+%% If you get lines sticking past the edge of the column, try adding
+%% \sloppy just after \scribbledraft.
+%%
+%% If your document has figure or figure* environments that come out much
+%% too small in \scribbledraft mode, you may be able to fix them by
+%% changing them to fullfigure or fullfigure* environments, which are
+%% defined below.  However, you may find that the result is no longer
+%% centered properly or is the wrong width.  If so, you might need to add
+%% a \setlength\originalwidth{6.5in} or \setlength\marginoffset{0in}
+%% after \scribbledraft, adjusting those two values to fix the width and
+%% left margin.  
+%%
+\newcommand{\scribbledraft}{
+  \newlength\marginoffset\setlength\marginoffset{-0.5in}
+  \newlength\nominalwidth\setlength\nominalwidth{3.5in}
+  \newlength\nominalmargin\setlength\nominalmargin{0.5in}
+  \setlength\topmargin{0.5in}
+%% \setlength\oddsidemargin{0.5in}
+%% \setlength\evensidemargin{0.5in}
+\setlength\oddsidemargin{\nominalmargin}
+\setlength\evensidemargin{\nominalmargin}
+\setlength\textheight{8in}
+\setlength\textwidth{\nominalwidth}
+\setlength\footskip{20pt}
+\setlength\marginparwidth{2.5in}
+\pagestyle{plain}
+\onecolumn
+% Some styles (e.g. cogsci, nntwocolumn) call \twocolumn in \maketitle,
+% so here we define it as a no-op
+\renewcommand{\twocolumn}[1][]{##1\bigskip\bigskip} 
+%%
+\renewcommand{\forcedoublecolumnfigurestart}
+{\setlength\textwidth{\originalwidth}%
+\hspace*{\marginoffset}%
+\begin{minipage}{\originalwidth}}
+%%
+\renewcommand{\forcedoublecolumnfigureend}
+{\end{minipage}\setlength\textwidth{\nominalwidth}}
+}
+%% Save original value here for later
+\newlength{\originalwidth}\setlength{\originalwidth}{\textwidth}
+%%
+\newcommand{\forcedoublecolumnfigurestart}{}
+\newcommand{\forcedoublecolumnfigureend}{}
+%%
+\newenvironment{fullfigure}[1][tbp]
+{\begin{figure}[#1]\forcedoublecolumnfigurestart}
+{\forcedoublecolumnfigureend\end{figure}}
+%%
+\newenvironment{fullfigure*}[1][tbp]
+{\begin{figure*}[#1]\forcedoublecolumnfigurestart}
+{\forcedoublecolumnfigureend\end{figure*}}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Conditional picture inclusion macros using the graphicx package
+%%
+%% If you use \pdfpic (below) when specifying a picture, you
+%% can use \psdraftlevel (also below) to specify which ones to include
+%% for a printout (e.g. to save print time or file size, or to print
+%% color pages separately).  It's also handy to have the type of picture
+%% declared in the source file this way, as a clue to what type of
+%% picture is involved.  Just ignore this if it is not needed.
+
+%% First, declare some symbolic constants representing the different
+%% classes of images.  These definitions shouldn't ever need changing, 
+%% but new ones can be added in between if needed.
+%%  
+\def\psnone{100}        % No picture should be included
+\def\psline{80}         % Black and white line drawings only
+\def\psmono{60}         % Monochrome images only
+\def\pscolororbw{40}    % Images for which color is optional
+\def\pscolor{20}        % Images for which color is required
+\def\psall{0}           % All pictures should be included
+
+
+%% The \psdraftlevel command determines which pictures should actually
+%% be included, while other pictures merely have their bounding
+%% box drawn in to save time or file size, or to print on printers
+%% with insufficient memory.  It is optional, but if used, should
+%% presumably be in the preamble. Each of the above levels is
+%% inclusive of the preceding ones (those with lower numbers), so
+%% \mono includes line drawings too, and \color includes line, mono,
+%% and color pictures. 
+%%
+%% Example:  To include all pictures (the default),
+%%   \psdrafttype{\psall}
+%%
+%% Example:  To include all pictures which make sense in monochrome,
+%%   \psdrafttype{\pscolororbw}
+%%
+%% Example:  To include only line drawings, i.e. pictures likely to be
+%% very small in file size, 
+%%   \psdrafttype{\psline}
+%%
+%% Below, 0 is hardcoded instead of \psall because of problems 
+%% with some versions of latex2html
+\newcount\psdraftlevel \psdraftlevel=0
+\newcommand{\psdrafttype}[1]{\psdraftlevel=#1}
+
+
+%% Including PDF, JPG, PNG, or TIF pictures in PDFLaTeX documents,
+%% (as well as EPS pictures in LaTeX documents)
+%%
+%% \pdfpic[category]{width}{height}{[dir/]filename}{filetype}
+%%
+%%
+%% Arguments:
+%%
+%% The "category" argument is optional; if present it should indicate the
+%% type of image the file represents, i.e. \psline for a line drawing,
+%% \pscolor for a color photo, \pscolororbw for an image that is readable
+%% either in color or monochrome, \psnone for a blank space, etc.  For 
+%% a given run, the actual image is included only if the the
+%% \psdrafttype is low enough.  For example, if \psdrafttype}{\psmono}
+%% has been specified, all line and monochrome pictures are included,
+%% but color pictures will be represented only by a bounding box.  If
+%% "category" is omitted then the image will always be displayed,
+%% regardless of draftlevel.
+%%
+%% Either or both of the length arguments "length" and "width" can be 
+%% omitted if they are replaced by "!", which indicates that that
+%% dimension should scale proportionally.  (If both are "!", then the
+%% image is left at the natural size of the image, whatever that might
+%% be for a given filetype.)  A dummy image (type \psnone) must have
+%% both "length" and "width" specified, since they cannot be read from
+%% a file.
+%%
+%% The argument "[dir/]filename" should be the complete path to your
+%% picture file, minus the final extension, which in turn goes in the 
+%% {filetype} argument.  For instance, to access "./images/pretty.jpg",
+%% use \pdfpic{!}{!}{images/pretty}{jpg}.  
+%%
+%% 
+%% Tips and examples:
+%% 
+%% Filetypes (i.e., extensions) of jpg, png, pdf and tif are currently
+%% supported. Of these you should usually use pdf for line drawings,
+%% jpg for photographs, and tif or png for non-photograph bitmap images.
+%% 
+%% Usually, it is best to specify that a picture be fixed in size
+%% horizontally if it extends across the page, so that it still fits
+%% on the page properly if the margins, number of columns, etc. are
+%% changed.  
+%%
+%% Example: To insert a monochrome PNG picture images/sample.png, scaled
+%% to be as wide as the current page,        
+%%   \pdfpic[\psmono]{\textwidth}{!}{images/sample}{png}
+%%
+%% Example: To insert a line drawing images/sample.pdf, scaled to be as
+%% half as wide as the page, rotated 90 degrees counterclockwise, and
+%% framed with a thin, snug outline,
+%%   \frame{\rotatebox{90}{\pdfpic[\psline]{!}{0.5\textwidth}{images/sample.pdf}{pdf}}}
+%%
+%% Example: To insert a dummy 3" x 2" space for pasting in a picture 
+%% later, when no image file actually exists on disk,
+%%   \pdfpic[\psnone]{3in}{2in}{Paste feller:science96 figure 3 here}{}
+%%
+%% If this command is used under LaTeX, the filetype is ignored and 
+%% one of type eps and ending in .ps is assumed.  If you do use such EPS 
+%% files, make sure that they are truly EPS (i.e., have a bounding box)
+%% and not just PostScript.
+%%
+%%
+\newcommand{\pdfpic}[5][\psall]{\includepdfpic[#1]{#2}{#3}{#4}{#5}{}}%
+
+
+%% Same as \pdfpic but clips to boundary of box
+\newcommand{\pdfpicclip}[5][\psall]{\includepdfpic[#1]{#2}{#3}{#4}{#5}{clip=True,}}%
+
+
+
+%% Old-style interface for inserting PostScript pictures into LaTeX
+%% documents:
+%%
+%%
+%% This interface only supports PDF and EPS filetypes, and is included
+%% for backwards compatibility with older documents developed in LaTeX.
+%% Such documents can be converted to work with PDFLaTeX simply by
+%% converting all of the EPS files they include to PDF.  For instance,
+%% (in csh):
+%%
+%% foreach psfile (ps/*.ps) 
+%%   epstopdf "${psfile}"
+%% end
+%%
+%% That way PDFLaTeX will find the ps/*.pdf files, and LaTeX will find
+%% the ps/*.ps files.  Be sure to check the generated .pdf figures
+%% carefully; sometimes the translation process generates visible
+%% artifacts.  For instance, sometimes you can see fringes around
+%% sharp, high-contrast borders in images, like those when converting
+%% bitmaps to JPEG.
+%%
+%% 
+%% This macro is used just like \pdfpic, except that you should omit the
+%% filetype (because only one filetype is supported for each platform)
+%% and the directory (which is assumed to be ./ps/):
+%%
+%% \pspic[category]{width}{height}{filename}
+%%
+\newcommand{\pspic}[4][\psall]{\pdfpic[#1]{#2}{#3}{ps/#4}{pdf}}
+\newcommand{\pspicclip}[4][\psall]{\pdfpicclip[#1]{#2}{#3}{ps/#4}{pdf}}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% Implementation for \pdfpic, etc.; shouldn't usually 
+%% be called directly.  Arguments are same as for \pdfpic
+%% except that a 6th argument is accepted, and passed
+%% directly to \includegraphics
+%%
+\newcommand{\includepdfpic}[6][\psall]{%
+\def\pdfpicFileType{#5}%
+\def\pdfpicFileExt{#5}%
+%%
+%% Assume .ps under LaTeX
+\ifpdf\else% 
+\def\pdfpicFileType{eps}%
+\def\pdfpicFileExt{ps}%
+\fi%
+%%
+%% Dummy picture: empty box (not even a frame).
+%% Unspecified heights default to \unitlength
+\ifx#1\psnone%
+\resizebox{#2}{#3}{\begin{picture}(1,1)\end{picture}}%
+%%
+%% Draft picture: framed box with filename inside.
+%% This looks fine with dvips, but it confuses xdvi
+%% for some reason, which draws an extra box with the
+%% natural size of the image. 
+\else{\ifnum#1<\psdraftlevel%
+\frame{\resizebox{#2}{#3}{\includegraphics[#6draft=true,type=\pdfpicFileType,ext=.\pdfpicFileExt,read=*,command=##1]{#4}}}%
+\else%
+%%
+%% Normal picture: image in the specified format.
+\resizebox{#2}{#3}{\includegraphics[#6type=\pdfpicFileType,ext=.\pdfpicFileExt,read=*,command=##1]{#4}}\fi}\fi%
+}
+
+%% Simpler version to keep LaTeX2HTML from getting confused
+\begin{imagesonly}
+\renewcommand{\pspic}[4][\psall]{\resizebox{#2}{#3}{\includegraphics{ps/#4.ps}}}
+\end{imagesonly}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%>> To do (6/2002): 
+%% It would be nice to have some sort of facility for automatically 
+%% handling conditional text for different document types.  Here's
+%% a sketch, but it is not legal LaTeX code:
+%%
+%% \newcommand{\definedocumenttype}[2]{
+%%   \expandafter\def\csname dt#1\endcsname{#2}%
+%%   \newcommand{not#1}[1]{}%
+%%   \newcommand{#1only}[1]{}%
+%% }
+%% \definedocumenttype{book}{100}          % Book
+%% \definedocumenttype{thesis}{80}         % PhD. or Master's thesis
+%% \definedocumenttype{techreport}{60}     % Technical report
+%% \definedocumenttype{preprint}{45}       % Journal preprint (to be passed around, not submitted)
+%% \definedocumenttype{journal}{40}        % Journal paper (as published, or to be submitted)
+%% \definedocumenttype{conf}{20}           % Conference paper
+%% \definedocumenttype{article}{0}         % Default; generic article
+%% 
+%% \newcount\documenttype \documenttype=0
+%% \newcommand{\setdocumenttype}[1]{%
+%%   \documenttype=#1%
+%%   \newcommand{not#1}[1]{#1}%
+%%   \newcommand{#1only}[1]{}%
+%% }
+%%
+%% Usage:
+%%  \setdocumenttype{\book}  % Or any other
+%%  \bookonly{Text for the book version}
+%%  \notbook{Text for all versions except the book}
+%%
+%% All 'only' and 'not' comparisons should be available
+%% even if only a single document type is available.  It should
+%% be legal to define multiple document types.  However, it's not
+%% clear how to implement any of this.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Standard lengths, used to keep documents uniform throughout
+ 
+%% Set size of windowpane to fit one, two, etc. square panes per line  
+%%
+\newlength{\oneplotwidth}           \setlength{\oneplotwidth}         {\textwidth}
+\newlength{\twoplotwidth}           \setlength{\twoplotwidth}         {0.46\textwidth}
+\newlength{\twoplotheight}          \setlength{\twoplotheight}        {\twoplotwidth}
+\newlength{\threeplotwidth}         \setlength{\threeplotwidth}       {0.31\textwidth}
+\newlength{\threeplotheight}        \setlength{\threeplotheight}      {\threeplotwidth}
+\newlength{\fourplotwidth}          \setlength{\fourplotwidth}        {0.22\textwidth}
+\newlength{\fourplotheight}         \setlength{\fourplotheight}       {\fourplotwidth}
+\newlength{\fiveplotwidth}          \setlength{\fiveplotwidth}        {0.18\textwidth}
+\newlength{\fiveplotheight}         \setlength{\fiveplotheight}       {\fiveplotwidth}
+ 
+%% Set size of windowpane to fit the specified configuration of square
+%% panes per page  
+%%
+\newlength{\twobytwoplotwidth}      \setlength{\twobytwoplotwidth}    {0.46\textwidth}
+\newlength{\threebyfourplotwidth}   \setlength{\threebyfourplotwidth} {0.25\textwidth}
+\newlength{\fourbythreeplotwidth}   \setlength{\fourbythreeplotwidth} {0.171875\textheight}
+%% Note that the portrait page above with 12 square panes is named as 
+%% a "width", but it is actually limited in the vertical direction
+%% for typical US paper proportions, assuming there is a 1-inch caption.
+ 
+ 
+%% Plot width that xmgr graphs should use
+%%
+%% This value is appropriate for output that has been run through
+%% ps2epsi to fix the bounding boxes.  Xmgr computes them too
+%% generously, so this would need to be some smaller value otherwise.
+%%
+\newlength{\xmgrplotwidth}          \setlength{\xmgrplotwidth}{\textwidth}
+ 
+ 
+%% Blank variable available for various purposes
+%%   Must use \setlength or \settowidth to give it 
+%%   a value before using it
+%%   E.g.: \settowidth{\templength}{Some text}
+%%
+\newlength{\templength}
+
+ 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Support for captioned subfigures
+%%
+%% To enable these commands, add "\usepackage[tight,center]{subfigure}"
+%% before loading this file.  Then define subfigures with \sfobject, \sfpic,
+%% or \sfpicframe, and refer to them with \sfref or \sfrefnp.
+%%
+%% Requires subfigure package version 2.1.2 or higher.  See the subfigure 
+%% documentation for more details, such as how to change the caption 
+%% separation, fonts, etc.:
+%% http://www-2.cs.cmu.edu/afs/cs/usr/sdc/www/latex/subfigure.html
+%%
+\makeatletter
+  \@ifpackageloaded{subfigure}{%
+
+  %% Set up the subfigure package to italicize only the subfigure letters,
+  %% not the parentheses, and to make \ref show only the bare letters,
+  %% without any parentheses and without the main figure number.
+  \let\p@subfigure\relax
+  \renewcommand{\thesubfigure}{\emph{\alph{subfigure}}}
+  \renewcommand*{\@thesubfigure}{(\thesubfigure)\hskip\subfiglabelskip}
+  \renewcommand*{\@@thesubfigure}{(\thesubfigure)}
+
+
+  %% Define a subfigure of any type with a caption underneath it
+  %% Usage:   \sfobject[width]{item}{caption-text}{subfigure-label}
+  %% Example: \sfobject{0.3\textwidth}{... a picture of some sort ...}{Above is a fancy picture}{fig}
+  %% The subfigure-label must be unique for the whole document.
+  %%
+  \newcommand{\sfobject}[4]{%
+    \subfigure[\label{sf:#4}#3]{\begin{minipage}[t]{#1}#2\end{minipage}}}
+  \newcommand{\sfobjectuncaptioned}[2]{% Same spacing but no caption
+    \subfigure{\begin{minipage}[t]{#1}#2\end{minipage}\addtocounter{subfigure}{-1}}}
+
+
+  %% Define a subfigure consisting of a captioned \pdfpic
+  %% Usage:   \sfpic{width}{filenamebase}{imagetype}{caption text}{subfigure-label}
+  %% Example: \sfpic{0.3\textwidth}{picture}{jpg}{A picture}{renoir-pic}
+  %%
+  \newcommand{\sfpic}[5]{%
+    \sfobject{#1}{\pdfpic{\textwidth}{!}{#2}{#3}}{#4}{#5}}%
+  \newcommand{\sfpicuncaptioned}[3]{% Same but no caption
+    \sfobjectuncaptioned{#1}{\pdfpic{\textwidth}{!}{#2}{#3}}}%
+
+  %% Same as \sfpic but with a frame around the picture
+  \newcommand{\sfpicframe}[5]{%
+    \sfobject{#1}{\frame{\pdfpic{\textwidth}{!}{#2}{#3}}}{#4}{#5}}%
+  \newcommand{\sfpicframeuncaptioned}[3]{%
+    \sfobjectuncaptioned{#1}{\frame{\pdfpic{\textwidth}{!}{#2}{#3}}}}%
+
+
+  %% Expand a reference to a subfigure, e.g. in caption or the main text
+  %% \sfref{subfigure-label} yields (\emph{a}), etc.
+  \newcommand{\sfref}[1]{(\ref{sf:#1})}
+
+
+  %% Same as \sfref without the parentheses
+  %% \sfrefnp{subfigure-label} yields \emph{a}, etc.
+  \newcommand{\sfrefnp}[1]{\ref{sf:#1}}
+
+
+  %% If producing overhead slides, call this command in the preamble
+  %% so that (a), (b), etc. will be omitted from subfigure captions
+  \newcommand{\sfstriplabels}{\renewcommand*{\@thesubfigure}{\mbox{}}}
+}
+\makeatother
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Misc
+
+%% Puts a tiny note in the margin; useful for notes on drafts.
+%%
+%% To disable all of them uncomment the second def.
+%% When you use it in the middle of a paragraph, you should follow 
+%% the last brace with a comment character (%) to avoid getting
+%% a double space in the output.
+\newcommand{\draftnote}[1]{{\marginpar{\tiny\em\raggedright #1}}}
+%%\renewcommand{\draftnote}[1]{}
+
+%% The \draftnote command is based on \marginpar, which doesn't work 
+%% in floating  bodies like figures and tables because the notes also
+%% float.  So we provide a non-floating version of marginpar
+%% (\rawmarginpar), and then use that to create a version of
+%% \draftnote that works with figures (\rawdraftnote).  Note that
+%% \rawdraftnotes might overlap, go off the page, etc.; they are not
+%% juggled automatically like \draftnotes are.  \rawdraftnote
+%% usually works best right before the figure caption.
+%%
+\newcommand{\rawmarginpar}[1]{%
+\vadjust{\smash{\llap{\parbox[t]{0.7\marginparwidth}{#1}\kern\marginparsep}}}}
+\newcommand{\rawdraftnote}[1]{{\rawmarginpar{\tiny\em\raggedright #1}}}
+
+%% Pretends that its argument takes zero horizontal space, e.g. to 
+%% prevent a caption from having a linebreak by letting it 
+%% extend slightly into the space on either side.
+%%
+\providecommand{\zerospace}[1]{\mbox{\makebox[0in]{#1}}}
+
+%% Same as \zerospace except that the result is left-
+%% justified, as if it had zero length out to the right.
+\providecommand{\zerolength}[1]{\mbox{\makebox[0in][l]{#1}}}
+
+
+%% Centers the given object vertically and horizontally
+%% within a square box of the specified size, ignoring 
+%% the size of the object.  
+%%
+%% Usage: \squarebox[position]{width}{object}
+%%
+%% Examples:
+%%   Center some text in the left 1/10 page and draw a border around it:
+%%     \frame{\squarebox{0.1\textwidth}{Some text}}
+%%   Center an image 1/8 the size of the page in a box twice its width:
+%%     \frame{\squarebox{0.25\textwidth}{\pdfpic{0.5\textwidth}{!}{somefile}{pdf}}
+\newcommand{\squarebox}[3][c]{%
+    \begin{minipage}[#1]{#2}%
+      \setlength{\unitlength}{\textwidth}%
+      \begin{picture}(1.0,1.0)%
+        \put(0.5,0.5){\makebox(0,0)[c]{#3}}%
+      \end{picture}%
+    \end{minipage}}
+
+%% Command to add a degree symbol following a number
+%%
+%% When using it, you need to follow it with a "\ " if the next
+%% character should be a space.  
+%%
+%% Examples: "23\degree\ line"    "the orientation was 23\degree."
+%%
+%% Used to be called \deg but there is now a LaTeX2e command by that
+%% name. 
+\newcommand{\degree}{\ensuremath{^\circ}}
+
+
+%% Non-math-mode equivalents of math-mode characters, etc.
+%% These are useful for preventing LaTeX2HTML from converting
+%% tiny in-text expressions like these into GIFs, and can also 
+%% make text a little more readable overall.
+\newcommand{\superscript}[1]{\ensuremath{^#1}}
+\newcommand{\subscript}[1]{\ensuremath{_#1}}
+\newcommand{\mtimes}[2]{\ensuremath{#1 \times #2}}
+\newcommand{\madd}[2]{\ensuremath{#1 + #2}}
+\newcommand{\mplus}{\ensuremath{+}}
+\newcommand{\mpm}{\ensuremath{\pm}}
+\newcommand{\mlt}{\ensuremath{<}}
+\newcommand{\mgt}{\ensuremath{>}}
+
+%% Given a color type as argument, e.g. \psmono or \pscolor, returns the note 
+%% that should be placed in the caption for that figure.
+%% This will make figures that require color say so; I can't think of anything
+%% useful for the rest to say.
+%% Maybe \pscolororbw should say something like "(Figure looks better in color)"?
+\newcommand{\figurenote}[1]{%
+\ifx#1\pscolor{\ ({\em color figure\/})}\fi}
+
+
+%% Dummy command marking a section of text as something for latex2html
+%% to typeset as a single left-justified block  
+\newcommand{\htmlblock}[1]{#1}
+
+
+%% Constructs a titled figure caption.  Takes four arguments:
+%%
+%% \titledcaption[category]{label}{title}{captiontext}
+%%
+%% The "category" argument is optional; if present it should indicate the
+%% type of image the file represents, i.e.  \psline for a line drawing,
+%% \pscolor for a color photo, \pscolororbw for an image that is readable
+%% either in color or monochrome, \psnone for a blank space, etc.  At
+%% present, "category" is only used to see whether or not to
+%% add a descriptive note for the title and list of figures entry.
+%% See the \figurenote command for the cases where a note will be
+%% added.  The default will never add any note.
+%% 
+%% The "label" is a name used to construct a label for the figure.
+%%
+%% The "title" should be a short heading, which will go in bold at the
+%% top of the caption, and also goes into the list of figures.
+%%
+%% The "captiontext" will go into the caption only, not the list of
+%% figures, after the title.  Just use an empty last argument {} if 
+%% there is no caption text.
+%% 
+%% Complete figure example:
+%% \begin{figure}
+%%   \centering 
+%%   \pspic[\psline]{\oneplotwidth}{!}{some-figure-filename-wo-ps-extension}
+%%   \titledcaption[\psline]{fg:some-figure-label}
+%%   {Title of the figure}{ 
+%%     Some long text describing what this figure means and how it
+%%     should be interpreted.}
+%% \end{figure}
+%%
+%% jbednar040510: For some reason, I had replaced both "#1"s with 
+%% "\protect{#1}", probably to fix some problem with the separate
+%% versions for typesetters (below).  However, that broke the color
+%% figure labels for the normal case, so I have removed it.  Next time
+%% the typesetter versions are used, they will probably need to be
+%% debugged.
+%%
+\newcommand{\titledcaption}[4][\psall]{%
+    \caption[#3\figurenote{#1}]{%
+      \label{#2}\mycapdefs%
+      \textbf{\mathversion{bold}#3\figurenote{#1}.} %
+      \htmlblock{#4}}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Support for defining figure graphics separately from captions
+%%
+%% To use this, just pick a label you want to refer to the figure by,
+%% and define the meat of the figure:
+%%
+%% \definefigbody{fg:some-fig}{%
+%%  \sfpicframe{\twoplotwidth}{picture1}{jpg}{Case 1}{case-1-label}\hfill
+%%  \sfpicframe{\twoplotwidth}{picture2}{jpg}{Case 2}{case-2-label}}
+%%
+%% Then wherever you want the figure to appear, insert it with a caption:
+%%
+%%  \insertfig[\pscolor]{fg:some-fig}{%
+%%    Figure title}{%
+%%    This figure conclusively demonstrates that...}%
+%%
+%% Leave off [\pscolor] if you don't want the "(color figure)" note
+%% in the caption.
+%%
+%% Everything else will be handled automatically.  If you want fine
+%% control over the figure (instead of automatically using
+%% titledcaption, fullfigure*, etc.), just use 
+%% \insertfigbody{fg:some-fig} to insert the meat of the figure into 
+%% your own figure skeleton.
+%%
+%% If you also want to define the captions separately from where they
+%% are first inserted into the text, then use \definefigcaption
+%% instead of \insertfig.  That way the caption will be defined but
+%% not yet inserted into the text.  Then just use \firstfigref
+%% instead of \ref the first time you refer to the figure, and the
+%% figure will automatically be placed into the text at that point.
+%%
+%% If you want the captioned figure to be placed somewhere other
+%% than the first reference, just put an \insertfighere{fg-some-fig} 
+%% command where you want the figure to appear.
+%%
+%%
+%% Defines the body of the given figure
+\newcommand{\definefigbody}[2]{%
+  \ifundefined{figbody--#1}\expandafter\def\csname figbody--#1\endcsname{#2}%
+  \else\errmessage{Figure #1 already defined}\fi}%
+%%
+%% Rarely used by end users:
+\newcommand{\insertfigbody}[1]{\csname figbody--#1\endcsname}%
+\newcommand{\insertfigtype}[1]{\csname figtype--#1\endcsname}%
+\newcommand{\insertfigtitle}[1]{\csname figtitle--#1\endcsname}%
+\newcommand{\insertfigcaption}[1]{\csname figcaption--#1\endcsname}%
+%%
+%% Defines the type, title, and caption of the given figure
+\newcommand{\definefigcaption}[4][\psmono]{%
+  \ifundefined{figtype--#2}\expandafter\def\csname figtype--#2\endcsname{#1}%
+  \else\errmessage{Type for #2 already defined}\fi%
+  \ifundefined{figtitle--#2}\expandafter\def\csname figtitle--#2\endcsname{#3}%
+  \else\errmessage{Title for #2 already defined}\fi%
+  \ifundefined{figcaption--#2}\expandafter\def\csname figcaption--#2\endcsname{#4}%
+  \else\errmessage{Caption for #2 already defined}\fi}%
+%%
+%% Inserts the given figure given the type, title, and caption
+\newcommand{\insertfig}[4][\psmono]{%
+  \begin{fullfigure*}\insertfigbody{#2}\titledcaption[#1]{#2}{#3}{#4}\end{fullfigure*}}%
+%%
+%% Rarely used by end users:
+\newcommand{\insertfighere}[1]{%
+  \insertfig%
+  [\insertfigtype{#1}]{#1}%
+  {\insertfigtitle{#1}}%
+  {\insertfigcaption{#1}}}%
+%%
+%% Refers to and inserts the given captioned figure
+\newcommand{\firstfigref}[1]{\ref{#1}\insertfighere{#1}}%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Support for figures at end of document for journal paper
+%% submissions
+%% 
+%% None of these commands are used in a normal camera-ready paper
+%%
+%% For these commands to work, you should use \firstfigref
+%% consistently (which allows the actual caption to be inserted 
+%% wherever).  
+%%
+%% If you use subfigures, you should also add a line:
+%%   \PassOptionsToPackage{normalsize}{subfigure}
+%% before the \usebpackage{subfigure}, to make the fonts the right 
+%% size.
+
+
+%% Declare that figures should be put at end of paper for typesetting
+\newcommand{\figuresatend}[1]{%
+  \renewcommand{\firstfigref}[1]{\begin{center}--- Insert
+      figure~\ref{##1} about here ---\end{center}\ref{##1}}%
+  %% Hack to make subfigure package work outside of a float environment
+  \makeatletter\newcommand{\@captype}{figure}\makeatother%
+}
+
+%% Override this if you need to add your name or manuscript number
+%% Accepts one argument, the figure key (suitable for \ref)
+\newcommand{\submissionfigdescription}[1]{Figure~\ref{#1}}
+
+% Format a figure for typesetting
+% Usage: \insertsubmissionfig[separation]{reference}
+\newcommand{\insertsubmissionfig}[2][1in]{%
+\newpage\setcounter{subfigure}{0}
+\centering
+\makebox[0in]{%
+\resizebox{7.5in}{!}
+{\begin{minipage}{\textwidth}
+    \centering%
+    \insertfigbody{#2}\\[#1]
+    \submissionfigdescription{#2}
+  \end{minipage}}}%
+}
+
+
+% Format a caption for typesetting
+% Usage: \insertsubmissioncaption{reference}
+\newcommand{\insertsubmissioncaption}[1]{%
+  \newpage%
+  \begin{figure}[h]%
+    \renewcommand{\baselinestretch}{1.5}\small\normalsize
+    \caption[\insertfigtitle{#1}\figurenote{\protect{\insertfigtype{#1}}}]{%
+      \label{#1}%
+      \textbf{\insertfigtitle{#1}\figurenote{\protect{\insertfigtype{#1}}}}.
+      \raggedright%
+      \htmlblock{\insertfigcaption{#1}}}
+  \end{figure}%
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Tech report title pages
+%%
+%% Default values; you can (and should) override these using
+%% \renewcommand within your own paper.  Often you will need to add
+%% different linebreaks to the \techreporttitle and
+%% \techreportauthor since they need to fit in such a narrow window.
+%%
+\newcommand{\techreporttitle}{\title}
+\newcommand{\techreportauthor}{\author}
+\newcommand{\techreportnumber}{}
+\newcommand{\techreportemailaddress}{}
+\newcommand{\techreporthttpaddress}{http://www.cs.utexas.edu/users/nn}
+\newcommand{\techreportdepartment}{Artificial Intelligence Laboratory}
+\newcommand{\universityname}{The University of Texas at Austin}
+\newcommand{\universityaddress}{Austin, TX 78712}
+
+%% Call just after your \begin{document} to actually generate the tech
+%% report title page.
+%%
+%% Takes two arguments -- the offset in x and y to correct for the
+%% left and top margins, respectively, in the current style.  The
+%% values should both be zero for the default 1-inch margins in
+%% nnonecolumn.sty; adjust other margins as needed.
+%%
+\newcommand{\techreporttitlepage}[2]{%
+  \newpage
+  \thispagestyle{empty}
+  \setlength{\unitlength}{1in}%
+  \begin{picture}(0,0)(#1,#2)
+    \put(1,-2.3){\parbox{4in}{%
+      \begin{center}%
+        {\textbf{\Large \techreporttitle}}\\[8mm]
+        {\textbf{\large \techreportauthor}}\\[8mm]
+        \textbf{\large \techreportnumber}
+      \end{center}}}
+    \put(1,-7.8){\parbox{4in}{%
+      \begin{center}%
+        {\tt \techreportemailaddress}\\
+        {\tt \techreporthttpaddress}\\[8mm]
+        \techreportdepartment\\
+        \universityname\\
+        \universityaddress
+      \end{center}}}
+  \end{picture}
+  \newpage
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% For emacs:
+%Local Variables:
+%TeX-command-default:"Check"
+%End:

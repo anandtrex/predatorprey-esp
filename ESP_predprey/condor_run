@@ -3,6 +3,7 @@ Requirements = Lucid
 Executable     = run.sh 
 Log = condor.log
 Output  = output.log
+Error = error.log
 +Group = "GRAD" 
 +Project = "AI_Neural_Networks" 
 +ProjectDescription = "Prey-Predator Simulation"  

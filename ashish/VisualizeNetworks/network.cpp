@@ -633,15 +633,50 @@ void Network::writeToDotFile(char* filename) {
 		cerr<<"Can't open "<<filename<<" for output" << endl;
 		throw -1; // throw something meaningful later
 	}
+  std::string indentation = "\t";
+  std::string terminate = ";\n";
 	oFile<<"digraph G {\n";
-  oFile<<"node [shape=circle weight=bold fontsize=10 color=black fontcolor=black]" << endl;
-  oFile<<"edge [color=black fontsize=9 fontcolor=black, decorate = true ]" << endl;
+  oFile<<indentation<<"rankdir=BT"<<terminate;
+  oFile<<indentation<<"node [shape=circle weight=bold fontsize=10 color=black fontcolor=black]"<<terminate;
+  oFile<<indentation<<"edge [color=black fontsize=9 fontcolor=black, decorate = true ]"<<terminate;
+  // output nodes
+  std::cout << "output nodes:" << std::endl;
+	for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
+    std::cout << (*curnode)->node_id << ": " << (*curnode)->gen_node_label << std::endl; 
+    if (OUTPUT==((*curnode)->gen_node_label)) {
+      oFile<<indentation<<(*curnode)->node_id<<" [ shape=ellipse, label=\"O"<<(*curnode)->node_id<<"\" ]"<<terminate; 
+    }
+  }
+  // input nodes 
+  std::cout << "input nodes:" << std::endl;
+	for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
+    std::cout << (*curnode)->node_id << ": " << (*curnode)->gen_node_label << std::endl; 
+    if (INPUT==((*curnode)->gen_node_label)) {
+      oFile<<indentation<<(*curnode)->node_id<<" [ shape=box, label=\"I"<<(*curnode)->node_id<<"\" ]"<<terminate; 
+    }
+  }
+  // bias nodes 
+  std::cout << "bias nodes:" << std::endl;
+	for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
+    std::cout << (*curnode)->node_id << ": " << (*curnode)->gen_node_label << std::endl; 
+    if (BIAS==((*curnode)->gen_node_label)) {
+      oFile<<indentation<<(*curnode)->node_id<<" [ shape=hexagon, label=\"B"<<(*curnode)->node_id<<"\" ]"<<terminate; 
+    }
+  }
+  // hidden nodes
+  std::cout << "hidden nodes:" << std::endl;
+	for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
+    std::cout << (*curnode)->node_id << ": " << (*curnode)->gen_node_label << std::endl; 
+    if (BIAS==((*curnode)->gen_node_label)) {
+      oFile<<indentation<<(*curnode)->node_id<<" [ shape=circle, label=\"H"<<(*curnode)->node_id<<"\" ]"<<terminate; 
+    }
+  }
 	for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
 		if (((*curnode)->type)!=SENSOR) {
 			for(curlink=((*curnode)->incoming).begin(); curlink!=((*curnode)->incoming).end(); ++curlink) {
-        oFile << (*curlink)->in_node->node_id << " -> " <<(*curlink)->out_node->node_id;
+        oFile << indentation << (*curlink)->in_node->node_id << " -> " <<(*curlink)->out_node->node_id;
         oFile << " [ label = " << (*curlink)->weight << " ] ";
-        oFile << " ; " << endl;
+        oFile << terminate; 
 			} // end for loop on links
 		} //end if
 	} //end for loop on nodes
