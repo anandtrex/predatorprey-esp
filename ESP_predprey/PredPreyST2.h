@@ -10,9 +10,9 @@
 class PredPreyST2: public Environment
 {
 public:
-    PredPreyST2(int num_of_predators, int num_teams_predator, int num_of_hunters);
+    //PredPreyST2(int num_of_predators, int num_teams_predator, int num_of_hunters, double hunter_move_probability);
     PredPreyST2(int num_of_predators, int num_teams_predator, int num_of_hunters,
-            int num_teams_hunters);
+            int num_teams_hunters, double hunter_move_probability);
     int num_of_predators;
     int num_teams_predator;
 

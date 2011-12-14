@@ -17,8 +17,8 @@
 #include <vector>
 using namespace std;
 
-#define MAP_LENGTH 10
-#define MAP_HEIGHT 10
+#define MAP_LENGTH 9
+#define MAP_HEIGHT 9
 
 extern int NUM_OUTPUT_PRED_COMBINER;
 extern int NUM_OUTPUT_PREY_COMBINER;
@@ -65,6 +65,8 @@ public:
 	int outputSize; // output space dimension;          "
 	int outputSize_prey; // output space dimension;          "
 	double maxFitness;
+
+	double hunter_move_probability;
 
 };
 

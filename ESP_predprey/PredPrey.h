@@ -1,4 +1,5 @@
 #include "Environment.h"
+#include <fstream>
 
 /**
  * Defines the Predator-Prey environment
@@ -6,10 +7,13 @@
 class PredPrey: public Environment {
 public:
 	PredPrey(int num_of_predators, int num_of_prey, int num_teams_predator,
-			int num_teams_prey, vector<double> prey_move_probability, int num_of_hunters);
-	PredPrey(int num_of_predators, int num_of_prey, int num_teams_predator,
-	            int num_teams_prey, vector<double> prey_move_probability);
-	PredPrey(int num_of_predators, int num_teams_predator, int num_of_hunters, int num_teams_hunters);
+			int num_teams_prey, vector<double> prey_move_probability, int num_of_hunters, double hunter_move_probability);
+//	PredPrey(int num_of_predators, int num_of_prey, int num_teams_predator,
+//	            int num_teams_prey, vector<double> prey_move_probability, double hunter_move_probability);
+	//PredPrey(int num_of_predators, int num_teams_predator, int num_of_hunters, int num_teams_hunters, double hunter_move_probability);
+	~PredPrey(){
+	    fout.close();
+	}
 	int num_of_predators;
 	int num_of_prey;
 	int num_teams_predator;
@@ -37,6 +41,7 @@ public:
 
 private:
 
+	ofstream fout;
 	static int count_trials;
 	static double count_overall_best_zebra_caught;
 	static double count_generation_best_zebra_caught;

@@ -38,12 +38,13 @@ extern bool pred_messaging;  //  1 - Broadcast Messaging in predator teams, 0 - 
 //*************************END Parameters Read from the Config file**********************
 
 PredPreyST2::PredPreyST2(int num_of_predators, int num_teams_predator, int num_of_hunters,
-        int num_teams_hunters)
+        int num_teams_hunters, double hunter_move_probability)
 {
     this->num_of_predators = num_of_predators;
     this->num_teams_predator = num_teams_predator;
     this->num_of_hunters = num_of_hunters;
     this->num_teams_hunters = num_teams_hunters;
+    this->hunter_move_probability = hunter_move_probability;
 
     inputSize_prey = 0;
     inputSize_prey_combiner = 0;
@@ -72,10 +73,10 @@ PredPreyST2::PredPreyST2(int num_of_predators, int num_teams_predator, int num_o
         outputSize_pred_combiner = outputSize_pred_combiner + 1;  //Extra combiner output for predator messaging
     }
 
-    LOG(INFO) << "   inputSize per agent :  " << " Predator:: " << inputSize << "  Predator Combiner:: "
-            << inputSize_pred_combiner << endl;
-    LOG(INFO) << "   outputSize per agent:  " << " Predator:: " << outputSize << "  Predator Combiner:: "
-            << outputSize_pred_combiner << endl;
+    LOG(INFO) << "   inputSize per agent :  " << " Predator:: " << inputSize
+            << "  Predator Combiner:: " << inputSize_pred_combiner << endl;
+    LOG(INFO) << "   outputSize per agent:  " << " Predator:: " << outputSize
+            << "  Predator Combiner:: " << outputSize_pred_combiner << endl;
 
 }
 
@@ -94,7 +95,6 @@ int PredPreyST2::count_trials = 0;
 //{
 //    return evalNet(team, generation);
 //}
-
 /**
  * To implement the Environment interface
  * @param team
@@ -107,7 +107,6 @@ int PredPreyST2::count_trials = 0;
 //{
 //    return testNet(team, trials);
 //}
-
 // Fitness = (ave_initial_distance - ave_final_distance) / steps
 //           if prey caught then X 10
 // If (random) then prey starts at random location
@@ -309,8 +308,8 @@ vector<vector<vector<double> > > PredPreyST2::evalNet(vector<vector<Network*> >&
             temp_hit_wall = temp_hit_wall + pred_hit_wall_times[p][i];
             // NOTE Fitness value decreased if predator is hit by hunter
             if (pred_hit[p][i] == true) {
-                double individual_fitness_value = -300.0;
-                VLOG(1) << "Fitness decreased" << endl;
+                double individual_fitness_value = -10 * (maxSteps - steps);  //-300.0;
+                //VLOG(1) << "Fitness decreased" << endl;
                 temp_individual_fitness.push_back(individual_fitness_value);  // This is individual fitness for Competing agents
                 //LOG(INFO) << "temp_individual_fitness[0] is " << temp_individual_fitness[0];
             } else {
@@ -411,8 +410,8 @@ void PredPreyST2::init(bool predsRandom, bool huntersRandom, int generation)
     if (huntersRandom) {
         for (int k = 0; k < num_teams_hunters; k++) {
             for (int i = 0; i < num_of_hunters; i++) {
-                temp_x.push_back((int) (drand48() * 100));
-                temp_y.push_back((int) (drand48() * 100));
+                temp_x.push_back((int) (drand48() * MAP_LENGTH));
+                temp_y.push_back((int) (drand48() * MAP_HEIGHT));
             }
             hunter_x.push_back(temp_x);
             hunter_y.push_back(temp_y);
@@ -425,8 +424,8 @@ void PredPreyST2::init(bool predsRandom, bool huntersRandom, int generation)
     if (predsRandom) {
         for (int k = 0; k < num_teams_predator; k++) {
             for (int i = 0; i < num_of_predators; i++) {
-                temp_x.push_back((int) (drand48() * 100));
-                temp_y.push_back((int) (drand48() * 100));
+                temp_x.push_back((int) (drand48() * MAP_LENGTH));
+                temp_y.push_back((int) (drand48() * MAP_HEIGHT));
                 temp_energy.push_back(1000);
                 temp_hit_wall_times.push_back(0);
             }
@@ -684,13 +683,14 @@ void PredPreyST2::performPredAction_complex(int pred_team, int pred,
         showPred(pred_team, pred, old_pred_x, old_pred_y);
     }  // end show
 
-    VLOG(1) << "Predator " << pred << " at \t(" << pred_x[pred_team][pred] << ", "
-                << pred_y[pred_team][pred] << "), \tOutput: ";
+    VLOG(1)
+            << "Predator " << pred << " at \t(" << pred_x[pred_team][pred] << ", "
+                    << pred_y[pred_team][pred] << "), \tOutput: ";
 
-        for (int i = 0; i < (int) output_single_predator.size(); i++)
-            VLOG(1) << output_single_predator[i] << " ";
+    for (int i = 0; i < (int) output_single_predator.size(); i++)
+        VLOG(1) << output_single_predator[i] << " ";
 
-        VLOG(1) << endl << "Action: " << predAction << endl;
+    VLOG(1) << endl << "Action: " << predAction << endl;
 
     // Checks if the predator was killed by the hunter
     for (int p = 0; p < num_teams_hunters; p++) {
@@ -700,8 +700,9 @@ void PredPreyST2::performPredAction_complex(int pred_team, int pred,
                 pred_hit[pred_team][pred] = true;
                 num_of_pred_hit[p]++;
                 VLOG(1) << "Predator hit by hunter" << endl;
-                VLOG(1) << "Predator was at " << pred_x[pred_team][pred] << ", "
-                            << pred_y[pred_team][pred] << endl;
+                VLOG(1)
+                        << "Predator was at " << pred_x[pred_team][pred] << ", "
+                                << pred_y[pred_team][pred] << endl;
                 VLOG(1) << "Hunter was at " << hunter_x[p][i] << ", " << hunter_y[p][i] << endl;
             }
         }
@@ -849,14 +850,14 @@ void PredPreyST2::showPred(int pred_team, int pred, int old_pred_x, int old_pred
 
 void PredPreyST2::performHunterAction_complex(int hunter_team, int hunter)
 {  //Added the argument int prey to check which prey is being processed ******PADMINI
-//double nearestDist = MAP_LENGTH * 2 + 1;  //Big number
+    double nearestDist = MAP_LENGTH * 2 + 1;  //Big number
 
-    //int nearestPred = 0;  //To hold the nearest predator to the prey
-    //int nearestPred_team = 0;
+//    int nearestPred = 0;  //To hold the nearest predator to the prey
+//    int nearestPred_team = 0;
 
     //double dist;
 
-    //int x_dist, y_dist, temp;
+    int x_dist, y_dist, temp;
 
     //int i;  //Counter for loops ******PADMINI
 
@@ -884,54 +885,50 @@ void PredPreyST2::performHunterAction_complex(int hunter_team, int hunter)
      }*/
 
     // calculate predator offset with wraparound
-    /*
-     x_dist = pred_x[nearestPred_team][nearestPred] - hunter_x[hunter_team][hunter];
+    x_dist = pred_x[0][0] - hunter_x[0][0];
 
-     if ((abs(x_dist)) > (MAP_LENGTH / 2)) {
-     temp = x_dist;
-     x_dist = MAP_LENGTH - abs(x_dist);
-     if (temp > 0)
-     x_dist = 0 - x_dist;
-     }
+    if ((abs(x_dist)) > (MAP_LENGTH / 2)) {
+        temp = x_dist;
+        x_dist = MAP_LENGTH - abs(x_dist);
+        if (temp > 0)
+            x_dist = 0 - x_dist;
+    }
 
-     y_dist = pred_y[nearestPred_team][nearestPred] - hunter_y[hunter_team][hunter];
+    y_dist = pred_y[0][0] - hunter_y[0][0];
 
-     if ((abs(y_dist)) > (MAP_HEIGHT / 2)) {
-     temp = y_dist;
-     y_dist = MAP_HEIGHT - abs(y_dist);
-     if (temp > 0)
-     y_dist = 0 - y_dist;
-     }*/
+    if ((abs(y_dist)) > (MAP_HEIGHT / 2)) {
+        temp = y_dist;
+        y_dist = MAP_HEIGHT - abs(y_dist);
+        if (temp > 0)
+            y_dist = 0 - y_dist;
+    }
 
-    hunterAction = (int) (drand48() * 4.0);
-    //cout << "Hunter action is "<< hunterAction << endl;
-    /* NOTE: Can use this to make hunter move towards predators (with modifications)
-     if (y_dist < 0 && (abs(y_dist) >= abs(x_dist))) {
-     //prey_y[prey]++;
-     hunterAction = 0;
-     }
+    //DLOG(INFO) << "Distances are " << x_dist << ", " << y_dist;
+    //DLOG(INFO) << "hunter_move_probability is " << hunter_move_probability;
 
-     else if (x_dist < 0 && (abs(x_dist) >= abs(y_dist))) {
-     //prey_x[prey]++;
-     hunterAction = 1;
-     }
+    if (drand48() > hunter_move_probability) {
+        hunterAction = (int) (drand48() * 4.0);
+    } else {
+        if (y_dist < 0 && (abs(y_dist) >= abs(x_dist))) {
+            hunterAction = 2;
+        }
+        else if (x_dist < 0 && (abs(x_dist) >= abs(y_dist))) {
+            hunterAction = 3;
+        }
 
-     else if (y_dist > 0 && (abs(y_dist) >= abs(x_dist))) {
-     //prey_y[prey]--;
-     hunterAction = 2;
-     }
+        else if (y_dist > 0 && (abs(y_dist) >= abs(x_dist))) {
+            hunterAction = 0;
+        }
 
-     else if (x_dist > 0 && (abs(x_dist) >= abs(y_dist))) {
-     //prey_x[prey]--;
-     hunterAction = 3;
-     }
+        else if (x_dist > 0 && (abs(x_dist) >= abs(y_dist))) {
+            hunterAction = 1;
+        }
 
-     else {
-     hunterAction = 4;
-     }*/
-    //	}
-    //}
-    //preyAction=4; // Making the prey fixed for now (It is acting as a food)
+        else {
+            hunterAction = 4;
+        }
+    }
+
     if (hunterAction == 0) {
         hunter_y[hunter_team][hunter]++;
     }
@@ -952,13 +949,13 @@ void PredPreyST2::performHunterAction_complex(int hunter_team, int hunter)
     }
 
     if (hunter_x[hunter_team][hunter] > MAP_LENGTH)
-        hunter_x[hunter_team][hunter] -= MAP_LENGTH;
+        hunter_x[hunter_team][hunter] = 0; // -= MAP_LENGTH;
     if (hunter_y[hunter_team][hunter] > MAP_HEIGHT)
-        hunter_y[hunter_team][hunter] -= MAP_HEIGHT;
+        hunter_y[hunter_team][hunter] = 0; // -= MAP_HEIGHT;
     if (hunter_x[hunter_team][hunter] < 0)
-        hunter_x[hunter_team][hunter] += MAP_LENGTH;
+        hunter_x[hunter_team][hunter] = 0; // += MAP_LENGTH;
     if (hunter_y[hunter_team][hunter] < 0)
-        hunter_y[hunter_team][hunter] += MAP_HEIGHT;
+        hunter_y[hunter_team][hunter] = 0; // += MAP_HEIGHT;
 
     // Code for showing simulation in UI
     if (SHOW) {
