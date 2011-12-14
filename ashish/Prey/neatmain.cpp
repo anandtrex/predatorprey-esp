@@ -34,9 +34,10 @@ int main(int argc, char *argv[]) {
       the numbers will be different every time we run.    */
   srand( (unsigned)time( NULL ) );
 
-  if (argc < 3) {
+  if (argc < 4) {
     cerr << "A NEAT parameters file (.ne file) is required to run the experiments!" << endl;
     cerr << "Number of generations for which I need to run the evolution" << endl;
+    cerr << "I also want the plot name" << endl;
     return -1;
   }
 
@@ -53,7 +54,9 @@ int main(int argc, char *argv[]) {
   int gens;
   sin >> gens;
   cout << "Beginnning predatorpreyhunter_test for #" << gens << " generations" << endl;
-  p = predatorpreyhunter_test(gens);
+
+  string namePlot = argv[3];
+  p = predatorpreyhunter_test(gens, namePlot);
 
   if (p)
     delete p;
