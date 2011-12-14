@@ -37,12 +37,15 @@ if __name__ == '__main__':
                 
         plt.xlabel('generations')
         plt.ylabel('average fitness')
-        plt.legend(loc='upper left')
+        plt.legend(loc='lower right')
 
         plt.savefig("fitness-vs-generations.png")
         plt.show()
         plt.close()
         
+        if "prop" in fileName:
+                sys.exit(0)
+                
         for o in others:
                 per_improvement = [(float(base[i].split(" ")[1]) - float(o[i].split(" ")[1])) * 100 /float(base[i].split(" ")[1]) for i in xrange(0,100)]
                 plt.plot(xrange(0,100), per_improvement, label=o[101])
