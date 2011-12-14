@@ -1,5 +1,16 @@
 \section{Results}
-We got awesome results.
+Both the monolithic network and the modular network were tested on the following test cases:
+\begin{itemize}
+\item 5 \times 5 grid world with the subnetworks evolving for 5, 10, 15, 50 generations and the overall network evolving for 100 generations in all cases. This was run for both ESP and NEAT
+\item 10 \times 10 grid world with the subnetworks evolving for 5, 10, 15, 50 generations and the overall network evolving for 100 generations in all cases. This was also run for both ESP and NEAT
+\item For the case of ESP, the algorithm was run with prey and hunter move probability set to 01, 0.5, 0.7 and 0.8. The number of generations of the sub-network evolution was fixed at 10. The overall network was run for 100 generations. 
+\end{itemize}
 
+First the experiments were run using NEAT.
+Figure \ref{fig:MeanMAPNDCGPI1} a and b show the average predator fitness and the percentage improvement over the monolithic network for the 5x5 grid for the monolithic network, and for the case where the subnetwork was evolved for 50 generations. In this case the monolithic network seems to perform better than the modular network throughout. This might be because of the small size of the environment, which makes it easier for the monolithic network to learn, without having to contend with having to coordinate between the subnetworks. 
+
+Figure \ref{fig:MeanMAPNDCGPI2} show the average predator fitness and the percentage improvement over the monolithic network for the 5x5 grid for the monolithic network, and the cases where the subnetworks were evolved for 5, 10, 15 and 50 generations. Again, the monolithic network is consistently better than the modular networks, and the number of generations the subnetworks were evolved doesn't seem to have a significant effect on the performance, although evolving the subnetwork for 15 generations seems to perform slightly better.
+
+Very similar results are obtained for the 10 \times 10 grid size. The monolithic network performs much better in the case where the subnetwork is evolved for 50 generations (Figure \ref{fig:MeanMAPNDCGPI3}) and for cases where the subnetwork is evolved for 5, 10, 15 and 50 generations (Figure \ref{fig:MeanMAPNDCGPI4}).  
 \input{figures_neat}
 \input{figures_esp}
