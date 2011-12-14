@@ -20,6 +20,9 @@
 //#define NO_SCREEN_OUT 
 
 // PREDATOR PREY HUNTER CODE BEGINS
+void writeChampionPopulation( Population* pop ) {
+  
+}
 
 //Perform evolution on predator prey hunter, for gens generations
 Population *predatorpreyhunter_test(int gens) {
@@ -28,22 +31,22 @@ Population *predatorpreyhunter_test(int gens) {
     char curword[20];
     int id;
 
-    ostringstream *fnamebuf;
+    //ostringstream *fnamebuf;
     int gen;
-
     int expcount;
-    double status; // store the fitness of the champ of each epoch
-    int runs[NEAT::num_runs]; // change runs to double later
-    int totalevals;
-    int samples;  //For averaging
 
-    memset (runs, 0, NEAT::num_runs * sizeof(int));
-
-    ifstream iFile("singlepreyhunter_startgenes",ios::in);
+    double championFitness; // store the fitness of the champ of each epoch
+    vector<double> vGenerationChamptionFitness;
+    vGenerationChamptionFitness.reserve( gens );
 
     cout<<"START SINGLE PREDATOR PREY HUNTER EVOLUTION"<<endl;
-
     cout<<"Reading in the start genome"<<endl;
+    string pathFileGenomeStart = "singlepreyhunter_startgenes";
+    ifstream iFile( pathFileGenomeStart.c_str(), ios::in );
+    if ( !iFile.is_open() ) {
+      cerr << "I could not open " << pathFileGenomeStart << " for reading the starter genome" << endl;
+      throw 1; // throw something meaningful later
+    }
     //Read in the start Genome
     iFile>>curword;
     iFile>>id;
@@ -52,64 +55,44 @@ Population *predatorpreyhunter_test(int gens) {
     iFile.close();
   
     //Run multiple experiments
+    cout << "TOTAL EXPERIMENTS: " << NEAT::num_runs << endl;
     for(expcount=0;expcount<NEAT::num_runs;expcount++) {
-
+      vGenerationChamptionFitness.clear();
       cout<<"EXPERIMENT #"<<expcount<<endl;
-
       cout<<"Start Genome: "<<start_genome<<endl;
-      
       //Spawn the Population
       cout<<"Spawning Population off Genome"<<endl;
-      
       pop=new Population(start_genome,NEAT::pop_size);
-      
       cout<<"Verifying Spawned Pop"<<endl;
       pop->verify();
-
+      cout << "TOTAL GENERATIONS: " << gens << endl;
       for (gen=1;gen<=gens;gen++) {
         cout<<"Generation "<<gen<<endl;
-	
-        fnamebuf=new ostringstream();
-        (*fnamebuf)<<"gen_"<<gen<<ends;  //needs end marker
-
-        cout<<"name of fname: "<<fnamebuf->str()<<endl;
-
+        //fnamebuf=new ostringstream();
+        //(*fnamebuf)<<"gen_"<<gen<<"_"; // ends;  //needs end marker
+        //cout<<"name of fname: "<<fnamebuf->str()<<endl;
         char temp[50];
         sprintf (temp, "gen_%d", gen);
-
-        status=predatorpreyhunter_epoch(pop,gen,temp);
-        //status=(pole1_epoch(pop,gen,fnamebuf->str()));
-	
-        if (status > 0) { // if we had some success i.e. no negative fitness
-          // change runs to double later
-          runs[expcount]=static_cast<int> (status);
-          gen=gens+1;
-        }
-	
-        fnamebuf->clear();
-        delete fnamebuf;
-	
+        championFitness=predatorpreyhunter_epoch(pop,gen,temp);
+        vGenerationChamptionFitness.push_back( championFitness );
+        //fnamebuf->clear();
+        //delete fnamebuf;
       } // end of for loop generations
-
-      if (expcount<NEAT::num_runs-1) delete pop;
-    } // end of for loop experiments
-
-    totalevals=0;
-    samples=0;
-    for(expcount=0;expcount<NEAT::num_runs;expcount++) {
-      cout<<runs[expcount]<<endl;
-      if (runs[expcount]>0)
-      {
-        totalevals+=runs[expcount];
-        samples++;
+      // write chamption fitness scores of generations to file
+      ostringstream sout;
+      sout << "E" << expcount << ".txt";
+      ofstream fout( sout.str().c_str() );
+      if ( !fout.is_open() ) {
+        cerr << "Could not open file " << sout.str() << " for writing." << endl;
+        throw 1; // throw something meaningful later
       }
-    }
-
-    cout<<"Failures: "<<(NEAT::num_runs-samples)<<" out of "<<NEAT::num_runs<<" runs"<<endl;
-    cout<<"Average evals: "<<(samples>0 ? (double)totalevals/samples : 0)<<endl;
-
+      for ( vector<double>::const_iterator it = vGenerationChamptionFitness.begin(); it != vGenerationChamptionFitness.end(); ++it ) {
+        fout << *it << endl;
+      }
+      fout.close();
+      if ( expcount < NEAT::num_runs - 1 ) delete pop; // delete all but the last population
+    } // end of for loop experiments
     return pop;
-
 }
 
 double predatorpreyhunter_epoch(Population *pop,int generation,char *filename) {
@@ -298,11 +281,9 @@ Population *xor_test(int gens) {
 
 	//This is how to make a custom filename
 	fnamebuf=new ostringstream();
-	(*fnamebuf)<<"gen_"<<gen<<ends;  //needs end marker
+	(*fnamebuf)<<"gen_"<<gen<<"_";  //needs end marker; removed ends (ASHISH)
 
-	#ifndef NO_SCREEN_OUT
 	cout<<"name of fname: "<<fnamebuf->str()<<endl;
-	#endif
 
 	char temp[50];
 	sprintf (temp, "gen_%d", gen);

@@ -41,6 +41,7 @@ Population* predatorpreyhunter_test( int gens );
 double predatorpreyhunter_epoch( Population* pop, int generation, char* filename );
 double predatorpreyhunter_evaluate( Organism* org );
 double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathFile );
+void writeChampionPopulation( Population* pop );
 
 //The XOR evolution routines *****************************************
 Population *xor_test(int gens);
