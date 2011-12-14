@@ -1,4 +1,5 @@
 \section{Approach}
+\label{sec:approach}
 In this paper, we consider a toroidal grid world with one predator and one prey. Capture is defined as the predator occupying the same cell as the prey. The prey moves slightly slower than the predator (0.8 times the predator speed). We introduce additional agents into the environment called “hunters”. If the predators come in contact with the hunters, they receive a large negative reward, and hence the predator agents have to learn to stay away from the hunters apart from chasing and capturing the prey. We also fix the behaviour of both the prey and the hunter. The prey always moves away from the predators, while the hunter either moves randomly or moves towards the predator with a fixed probability.
 
 The task decomposition paper discussed above in section []  was the primary

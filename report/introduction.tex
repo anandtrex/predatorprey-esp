@@ -1,19 +1,21 @@
 \section{Introduction}
+\label{sec:Intro}
 The seemingly simple predator prey domain can be quite difficult for a single monolithic network to solve. Introduction of simultaneous multiple goals for the predators in the predator prey domain makes the task much more complex and harder to learn for the predator agents.
-    In this paper, a brief outline is given of the predator-prey domain in section [], then both NEAT and ESP are explained succintly in Sections [] and []. In Section [], related work on task decomposition is discussed. Section [] describes our approach to solving the predator-prey domain with multiple subgoals using task decomposition. Sections [], [] and [] give the results, conclutions and future work.
+    In this paper, a brief outline is given of the predator-prey domain in section \ref{sec:PPD}, then both NEAT and ESP are explained succintly in sections \ref{sec:NEAT} and \ref{sec:ESP}. In Section \ref{sec:RW}, related work on task decomposition is discussed. Section \ref{sec:approach} describes our approach to solving the predator-prey domain with multiple subgoals using task decomposition. Finally these are followed by the results, conclusions and future work.
 
 \subsection{Predator-Prey domain}
-The predator prey domain is a well studied problem in machine learning. It consists of an gridworld (toroidal in this case) with one or more predators and one or more prey. Both the predators and the prey can move in one of hte four directions -- north, south, east or west. The goal of the predator is to capture the prey in some manner defined as “capture”. For example, the predator occupying the same cell in the grid world as the prey is considered “capture” in this paper.
+\label{sec:PPD}
+The predator prey domain is a well studied problem in machine learning. It consists of an gridworld (toroidal in this case) with one or more predators and one or more prey. Both the predators and the prey can move in one of hte four directions -- north, south, east or west. The goal of the predator is to capture the prey in some manner defined as ``capture''. For example, the predator occupying the same cell in the grid world as the prey is considered ``capture'' in this paper.
 
     There are multiple parameters that can be varied in the predator-prey domain including, but not limited to, relative speed of the prey with respect to the predator, number of predators, number of prey, the type of grid world (toroidoal, plane etc.), having separate teams of predators and/or prey, behaviour of both the predator and prey -- whether both of them learn or one has fixed behaviour, etc. Additional goals may also be added to the problem apart from capturing prey. Each of these changes in the parameters changes the nature of the problem significantly and also changes the difficulty of learning hte problem significantly. For instance, having multiple predators, and defining the capture method as one or more predators occupying cells adjoining hte prey in all directions makes the task cooperative. On the other hand, having multiple predators, and allowing only one predator to capture the prey at a time, and that predator receiving the entire reward for capture the prey, makes the problem competitive. The prey may also be evolved along with the predator, leading to an arms race between the predators and the prey.
 
 \subsection{NEAT}
-Neuro-evolution of Augmenting Topologies (NEAT) [1] is a neuro-evolution method that evolves increasingly complex networks in each generation, starting from a very simple network. It also protects innovation using speciation, and keeps track of the ancestry of genomes in order to get more useful crossovers.
-   
-TODO ADD MORE DATA ON NEAT 
+\label{sec:NEAT}
+Neuro-evolution of Augmenting Topologies (NEAT) \nocite{Stanley2002} is a neuro-evolution method that evolves increasingly complex networks in each generation, starting from a very simple network. We have chosen NEAT as one of our neuroevolution algorithms because it tends to find a solution close to the minimal size. Another strong reason for chosing NEAT is that it evolves both the weights and the topology of the network.
 
 We use NEAT to evolve the separate subnetworks, and to evolve the overall network for the predator agent to learn the task in the environment described in [pred-prey section] 
 
 \subsection{ESP}
-Enforced sup-populations (ESP) [2] is a method that evolves a population of neurons for each hidden layer position. At each step, a random neuron is chosen from its associated subpopulation for each hidden neuron, and a network is constructed. The fitness of this network is evaluated in the given task, and this fitness is distributed to the neuron subpopulations appropriately. Based on this fitness, the neurons in the sub-population are evolved.
+\label{sec:ESP}
+Enforced sup-populations (ESP) \nocite{Gomez1997} is a method that evolves a population of neurons for each hidden layer position. At each step, a random neuron is chosen from its associated subpopulation for each hidden neuron, and a network is constructed. The fitness of this network is evaluated in the given task, and this fitness is distributed to the neuron subpopulations appropriately. Based on this fitness, the neurons in the sub-population are evolved.
 Multi-agent ESP is an extension of ESP used to evolve separate networks for multiple agents using ESP. 
