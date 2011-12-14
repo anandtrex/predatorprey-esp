@@ -15,6 +15,7 @@
 */
 #include <iostream>
 #include <vector>
+#include <sstream>
 #include "neat.h"
 #include "population.h"
 #include "experiments.h"
@@ -33,8 +34,9 @@ int main(int argc, char *argv[]) {
       the numbers will be different every time we run.    */
   srand( (unsigned)time( NULL ) );
 
-  if (argc != 2) {
+  if (argc < 3) {
     cerr << "A NEAT parameters file (.ne file) is required to run the experiments!" << endl;
+    cerr << "Number of generations for which I need to run the evolution" << endl;
     return -1;
   }
 
@@ -47,8 +49,11 @@ int main(int argc, char *argv[]) {
   //and then visualize the speciation that took place
   //p=xor_test(100);  //100 generation XOR experiment
 
-  cout << "Beginnning predatorpreyhunter_test";
-  p = predatorpreyhunter_test(10);
+  istringstream sin( argv[2] );
+  int gens;
+  sin >> gens;
+  cout << "Beginnning predatorpreyhunter_test for #" << gens << " generations" << endl;
+  p = predatorpreyhunter_test(gens);
 
   if (p)
     delete p;
