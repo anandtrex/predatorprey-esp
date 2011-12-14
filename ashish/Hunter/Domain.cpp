@@ -115,25 +115,16 @@ namespace PredatorPreyHunter {
     double fitness = 0.0;
     uint noSteps = 0;
     Caught caught; // for catching caught signal
-    Position positionPredator, positionPrey, positionHunter;
+    Position positionPredator, positionHunter;
     while ( noSteps < maxSteps ) {
       //cout << "step: " << noSteps << endl;
       positionPredator = ptrPredator->getPosition(); 
-      positionPrey = ptrPrey->getPosition();
       positionHunter = ptrHunter->getPosition();
       fout << positionPredator.x << " " << positionPredator.y << " ";
-      fout << positionPrey.x << " " << positionPrey.y << " ";
+      fout << -10 << " " << -10 << " ";
       fout << positionHunter.x << " " << positionHunter.y << endl;
       caught = step(); 
       switch( caught ) {
-        case PREY_CAUGHT:
-          // if prey is caught
-          // update fitness of predator
-          cout << "PREY CAUGHT!!!!" << endl;
-          cout << "step: " << noSteps << endl;
-          fout.close(); // use smart pointer later
-          return calculateFitness( caught, noSteps );
-          // break;
         case PREDATOR_CAUGHT:
           // if predator is caught
           // update fitness of predator
