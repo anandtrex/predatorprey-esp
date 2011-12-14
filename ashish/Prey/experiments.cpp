@@ -41,7 +41,7 @@ Population *predatorpreyhunter_test(int gens) {
 
     cout<<"START SINGLE PREDATOR PREY HUNTER EVOLUTION"<<endl;
     cout<<"Reading in the start genome"<<endl;
-    string pathFileGenomeStart = "singlepreyhunter_startgenes";
+    string pathFileGenomeStart = "singleprey_startgenes";
     ifstream iFile( pathFileGenomeStart.c_str(), ios::in );
     if ( !iFile.is_open() ) {
       cerr << "I could not open " << pathFileGenomeStart << " for reading the starter genome" << endl;

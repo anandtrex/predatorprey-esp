@@ -37,7 +37,7 @@ public class VisualizePredatorPreyHunterDomain {
 	          for ( AgentPositions agentPositions : alAgentPositions ) {
 	        	  System.out.println( "STEP " + counter );
 	        	  agentCanvas.drawNext( gridWorld, agentPositions );
-	        	  Thread.sleep( 500 );
+	        	  Thread.sleep( 300 );
 	        	  counter++;
 	          }
           } catch ( InterruptedException ie ) {

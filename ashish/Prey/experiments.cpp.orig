@@ -14,39 +14,35 @@
    limitations under the License.
 */
 #include "experiments.h"
-#include "Domain.h"
 #include <cstring>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glut.h>
+#include <GL/glx.h>
 
-//#define NO_SCREEN_OUT 
-
-// PREDATOR PREY HUNTER CODE BEGINS
-void writeChampionPopulation( Population* pop ) {
-  
-}
-
-//Perform evolution on predator prey hunter, for gens generations
-Population *predatorpreyhunter_test(int gens) {
+//Perform evolution on Predprey for gens generations
+Population *predprey_test(int gens) {
     Population *pop=0;
     Genome *start_genome;
     char curword[20];
     int id;
 
-    //ostringstream *fnamebuf;
+    ostringstream *fnamebuf;
     int gen;
+
     int expcount;
+    int status;
+    int runs[NEAT::num_runs];
+    int totalevals;
+    int samples;  //For averaging
 
-    double championFitness; // store the fitness of the champ of each epoch
-    vector<double> vGenerationChamptionFitness;
-    vGenerationChamptionFitness.reserve( gens );
+    memset (runs, 0, NEAT::num_runs * sizeof(int));
 
-    cout<<"START SINGLE PREDATOR PREY HUNTER EVOLUTION"<<endl;
+    ifstream iFile("singlepreyhunter_startgenes",ios::in);
+
+    cout<<"START PREDPREY EVOLUTION"<<endl;
+
     cout<<"Reading in the start genome"<<endl;
-    string pathFileGenomeStart = "singlepreyhunter_startgenes";
-    ifstream iFile( pathFileGenomeStart.c_str(), ios::in );
-    if ( !iFile.is_open() ) {
-      cerr << "I could not open " << pathFileGenomeStart << " for reading the starter genome" << endl;
-      throw 1; // throw something meaningful later
-    }
     //Read in the start Genome
     iFile>>curword;
     iFile>>id;
@@ -55,86 +51,153 @@ Population *predatorpreyhunter_test(int gens) {
     iFile.close();
   
     //Run multiple experiments
-    cout << "TOTAL EXPERIMENTS: " << NEAT::num_runs << endl;
     for(expcount=0;expcount<NEAT::num_runs;expcount++) {
-      vGenerationChamptionFitness.clear();
+
       cout<<"EXPERIMENT #"<<expcount<<endl;
+
       cout<<"Start Genome: "<<start_genome<<endl;
+      
       //Spawn the Population
       cout<<"Spawning Population off Genome"<<endl;
+      
+      //cout<<NEAT::pop_size<<endl;
+
       pop=new Population(start_genome,NEAT::pop_size);
+      
       cout<<"Verifying Spawned Pop"<<endl;
       pop->verify();
-      cout << "TOTAL GENERATIONS: " << gens << endl;
+
+      cout << "#TOTAL GENERATIONS: " << gens;
+
       for (gen=1;gen<=gens;gen++) {
         cout<<"Generation "<<gen<<endl;
-        //fnamebuf=new ostringstream();
-        //(*fnamebuf)<<"gen_"<<gen<<"_"; // ends;  //needs end marker
-        //cout<<"name of fname: "<<fnamebuf->str()<<endl;
+        
+        fnamebuf=new ostringstream();
+        (*fnamebuf)<<"gen_"<<gen<<ends;  //needs end marker
+
+#ifndef NO_SCREEN_OUT
+	cout<<"name of fname: "<<fnamebuf->str()<<endl;
+#endif	
+
         char temp[50];
         sprintf (temp, "gen_%d", gen);
-        championFitness=predatorpreyhunter_epoch(pop,gen,temp);
-        vGenerationChamptionFitness.push_back( championFitness );
-        //fnamebuf->clear();
-        //delete fnamebuf;
-      } // end of for loop generations
-      // write chamption fitness scores of generations to file
-      ostringstream sout;
-      sout << "E" << expcount << ".txt";
-      ofstream fout( sout.str().c_str() );
-      if ( !fout.is_open() ) {
-        cerr << "Could not open file " << sout.str() << " for writing." << endl;
-        throw 1; // throw something meaningful later
+
+        status=predprey_epoch(pop,gen,temp);
+        //status=(pole1_epoch(pop,gen,fnamebuf->str()));
+	
+        if (status) {
+          runs[expcount]=status;
+          gen=gens+1;
+        }
+	
+        fnamebuf->clear();
+        delete fnamebuf;
+	
       }
-      for ( vector<double>::const_iterator it = vGenerationChamptionFitness.begin(); it != vGenerationChamptionFitness.end(); ++it ) {
-        fout << *it << endl;
+
+      if (expcount<NEAT::num_runs-1) delete pop;
+    } // end of for
+
+    totalevals=0;
+    samples=0;
+    for(expcount=0;expcount<NEAT::num_runs;expcount++) {
+      cout<<runs[expcount]<<endl;
+      if (runs[expcount]>0)
+      {
+        totalevals+=runs[expcount];
+        samples++;
       }
-      fout.close();
-      if ( expcount < NEAT::num_runs - 1 ) delete pop; // delete all but the last population
-    } // end of for loop experiments
+    }
+
+    cout<<"Failures: "<<(NEAT::num_runs-samples)<<" out of "<<NEAT::num_runs<<" runs"<<endl;
+    cout<<"Average evals: "<<(samples>0 ? (double)totalevals/samples : 0)<<endl;
+
     return pop;
+
 }
 
-double predatorpreyhunter_epoch(Population *pop,int generation,char *filename) {
+int predprey_epoch(Population *pop,int generation,char *filename) {
+  cout << "--------------PREDPREY_EPOCH BEGINS------------------";
+  cout << "#GENERATION: " << generation << endl;
   vector<Organism*>::iterator curorg;
   vector<Species*>::iterator curspecies;
   //char cfilename[100];
   //strncpy( cfilename, filename.c_str(), 100 );
 
-  //ofstream cfilename(filename.c_str());
+  //ofstream cfilename(filename.c_str()); 
+
+  //Initializing the fitnesses of all the organisms to zero
+  for(curorg = (pop->organisms).begin(); curorg != (pop->organisms).end(); ++curorg) {
+      (*curorg)->fitness = 0;
+      (*curorg)->num_trials = 0;
+  }
 
   bool win=false;
   int winnernum;
+  int i, j; //Counters for loops
 
-  //Evaluate each organism on a test
-  //store the iterator of the organism with the greatest fitness
-  curorg=(pop->organisms).begin();
-  double fitnessGreatest = predatorpreyhunter_evaluate(*curorg); // get the fitness of the first organism
-  vector<Organism*>::iterator itPtrOrgChamp = curorg;
-  ++curorg; // move to the next organism
-  for( ;curorg!=(pop->organisms).end(); ++curorg) {
-    double fitnessOrganism = predatorpreyhunter_evaluate(*curorg);
-    cout << "FITNESS: " << fitnessOrganism << endl;
-    if ( fitnessGreatest < fitnessOrganism ) { // if fitness of current organism greater than the best make it the champ
-      fitnessGreatest = fitnessOrganism; 
-      itPtrOrgChamp = curorg;
-    }
+  int popsize = (int)(pop->organisms).size(); // The size of the current population
+  int pred1, pred2, pred3; //The three predators that are randomly chosen from the population for each trial
+
+  /* //Evaluate each organism on a test
+  for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
+    if (predprey_evaluate(*curorg)) win=true;
+  }*/
+
+  for (int t = 0; t < popsize; t++) { // Evaluating each predator in the population (single predator case)
+
+	  pred1 = t;
+	  //Evaluate three organisms (picked randomly each time) simultaneously a thousand times
+	  for(j = 0; j < 5; j ++) {
+		  /*
+		  cout<<"Num_trials = "<<(pop->organisms)[pred1]->num_trials;
+		  ((pop->organisms)[pred1]->num_trials)++; //Increment the number of trials for pred1 so that its final fitness can be found by averaging
+		  cout<<" "<<(pop->organisms)[pred1]->num_trials<<endl; */
+
+
+	   /* do {
+			  pred2 = (lrand48() % popsize);
+		  } while (pred2 == pred1); //Don't get the same predator twice */
+
+		  pred2 = (lrand48() % popsize);
+		  //((pop->organisms)[pred1]->num_trials)++;
+
+		  pred3 = (lrand48() % popsize);
+		  //((pop->organisms)[pred1]->num_trials)++;
+
+
+		  //Find the iterator corresponding to each of these three randomly picked predators
+		  for(curorg1 = (pop->organisms).begin(), i = 0; i < pred1; ++curorg1, i++);
+
+
+		  if (predprey_evaluate(*curorg1)) win=true;
+	  }
   }
+
+  for(curorg1 = (pop->organisms).begin(); curorg1 != (pop->organisms).end(); ++curorg1) {
+      if((*curorg1)->num_trials != 0) {
+          (*curorg1)->fitness = (*curorg1)->fitness / (double)((*curorg1)->num_trials);
+      }
+  }
+
+  double gen_avg_fitness = 0;
+
+  for(curorg1 = (pop->organisms).begin(); curorg1 != (pop->organisms).end(); ++curorg1) {
+      gen_avg_fitness += (*curorg1)->fitness;
+
+  }
+
+  gen_avg_fitness /= (double)popsize;
+
+  cout<<"Average fitness: "<<gen_avg_fitness<<endl;
+
+  //Print generation avg fitness to file
+  ofstream outfile("results_new_weights", ios::app);
+
+  outfile<<generation<<"\t"<<gen_avg_fitness<<"\t";
+
+  outfile.close();
   
-  // run the evaluation again but just once and store the performance to a file
-  if ( itPtrOrgChamp == (pop->organisms).end() ) {
-    cerr << "predatorpreyhunter_epoch(): itPtrOrgChamp is null!" << endl;
-    throw 1; // throw something meaningful later
-  }
-  string pathFile = string( filename ) + ".champ.txt";
-  double fitnessOrganism = predatorpreyhunter_evaluate_storeperformance( *itPtrOrgChamp, pathFile ); 
-  ostringstream sout;
-  sout << "GenerationChamp" << generation << ".txt"; 
-  ofstream foutGenome( sout.str().c_str() );
-  Genome* genomeChamp = ( *itPtrOrgChamp )->gnome;
-  genomeChamp->print_to_file( foutGenome );
-  // TODO store the champ organism itself to file
-
   //Average and max their fitnesses for dumping to file and snapshot
   for(curspecies=(pop->species).begin();curspecies!=(pop->species).end();++curspecies) {
 
@@ -153,27 +216,17 @@ double predatorpreyhunter_epoch(Population *pop,int generation,char *filename) {
   //  pop->snapshot();
 
   //Only print to file every print_every generations
-  if  ( ( generation % ( NEAT::print_every ) )==0 ) {
-    pop->print_to_file_by_species(filename);
-  }
-
-  //if (win) {
-    //for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
-      //if ((*curorg)->winner) {
-        //winnernum=((*curorg)->gnome)->genome_id;
-        //cout<<"WINNER IS #"<<((*curorg)->gnome)->genome_id<<endl;
-      //}
-    //}    
-  //}
-
-  //Create the next generation
+    //Create the next generation
   pop->epoch(generation);
 
-  return fitnessGreatest; 
+  cout << "--------------PREDPREY_EPOCH ENDS------------------";
+  if (win) return ((generation-1)*NEAT::pop_size+winnernum);
+  else return 0; 
+
 }
 
-double predatorpreyhunter_evaluate(Organism *org) {
-  Network *net;
+bool predprey_evaluate(Organism *org1) {
+  Network *net1, *net2, *net3;
 
   int numnodes;  /* Used to figure out how many nodes
 		    should be visited during activation */
@@ -181,57 +234,701 @@ double predatorpreyhunter_evaluate(Organism *org) {
 		  (for loop detection) */
 
   //  int MAX_STEPS=120000;
-  int MAX_STEPS=1000; // grid size will be smaller like 10x10
+ int MAX_STEPS=100000;
   
-  net=org->net;
-  numnodes=((org->gnome)->nodes).size();
-  thresh=numnodes*2;  //Max number of visits allowed per activation
+  //net1 = org1->net;
+ // numnodes=((org->gnome)->nodes).size();
+  //thresh=numnodes*2;  //Max number of visits allowed per activation
   
-  //Try to balance a pole now
-  double sumFitness = 0.0;
-  int MAP_WIDTH = 10;
-  int MAP_HEIGHT = 10;
-  int noTrials = 5;
-  for ( int i = 0; i < noTrials; i++ ) {
-    PredatorPreyHunter::Domain domain( MAX_STEPS, MAP_WIDTH, MAP_HEIGHT, net );   
-    sumFitness += domain.run(); 
-  }
-  org->fitness = sumFitness / noTrials;
+  vector <double> fitnesses; //To hold the fitnesses of the three predators
 
-  cout<<"Org "<<(org->gnome)->genome_id<<" fitness: "<<org->fitness<<endl;
+  //Evaluate in the domain
+  fitnesses = predprey_domain(org1, MAX_STEPS, thresh);
 
-  return org->fitness;
+  org1->fitness = org1->fitness + fitnesses[0];
+
+  org1->num_trials = org1->num_trials + 1;
+
+  return false;
+
 }
 
-double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathFile ) {
-  Network *net;
+vector<double> predprey_domain(Organism *org1,int max_steps,int thresh) {
+	 cout << "----------- PREDPREY_DOMAIN BEGINS -------------" << endl;
+	 cout << "GENERATION: " << org1->generation << endl;
+	 cout << "GENOME ID : " << org1->gnome->genome_id << endl;
+	 Network *net1 = org1->net; // get the network from the organism
+	 // OpenGL
+	 if (SHOW) {
 
-  int numnodes;  /* Used to figure out how many nodes
-		    should be visited during activation */
-  int thresh;  /* How many visits will be allowed before giving up 
-		  (for loop detection) */
+	  // clear display window
+	  glClearColor (1.0, 1.0, 1.0, 0.0);
+	  { GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "2. Error" <<endl; } //ADI
 
-  //  int MAX_STEPS=120000;
-  int MAX_STEPS=1000; // grid size will be smaller like 10x10
+	  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	  { GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "3. Error" <<endl; } //ADI
+
+	  glFlush();
+	  { GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "4. Error" <<endl; } //ADI
+
+	     for(int i = 0; i < MAP_LENGTH; i++) {
+	             for(int j = 0; j < MAP_LENGTH; j++) {
+	                     glBegin (GL_POINTS);
+	                     glColor3f(1.0f, 1.0f, 1.0f);
+	                     glVertex3f (i, j, 0);
+	                     void glEnd(void);
+	             }
+	     }
+
+	 }
+
+	 cout << "Initializing agents ..." << endl;
+    //Vectors to hold the positions of the three predators and the four prey
+    double pred_x[3];
+    double pred_y[3];
+    double prey_x[4];
+    double prey_y[4];
+    const unsigned int noHunters = 1;
+    double hunter_x[noHunters];
+    double hunter_y[noHunters];
+
+    bool prey_caught[4] = {false, false, false, false}; // To see if a prey has already been caught or not
+    bool pred_caught[3] = {false, false, false};		// See if hunter caught the predator
+
+    int num_of_prey_caught = 0; //To count the number of prey caught by the team
+    int num_of_prey_caught_individually[3] = {0, 0, 0}; //To count the number of prey caught by each predator
+
+    int i, j, k; //Counters for loops 
+
+    //Arrange the predators and prey randomly on the 100x100 grid
+    for (i = 0; i < 3; i++) {
+        pred_x[i] = (int) (drand48() * 100); 
+        pred_y[i] = (int) (drand48() * 100);
+    }
+    for (i = 0; i < 4; i++) {
+        prey_x[i] = (int) (drand48() * 100); 
+        prey_y[i] = (int) (drand48() * 100);
+    }
+    for (i = 0; i < noHunters; i++) {
+    	hunter_x[i] = (int) (drand48() * 100); // should we check if the prey and the hunter are on the same block by mistake
+    	hunter_y[i] = (int) (drand48() * 100); // should we check if the prey and the hunter are on the same block by mistake
+    }
   
-  net=org->net;
-  numnodes=((org->gnome)->nodes).size();
-  thresh=numnodes*2;  //Max number of visits allowed per activation
-  
-  //Try to balance a pole now
-  double fitnessOrganism = 0.0;
-  int MAP_WIDTH = 10;
-  int MAP_HEIGHT = 10;
-  PredatorPreyHunter::Domain domain( MAX_STEPS, MAP_WIDTH, MAP_HEIGHT, net );   
-  fitnessOrganism = domain.run( pathFile ); 
-  org->fitness = fitnessOrganism; 
+    vector <double> fitnesses; //To hold the fitnesses of the three predators
+    fitnesses.clear(); // empty it just to make sure
 
-  cout<<"Org "<<(org->gnome)->genome_id<<" fitness: "<<org->fitness<<endl;
+    const int maxSteps = 500; //Maximum number of timeteps [TODO: shouldn't this vary with the size of the grid]
 
-  return org->fitness;
+    //Prey moves at 0.9 the speed of the predator
+    double prey_move_probability = 0.9;
+
+    double in[5];  //Input loading array
+
+    double out1; // TODO:?????
+    double out2; // TODO:?????
+
+    vector<NNode*>::iterator out_iter; // for iterating over the output nodes of the network
+
+    int steps = 0; //To count up to the maximum number of timesteps
+
+   /*--- Iterate through the action-learn loop. ---*/
+   cout << "Beginning the game ..." << endl;
+   while (steps++ < maxSteps) {
+       cout << "#step: " << steps << endl;
+       cout << "prey movement begins ..." << endl;
+       for(j = 0; j < 1; j++) {
+
+    		int old_prey_x = prey_x[j]; // old prey positions are needed for erasing previous position
+    		int old_prey_y = prey_y[j]; // old prey positions are needed for erasing previous position
+
+
+           if (drand48() < prey_move_probability) {   
+           
+               //To hold the distances of the prey from its nearest predator
+               int nearestDist = MAP_LENGTH * 2 + 1; //Big number: to compare distances
+           
+               int nearestPred = 0; //To hold the nearest predator to the prey
+               
+               int dist; // TODO: To hold the distance ?????
+           
+               //To hold the x- and y-distances from different predators
+               int x_dist, y_dist, temp;
+           
+               int i; //Counter for loops
+           
+               int preyAction;
+                              
+               if (prey_caught[j]) { // if prey already caught move to the next prey
+                   preyAction=4;
+                   continue;         // next iteration of for loop!!!!!!
+               }           
+
+               for (i = 0; i < 1; i++) { // calculate the distance between the 1 prey and the 1 predator
+                   dist = calc_dist (pred_x[i], pred_y[i], prey_x[j], prey_y[j], MAP_LENGTH, MAP_HEIGHT);
+                   if (dist < nearestDist) { // this part is not needed
+                       nearestDist = dist;   // get the actual distance between the predator and prey
+                       nearestPred = i;      // nearest predator is the closest one.
+                   }
+               }
+
+               x_dist = pred_x[nearestPred] - prey_x[j]; // NOTE: Predator - Prey
+               
+               if ((abs(x_dist)) > (MAP_LENGTH/2)) { // account for the toroid
+                   temp = x_dist;
+                   x_dist = MAP_LENGTH  - abs(x_dist);
+                   if (temp > 0)
+                       x_dist = 0 - x_dist;         // account for who is behind who
+               }
+               
+               // do the same thing for y
+               y_dist = pred_y[nearestPred] - prey_y[j]; // NOTE: Predator - Prey
+               
+               if ((abs(y_dist)) > (MAP_HEIGHT/2)) {
+                   temp = y_dist;
+                   y_dist = MAP_HEIGHT  - abs(y_dist);
+                   if (temp > 0)
+                       y_dist = 0 - y_dist;
+               }
+
+               if (y_dist<0 && (abs(y_dist)>=abs(x_dist))) {		
+                   preyAction = 0;
+               }
+               
+               else if (x_dist<0 && (abs(x_dist)>=abs(y_dist))) {
+                   preyAction = 1;
+               }
+               
+               else if (y_dist>0 && (abs(y_dist)>=abs(x_dist))) {
+                   preyAction = 2;
+               }
+               
+               else if (x_dist>0 && (abs(x_dist)>=abs(y_dist))) {
+                   preyAction = 3;
+               }
+               
+               else {
+                   preyAction = 4;
+               }
+
+               if (preyAction==0) {
+                   prey_y[j]++; 
+               }
+	
+               else if (preyAction==1) {
+                   prey_x[j]++; }
+               
+               else if (preyAction==2) {
+                   prey_y[j]--; }
+               
+               else if (preyAction==3) {
+                   prey_x[j]--; }
+               
+               else if (preyAction==4) {}
+               
+               // account for the toroid
+               if (prey_x[j] > MAP_LENGTH) 
+                   prey_x[j] -= MAP_LENGTH;
+       
+               if (prey_y[j] > MAP_HEIGHT) 
+                   prey_y[j] -= MAP_HEIGHT;
+       
+               if (prey_x[j] < 0) 
+                   prey_x[j] += MAP_LENGTH;
+       
+               if (prey_y[j] < 0) 
+                   prey_y[j] += MAP_HEIGHT;
+
+            } //End of if condition to see if prey moves or not
+
+       	if (SHOW) {
+
+       		// erase old prey point
+       		glBegin (GL_POINTS);
+       		{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "15. Error" <<endl; } //ADI
+
+       		glColor3f (1.0f, 1.0f, 1.0f);
+       		{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "14. Error" <<endl; } //ADI
+
+       		glVertex3f (old_prey_x, old_prey_y, 0);
+       		{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "16. Error" <<endl; } //ADI
+
+       		void glEnd(void);
+       		{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "17. Error" <<endl; } //ADI
+
+       		if(prey_caught[j] == false) { //Added this if-else condition so that caught prey are drawn in white ******PADMINI
+
+       			// draw new prey point
+       			glBegin (GL_POINTS);
+       			{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "19. Error" <<endl; } //ADI
+
+                   // YELLOW for the prey
+                   glColor3f (1.0f, 1.0f, 0.0f); //trying to change the colors of different prey ******PADMINI
+
+
+       			glVertex3f (prey_x[j], prey_y[j], 0);
+       			{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "20. Error" <<endl; } //ADI
+
+       			glEnd ();
+       			//{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "21. Error" <<err<<endl; } //ADI : DONT know why this is not going even after changing gl end to void
+       		}
+
+       		else {
+       			// draw new prey point
+       			glBegin (GL_POINTS);
+       			{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "19. Error" <<endl; } //ADI
+
+       			glColor3f (1.0f, 1.0f, 1.0f); //white color for the prey that've already been caught, i.e. they vanish ******PADMINI
+       			{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "18. Error" <<endl; } //ADI
+
+       			glVertex3f (prey_x[j], prey_y[j], 0);
+       			{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "20. Error" <<endl; } //ADI
+
+       			glEnd ();
+       		//{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "21. Error" <<err<<endl; } //ADI : DONT know why this is not going even after changing gl end to void
+       		}
+
+       		glFlush();
+       		//{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "22. Error" <<endl; } //ADI
+       	}
+
+       } //End of the prey action loop
+
+       //Predator Action
+       cout << "predator movement begins ..." << endl;
+       for(i = 0; i < 1; i++) {
+
+    	   //Saving old predator locations for display
+    	   int old_pred_x = pred_x[i];
+    	   int old_pred_y = pred_y[i];
+
+
+           //To store the x- and y-distances from various prey
+           int x_dist;
+           int y_dist;
+
+           int temp;
+
+           for(j = 0, k = 0; j < 1; j++, k+=2) {
+               
+               if (!prey_caught[j]) {
+                   x_dist = abs(pred_x[i] - prey_x[j]); //The distance in x-direction between predator and prey
+                   y_dist = abs(pred_y[i] - prey_y[j]); //The distance in y-direction between predator and prey
+               }
+
+               else {
+                   x_dist = 0; 
+                   y_dist = 0;
+               }
+
+               if ((abs(x_dist)) > (MAP_LENGTH/2)) {
+                   temp = x_dist;
+                   x_dist = MAP_LENGTH  - abs(x_dist);
+                   
+                   if (temp > 0)
+                       x_dist = 0 - x_dist;
+               }
+               
+               if ((abs(y_dist)) > (MAP_HEIGHT/2)) {
+                   temp = y_dist;
+                   y_dist = MAP_HEIGHT  - abs(y_dist);
+                   
+                   if (temp > 0)
+                       y_dist = 0 - y_dist; 
+               }
+
+               in[1] = ( (double) x_dist ) / MAP_LENGTH; // dist(prey, predator); earlier in[k]
+               in[2] = ( (double) y_dist ) / MAP_LENGTH; // dist(prey, predator); earlier in[k+1]
+               in[3] = 0.0; // 0 => PREY
+               //cout << "SENSOR INPUT: " << in[k] << "\t" << in[k+1] << endl;
+
+           } //End of prey distance loop
+
+           /*for(j = 0; j < 8; j++) {
+               cout<<in[j]<<" ";
+           }
+
+           cout<<endl;
+           cin>>j; */
+
+		   // predator, hunter distance
+           // using the same x_dist, y_dist
+           x_dist = abs(pred_x[i] - hunter_x[0]); //The distance in x-direction between predator and prey
+           y_dist = abs(pred_y[i] - hunter_y[0]); //The distance in y-direction between predator and prey
+           if ((abs(x_dist)) > (MAP_LENGTH/2)) {
+               temp = x_dist;
+               x_dist = MAP_LENGTH  - abs(x_dist);
+
+               if (temp > 0)
+                   x_dist = 0 - x_dist;
+           }
+
+           if ((abs(y_dist)) > (MAP_HEIGHT/2)) {
+               temp = y_dist;
+               y_dist = MAP_HEIGHT  - abs(y_dist);
+
+               if (temp > 0)
+                   y_dist = 0 - y_dist;
+           }
+           in[4] = ( (double) x_dist ) / MAP_LENGTH; // dist(predator, hunter); earlier in[k]
+           in[5] = ( (double) y_dist ) / MAP_LENGTH; // dist(predator, hunter); earlier in[k+1]
+           in[6] = 1.0; // designates => HUNTER
+           in[0] = 1.0; // BIAS
+
+           if(i == 0) { //Predator 1
+
+        	   cout << "feeding inputs: ";
+        	   for ( int oogabooga = 0; oogabooga < 5; oogabooga++ )
+        		   cout << in[oogabooga] << "; ";
+        	   cout << endl;
+
+               net1->load_sensors(in);
+
+               //Activate the net
+               //If it loops, exit returning only fitness of 1 step
+               if (!(net1->activate())) {
+            	   cout<<"Net not activating!!"<<endl;
+            		print_Genome_tofile((org1)->gnome,"Defective_genome");
+               	   return fitnesses;
+               }
+
+               //Decide which way to move by seeing which output unit is greatest
+               out_iter=net1->outputs.begin();
+
+               double greatest = (*out_iter)->activation;
+               k = 0;
+
+               for(j = 0; j < 5; j++) { // 5 because there are 5 outputs. But will it query the right parts of the network
+                   if (SHOW) {
+                	   //cout << (*out_iter)->activation<<endl;
+                   }
+                   if((*out_iter)->activation > greatest) { //TODO: Is this okay? Should be but check!!!!
+                   
+                       greatest = (*out_iter)->activation;
+                       k = j;  // store the highest activation or chosen direction.
+                   }
+
+                   ++out_iter;
+               }               
+
+           } //End of if condition for predator 1
+
+          /* else if (i == 1) { //Predator 2
+
+               net2->load_sensors(in);
+
+               //Activate the net
+               //If it loops, exit returning only fitness of 1 step
+               if (!(net2->activate())) return fitnesses;
+
+               //Decide which way to move by seeing which output unit is greatest
+               out_iter=net2->outputs.begin();
+
+               double greatest = (*out_iter)->activation;
+               k = 0;
+
+               for(j = 0; j < 5; j++) {
+               
+                   if((*out_iter)->activation > greatest) {
+                   
+                       greatest = (*out_iter)->activation;
+                       k = j;
+                   }
+
+                   ++out_iter;
+               }               
+
+           } //End of if condition for predator 2
+
+           else { //Predator 3
+
+               net3->load_sensors(in);
+
+               //Activate the net
+               //If it loops, exit returning only fitness of 1 step
+               if (!(net3->activate())) return fitnesses;
+
+               //Decide which way to move by seeing which output unit is greatest
+               out_iter=net3->outputs.begin();
+
+               double greatest = (*out_iter)->activation;
+               k = 0;
+
+               for(j = 0; j < 5; j++) {
+               
+                   if((*out_iter)->activation > greatest) {
+                   
+                       greatest = (*out_iter)->activation;
+                       k = j;
+                   }
+
+                   ++out_iter;
+               }               
+
+           } //End of if condition for predator 3 */
+
+
+           int predAction = k;
+
+           if(predAction == 0) pred_y[i]++;
+           
+           else if(predAction == 1) pred_x[i]++;
+
+           else if(predAction == 2) pred_y[i]--;
+
+           else if(predAction == 3) pred_x[i]--;
+
+           else {} //idle
+
+           if (pred_x[i] > MAP_LENGTH) 
+               pred_x[i] -= MAP_LENGTH;
+           
+           if (pred_y[i] > MAP_HEIGHT) 
+               pred_y[i] -= MAP_HEIGHT;
+           
+           if (pred_x[i] < 0) 
+               pred_x[i] += MAP_LENGTH;
+           
+           if (pred_y[i] < 0) 
+               pred_y[i] += MAP_HEIGHT;
+
+       	//To display predators
+       	double color1 = 0;
+       	double color2 = 0;
+       	double color3 = 0;
+       	double colorFlicker = 0;
+		// Implies the predator is black in color
+
+       	if (SHOW) {
+
+       		// erase old pred point
+       		glBegin (GL_POINTS);
+       		{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "6. Error" <<endl; } //ADI
+
+       		glColor3f(1.0f, 1.0f, 1.0f);
+       		{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "5. Error" <<endl; } //ADI
+
+       		glVertex3f (old_pred_x, old_pred_y, 0);
+       		{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "7. Error" <<endl; } //ADI
+
+       		void glEnd(void);
+       		{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "8. Error" <<endl; } //ADI
+
+       		// draw new pred point
+
+       		        if (i==0) {
+       		        	color1 = 1; // COLOR is RED
+                               }
+       		        else if (i==1) {
+       		        	color2 = 1;
+                               }
+       		        else if (i==2) {
+       		        	color3 = 1;
+                               }
+
+       		        glBegin (GL_POINTS);
+       		        { GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "10. Error" <<endl; } //ADI
+
+       		        glColor3f (color1, color2, color3);
+       		        { GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "9. Error" <<endl; } //ADI
+
+       		        glVertex3f (pred_x[i], pred_y[i], 0);
+       		        { GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "11. Error" <<endl; } //ADI
+
+       		        void glEnd(void);
+       		        { GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "12. Error" <<endl; } //ADI
+
+       		        glFlush();
+       		        { GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "13. Error" <<endl; } //ADI
+
+         	} //End display predators
+
+           //Check if the predator caught a prey
+           for(j = 0; j < 1; j++) {
+               if(prey_caught[j] == false && pred_x[i] == prey_x[j] && pred_y[i] == prey_y[j]) {
+                   prey_caught[j] = true;
+                   //Prey reappears
+                   //prey_x[j] = (int) (drand48() * 100);
+                   //prey_y[j] = (int) (drand48() * 100);
+
+                   //Fitness sharing
+                   num_of_prey_caught++;  //Adding exception for zebra. The whole team gets fitness on catching a zebra
+                   
+                   num_of_prey_caught_individually[i]++; 
+               }
+           }
+
+           //Check if the hunter caught the predator
+           for(int jHunter = 0; jHunter < 1; jHunter++) { // iterate over all hunters
+               if(pred_caught[i] == false && hunter_x[jHunter] == pred_x[i] && hunter_y[jHunter] == pred_y[i]) {
+                   pred_caught[i] = true;
+               }
+           }
+
+
+       } //End of predator action loop
+
+       // HUNTER action
+       cout << "hunter movement begins ..." << endl;
+       int jHunter = 0; // Only one hunter
+       int hunterAction = (int) (drand48() * 4.0);
+       int old_hunter_x, old_hunter_y;
+       old_hunter_x = hunter_x[jHunter];
+       old_hunter_y = hunter_y[jHunter];
+
+       if (hunterAction==0) {
+           hunter_y[jHunter]++;
+       }
+       else if (hunterAction==1) {
+           hunter_x[jHunter]++; }
+
+       else if (hunterAction==2) {
+           hunter_y[jHunter]--; }
+
+       else if (hunterAction==3) {
+           hunter_x[jHunter]--; }
+
+       else if (hunterAction==4) {}
+
+       // account for the toroid
+       if (hunter_x[jHunter] > MAP_LENGTH)
+           hunter_x[jHunter] -= MAP_LENGTH;
+
+       if (hunter_y[jHunter] > MAP_HEIGHT)
+           hunter_y[jHunter] -= MAP_HEIGHT;
+
+       if (hunter_x[jHunter] < 0)
+           hunter_x[jHunter] += MAP_LENGTH;
+
+       if (hunter_y[jHunter] < 0)
+           hunter_y[jHunter] += MAP_HEIGHT;
+
+       // draw Hunter
+      	if (SHOW) {
+
+      		// erase old hunter point
+      		glBegin (GL_POINTS);
+      		{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "15. Error" <<endl; } //ADI
+
+      		glColor3f (1.0f, 1.0f, 1.0f);
+      		{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "14. Error" <<endl; } //ADI
+
+      		glVertex3f (old_hunter_x, old_hunter_y, 0);
+      		{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "16. Error" <<endl; } //ADI
+
+      		void glEnd(void);
+      		{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "17. Error" <<endl; } //ADI
+
+			// draw new hunter point
+			glBegin (GL_POINTS);
+			{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "19. Error" <<endl; } //ADI
+
+      // COLOR is GREY
+			glColor3f (0.0f, 0.5f, 0.5f); //trying to change the colors of different hunters ******ASHU
+
+
+			glVertex3f (hunter_x[jHunter], hunter_y[jHunter], 0);
+			{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "20. Error" <<endl; } //ADI
+
+			glEnd ();
+			//{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "21. Error" <<err<<endl; } //ADI : DONT know why this is not going even after changing gl end to void
+
+      		glFlush();
+      		//{ GLint err = glGetError(); if (err != GL_NO_ERROR) cout<< "22. Error" <<endl; } //ADI
+      	}
+
+       cout << "evaluate how many prey are caught ..." << endl;
+       //While break condition when all prey are caught 
+       int count_prey_caught = 0;
+       for (i = 0; i < 1; i++) {
+           if (prey_caught[i] == true) {
+               count_prey_caught++;
+           }
+       }
+
+       // Remove if you want the prey to reappear. I am keeping this @ASHU
+       if(count_prey_caught >= 1) {
+    	   cout << "prey caught ... breaking from big while loop" << endl;
+           break;
+       }
+
+       // Break from the big while loop
+       cout << "evaluate how many predators are caught by hunters ..." << endl;
+       int count_pred_caught = 0;
+       for (int iPredator = 0; iPredator < 1; iPredator++) {
+    	   cout << "iPredator: " << iPredator << endl;
+    	   if (pred_caught[iPredator] == true) {
+    		   count_pred_caught++;
+    	   }
+       }
+
+       // Break from the big while loop
+       if (count_pred_caught == 1) {
+    	   cout << "OOPs predator caught ... breaking from big while loop" << endl;
+    	   break;
+       }
+
+       //Display stuff
+       if (SHOW) {
+    	   usleep(100000);
+       }
+
+   } //End of BIG while loop steps++ < maxSteps
+
+   //Display stuff
+   if (SHOW) { //Added another clear screen here ******PADMINI
+
+       for(i = 0; i < MAP_LENGTH; i++) {
+               for(j = 0; j < MAP_LENGTH; j++) {
+                       glBegin (GL_POINTS);
+                       glColor3f(1.0f, 1.0f, 1.0f);
+                       glVertex3f (i, j, 0);
+                       void glEnd(void);
+               }
+       }
+
+   }
+
+   //Calculate fitnesses
+   for(i = 0; i < 1; i++) {
+	   if (pred_caught[i] == false)
+		   fitnesses.push_back(num_of_prey_caught*(maxSteps-steps)); // Reward for how quickly it caught the prey
+	   else
+		   fitnesses.push_back(-1*10*maxSteps);  // REALLY BAD FITNESS VALUE
+   }
+   if (num_of_prey_caught > 1) {
+	   cout << " CAUGHT more than 1 prey  "<< num_of_prey_caught<<endl;
+	   cin >> i;
+
+   }
+   for (i = 0; i < 1; i++) {
+	   cout << "FITNESS: " << fitnesses[0] << endl;
+   }
+   //cout<<fitnesses[0]<<" "<<fitnesses[1]<<" "<<fitnesses[2]<<endl;
+
+   cout << "----------- PREDPREY_DOMAIN ENDS -------------" << endl;
+   return fitnesses;
+
 }
 
-// PREDATOR PREY HUNTER CODE ENDS
+// Calculates distance (actual distance, using pythag. thm)
+// Takes shortest distance, ie. will wrap around edges
+int calc_dist (int x1, int y1, int x2, int y2, int MAP_LENGTH, int MAP_HEIGHT) {
+
+  int x_dist = 0;
+  int y_dist = 0;
+
+  x_dist = abs (x1 - x2);
+  if (x_dist > (MAP_LENGTH/2))
+    x_dist = MAP_LENGTH - x_dist;
+
+  y_dist = abs (y1 - y2);
+  if (y_dist > (MAP_HEIGHT/2))
+    y_dist = MAP_HEIGHT - y_dist;
+
+  return (x_dist + y_dist);
+
+}
+
 
 //Perform evolution on XOR, for gens generations
 Population *xor_test(int gens) {
@@ -286,9 +983,11 @@ Population *xor_test(int gens) {
 
 	//This is how to make a custom filename
 	fnamebuf=new ostringstream();
-	(*fnamebuf)<<"gen_"<<gen<<"_";  //needs end marker; removed ends (ASHISH)
+	(*fnamebuf)<<"gen_"<<gen<<ends;  //needs end marker
 
+	#ifndef NO_SCREEN_OUT
 	cout<<"name of fname: "<<fnamebuf->str()<<endl;
+	#endif
 
 	char temp[50];
 	sprintf (temp, "gen_%d", gen);
@@ -408,8 +1107,8 @@ bool xor_evaluate(Organism *org) {
   }
 
   #ifndef NO_SCREEN_OUT
-  cout<<"Org "<<(org->gnome)->genome_id<<"                                     error: "<<errorsum<<"  ["<<out[0]<<" "<<out[1]<<" "<<out[2]<<" "<<out[3]<<"]"<<endl;
-  cout<<"Org "<<(org->gnome)->genome_id<<"                                     fitness: "<<org->fitness<<endl;
+  cout<<"Org "<<(org->gnome)->genome_id<<"  error: "<<errorsum<<"  ["<<out[0]<<" "<<out[1]<<" "<<out[2]<<" "<<out[3]<<"]"<<endl;
+  cout<<"Org "<<(org->gnome)->genome_id<<"  fitness: "<<org->fitness<<endl;
   #endif
 
   //  if (errorsum<0.05) { 

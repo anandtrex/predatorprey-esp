@@ -128,11 +128,6 @@ double predatorpreyhunter_epoch(Population *pop,int generation,char *filename) {
   }
   string pathFile = string( filename ) + ".champ.txt";
   double fitnessOrganism = predatorpreyhunter_evaluate_storeperformance( *itPtrOrgChamp, pathFile ); 
-  ostringstream sout;
-  sout << "GenerationChamp" << generation << ".txt"; 
-  ofstream foutGenome( sout.str().c_str() );
-  Genome* genomeChamp = ( *itPtrOrgChamp )->gnome;
-  genomeChamp->print_to_file( foutGenome );
   // TODO store the champ organism itself to file
 
   //Average and max their fitnesses for dumping to file and snapshot

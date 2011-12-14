@@ -16,6 +16,7 @@
 // using
 // std
 using std::ifstream;
+using std::ofstream;
 using std::string;
 using std::cerr;
 using std::endl;
@@ -92,7 +93,15 @@ int main( int argc, char* argv[] ) {
   // TESTING aggregateNetworks
   Genome* ptrGenomeAggregate = aggregateGenomes( vPtrGenome );
   cout << "Genome Aggregate: " << endl;
-  ptrGenomeAggregate->print_to_file( cout ); 
+  string pathFileCombinedGenome = "CombinedChamp.txt";
+  ofstream fout( pathFileCombinedGenome.c_str() );
+  if ( !fout.is_open() ) {
+    cerr << "Could not open file " << pathFileCombinedGenome << " for writing." << endl;
+    throw 1; // throw something meaningful later
+  }
+  ptrGenomeAggregate->print_to_file( fout ); 
+  ptrGenomeAggregate->print_to_file( cout );
+  cout << "WRITTEN SUCCESSFULLY TO FILE " << pathFileCombinedGenome << endl;
 
   //Organism* ptrOrganism = new Organism( 0, ptrGenome, 1 );
   //cout << "Organism" << endl;
@@ -234,22 +243,64 @@ Genome* aggregateGenomes( vector<Genome*>& vPtrGenome ) {
   for ( VPGI itG = vPtrGenome.begin(); itG != vPtrGenome.end(); ++itG ) { 
     VPN& vNodes = (*itG)->nodes;
     for ( VPNI itN = vNodes.begin(); itN != vNodes.end(); ++itN ) {
-      // node pointed to by ptrNNodeNew will be ultimately deleted by the Genome pointed to by ptrGenomeNew
-      NNode* ptrNNodeNew = new NNode( *itN, ptrTraitNew );
-      ptrNNodeNew->node_id = counter;
-      if ( OUTPUT == ptrNNodeNew->gen_node_label  ) {
-        ptrNNodeNew->gen_node_label = HIDDEN;
+      // The following is a hack. Please revert back to git commits before
+      // December 14, 2011 to get a better version
+      if ( BIAS != (*itN)->gen_node_label ) {
+        // node pointed to by ptrNNodeNew will be ultimately deleted by the Genome pointed to by ptrGenomeNew
+        NNode* ptrNNodeNew = new NNode( *itN, ptrTraitNew );
+        ptrNNodeNew->node_id = counter;
+        if ( OUTPUT == ptrNNodeNew->gen_node_label  ) {
+          ptrNNodeNew->gen_node_label = HIDDEN;
+        }
+        // insert NNode inside vPtrNodesNew which will be added to the new Genome
+        vPtrNodesNew.push_back( ptrNNodeNew ); 
+        // update index
+        PairPtrGenomeNodeId pairPtrGenomeNodeId = make_pair( *itG, (*itN)->node_id );
+        PairIndex pairIndex = make_pair( ptrNNodeNew->node_id, pairPtrGenomeNodeId );
+        index.insert( pairIndex );
+        // update invertedIndex
+        PairInvertedIndex pairInvertedIndex = make_pair( pairPtrGenomeNodeId, ptrNNodeNew ); 
+        invertedIndex.insert( pairInvertedIndex );
+        counter++;
       }
-      // insert NNode inside vPtrNodesNew which will be added to the new Genome
-      vPtrNodesNew.push_back( ptrNNodeNew ); 
-      // update index
-      PairPtrGenomeNodeId pairPtrGenomeNodeId = make_pair( *itG, (*itN)->node_id );
-      PairIndex pairIndex = make_pair( ptrNNodeNew->node_id, pairPtrGenomeNodeId );
-      index.insert( pairIndex );
-      // update invertedIndex
-      PairInvertedIndex pairInvertedIndex = make_pair( pairPtrGenomeNodeId, ptrNNodeNew ); 
-      invertedIndex.insert( pairInvertedIndex );
-      counter++;
+      else {
+        // check if bias already exists in vPtrNodesNew
+        bool existsBias = false;
+        VPNI itBias = vPtrNodesNew.end();
+        for ( VPNI itNBias = vPtrNodesNew.begin(); itNBias != vPtrNodesNew.end(); ++itNBias ) {
+          if ( BIAS == (*itNBias)->gen_node_label ) {
+            existsBias = true;
+            itBias = itNBias;
+          }
+        }
+        if ( !existsBias ) {
+          // if bias does not exist do the usual
+          // node pointed to by ptrNNodeNew will be ultimately deleted by the Genome pointed to by ptrGenomeNew
+          NNode* ptrNNodeNew = new NNode( *itN, ptrTraitNew );
+          ptrNNodeNew->node_id = counter;
+          if ( OUTPUT == ptrNNodeNew->gen_node_label  ) {
+            ptrNNodeNew->gen_node_label = HIDDEN;
+          }
+          // insert NNode inside vPtrNodesNew which will be added to the new Genome
+          vPtrNodesNew.push_back( ptrNNodeNew ); 
+          // update index
+          PairPtrGenomeNodeId pairPtrGenomeNodeId = make_pair( *itG, (*itN)->node_id );
+          PairIndex pairIndex = make_pair( ptrNNodeNew->node_id, pairPtrGenomeNodeId );
+          index.insert( pairIndex );
+          // update invertedIndex
+          PairInvertedIndex pairInvertedIndex = make_pair( pairPtrGenomeNodeId, ptrNNodeNew ); 
+          invertedIndex.insert( pairInvertedIndex );
+          counter++;
+        }
+        else {
+          // if bias node already exists no need to insert new one. just link
+          // that to the inverted index
+          PairPtrGenomeNodeId pairPtrGenomeNodeId = make_pair( *itG, (*itN)->node_id );
+          PairInvertedIndex pairInvertedIndex = make_pair( pairPtrGenomeNodeId, *itBias ); 
+          invertedIndex.insert( pairInvertedIndex );
+          // do not update the counter
+        }
+      }
     }
   }
 
