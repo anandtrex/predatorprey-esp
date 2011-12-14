@@ -25,7 +25,7 @@ void writeChampionPopulation( Population* pop ) {
 }
 
 //Perform evolution on predator prey hunter, for gens generations
-Population *predatorpreyhunter_test(int gens) {
+Population *predatorpreyhunter_test( int gens, string namePlot ) {
     Population *pop=0;
     Genome *start_genome;
     char curword[20];
@@ -80,14 +80,15 @@ Population *predatorpreyhunter_test(int gens) {
       } // end of for loop generations
       // write chamption fitness scores of generations to file
       ostringstream sout;
-      sout << "E" << expcount << ".txt";
+      sout << "E" << expcount << "-" << namePlot << ".txt";
       ofstream fout( sout.str().c_str() );
       if ( !fout.is_open() ) {
         cerr << "Could not open file " << sout.str() << " for writing." << endl;
         throw 1; // throw something meaningful later
       }
+      gen = 1;
       for ( vector<double>::const_iterator it = vGenerationChamptionFitness.begin(); it != vGenerationChamptionFitness.end(); ++it ) {
-        fout << *it << endl;
+        fout << gen << " " << *it << endl;
       }
       fout.close();
       if ( expcount < NEAT::num_runs - 1 ) delete pop; // delete all but the last population

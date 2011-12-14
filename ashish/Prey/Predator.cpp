@@ -19,7 +19,7 @@ namespace PredatorPreyHunter {
     // 2 relative prey position x
     // 3 relative prey position y
     // 4 prey type
-    double in[7]; // be careful about the starter genome that you feed
+    double in[4]; // be careful about the starter genome that you feed
     // you can do a check to confirm if the number of input nodes is equal to
     // the number of output nodes
     in[0] = 1.0; // BIAS
