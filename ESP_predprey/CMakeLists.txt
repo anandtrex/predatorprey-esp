@@ -6,10 +6,10 @@ find_package(OpenGL)
 find_package(X11)
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
- configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doxy_config ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+ configure_file(${CMAKE_SOURCE_DIR}/doxy_config ${CMAKE_BINARY_DIR}/Doxyfile @ONLY)
  add_custom_target(doc
- ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
- WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+ ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
+ WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
  COMMENT "Generating API documentation with Doxygen" VERBATIM
  )
 endif(DOXYGEN_FOUND)
@@ -18,12 +18,12 @@ set(CMAKE_CXX_COMPILER "clang++")
 
 set(CMAKE_CXX_FLAGS "-g -O3 -Wall")
 set(CORELIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${X11_LIBRARY} m)
-
+set(CMAKE_EXE_LINKER_FLAGS "-L${CMAKE_BINARY_DIR}/glog/lib -L${CMAKE_BINARY_DIR}/libconfig/lib")
 
 #include(ExternalProject)
 #ExternalProject_Add(
-#	glog-0.3.1
-#	URL http://google-glog.googlecode.com/files/glog-0.3.1-1.tar.gz
+#	glog-0.3.2
+#	URL http://google-glog.googlecode.com/files/glog-0.3.2.tar.gz
 #	CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/glog
 #	BUILD_COMMAND make -j2
 #)
@@ -36,11 +36,14 @@ set(CORELIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${X11_LIBRARY} m)
 #)
 
 include_directories(/usr/include/x86_64-linux-gnu) # for clang
+include_directories(${CMAKE_BINARY_DIR}/glog/include)
+include_directories(${CMAKE_BINARY_DIR}/libconfig/include)
 
 file(GLOB SRCS "*.C")
 
 add_executable(esp-predprey ${SRCS})
+#target_link_libraries(esp-predprey ${CORELIBS} ${CMAKE_BINARY_DIR}/glog/lib/glog.so ${CMAKE_BINARY_DIR}/libconfig/lib/libconfig++.so)
 target_link_libraries(esp-predprey ${CORELIBS} glog config++)
 
-ADD_DEPENDENCIES(esp-predprey glog-0.3.1)
+ADD_DEPENDENCIES(esp-predprey glog-0.3.2)
 ADD_DEPENDENCIES(esp-predprey libconfig-1.4.8)
