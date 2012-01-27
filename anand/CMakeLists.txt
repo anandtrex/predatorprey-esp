@@ -14,7 +14,7 @@ if(DOXYGEN_FOUND)
  )
 endif(DOXYGEN_FOUND)
 
-set(CMAKE_CXX_COMPILER "clang++")
+set(CMAKE_CXX_COMPILER "clang")
 
 set(CMAKE_CXX_FLAGS "-g -O3 -Wall")
 set(CORELIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${X11_LIBRARY} m)
@@ -39,7 +39,7 @@ include_directories(/usr/include/x86_64-linux-gnu) # for clang
 include_directories(${CMAKE_BINARY_DIR}/glog/include)
 include_directories(${CMAKE_BINARY_DIR}/libconfig/include)
 
-file(GLOB SRCS "*.C")
+file(GLOB SRCS "*.cpp")
 
 add_executable(esp-predprey ${SRCS})
 #target_link_libraries(esp-predprey ${CORELIBS} ${CMAKE_BINARY_DIR}/glog/lib/glog.so ${CMAKE_BINARY_DIR}/libconfig/lib/libconfig++.so)
