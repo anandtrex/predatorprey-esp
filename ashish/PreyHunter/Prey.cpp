@@ -10,7 +10,7 @@ namespace PredatorPreyHunter {
   using std::abs;
   Prey::Prey( const GridWorld* ptrGridWorld, const uint& agentId, const Position& p ) : Agent( ptrGridWorld, agentId, p ) {
     this->typeAgent = PREY;
-    moveProbability = 0.9; // fetch this using a constructor later
+    moveProbability = 0.8; // fetch this using a constructor later
   }
   Position Prey::move( const std::vector<AgentInformation>& vAgentInformation ) {
     typedef vector<AgentInformation>::const_iterator VAICI;

@@ -33,8 +33,10 @@ int main(int argc, char *argv[]) {
       the numbers will be different every time we run.    */
   srand( (unsigned)time( NULL ) );
 
-  if (argc != 2) {
+  if (argc < 4) {
     cerr << "A NEAT parameters file (.ne file) is required to run the experiments!" << endl;
+    cerr << "path of starter genome file is expected" << endl;
+    cerr << "name for plotting is expected" << endl;
     return -1;
   }
 
@@ -48,7 +50,7 @@ int main(int argc, char *argv[]) {
   //p=xor_test(100);  //100 generation XOR experiment
 
   cout << "Beginnning predatorpreyhunter_test";
-  p = predatorpreyhunter_test(10);
+  p = predatorpreyhunter_test( 100, argv[2], argv[3] ); // running for 100 generations
 
   if (p)
     delete p;
