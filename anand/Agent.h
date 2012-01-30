@@ -18,7 +18,7 @@ enum TypeAgent
 struct AgentInformation
 {
     uint agentId;
-    TypeAgent typeAgent;
+    TypeAgent agentType;
     Position position;
 };
 

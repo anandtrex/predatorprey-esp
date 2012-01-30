@@ -2,16 +2,18 @@
 #include <iostream>
 #include <stdlib.h> // for drand48(): note unix only
 #include <cstdlib>
+#include <math.h>
 
 namespace PredatorPreyHunter {
   using std::vector;
-  using std::cerr;
   using std::endl;
   using std::abs;
-  Prey::Prey( const GridWorld* ptrGridWorld, const uint& agentId, const Position& p ) : Agent( ptrGridWorld, agentId, p ) {
+  Prey::Prey( const GridWorld* ptrGridWorld, const uint& agentId, const Position& p, const double& moveProbability ) : Agent( ptrGridWorld, agentId, p ) {
     this->typeAgent = PREY;
-    moveProbability = 0.9; // fetch this using a constructor later
+    //moveProbability = 0.9; // fetch this using a constructor later
+    this->moveProbability = moveProbability;
   }
+
   Position Prey::move( const std::vector<AgentInformation>& vAgentInformation ) {
     typedef vector<AgentInformation>::const_iterator VAICI;
     // if the random number between 0 and 1 is greater than the moveProbability
@@ -19,25 +21,26 @@ namespace PredatorPreyHunter {
     if ( fetchRandomNumber() > moveProbability ) { 
       return this->position;
     }
-    const int BIG_DISTANCE = ptrGridWorld->getWidth() + ptrGridWorld->getHeight();
+    const int MAX_DISTANCE = sqrt(ptrGridWorld->getWidth()*ptrGridWorld->getWidth() + ptrGridWorld->getHeight()*ptrGridWorld->getHeight());
     // find the closest predator
-    int distMin, dist;
-    distMin = BIG_DISTANCE; 
+    int minDist, dist;
+    minDist = MAX_DISTANCE; 
     VAICI itPredatorClosest = vAgentInformation.end();
-    for ( VAICI it = vAgentInformation.begin(); it != vAgentInformation.end(); ++it ) {
-      if ( PREDATOR == it->typeAgent ) {
-        dist = ptrGridWorld->distance( this->position, it->position ); 
-        if ( dist < distMin ) {
-          distMin = dist;
-          itPredatorClosest = it;
+    for ( VAICI itAgent = vAgentInformation.begin(); itAgent != vAgentInformation.end(); ++itAgent ) {
+      if ( itAgent->agentType == PREDATOR ) {
+        dist = ptrGridWorld->distance( this->position, itAgent->position ); 
+        if ( dist < minDist ) {
+          minDist = dist;
+          itPredatorClosest = itAgent;
         }
       }
     }
-    if ( BIG_DISTANCE == distMin || vAgentInformation.end() == itPredatorClosest ) {
-      cerr << "Houston, we have a problem" << endl;
-      cerr << "Prey::move could not find the nearest predator." << endl;
-      throw 1; // throw something meaningful later
+
+    if ( MAX_DISTANCE == minDist || vAgentInformation.end() == itPredatorClosest ) {
+      LOG(ERROR) << "Houston, we have a problem" << endl;
+      LOG(ERROR) << "Prey::move could not find the nearest predator." << endl;
     }
+
     // move away from the closest predator
     // the following code has been taken from Padmini and Aditya
     // uses the same conventions
@@ -59,6 +62,7 @@ namespace PredatorPreyHunter {
         if (temp > 0)
             y_dist = 0 - y_dist;
     }
+
     Action preyAction;
     if (y_dist<0 && (abs(y_dist)>=abs(x_dist))) {		
         preyAction = NORTH;
@@ -76,6 +80,7 @@ namespace PredatorPreyHunter {
         preyAction = STAY;
     }
     this->position = ptrGridWorld->move( this->position, preyAction ); 
+    return this->position;
   }
 }
 

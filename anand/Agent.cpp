@@ -18,12 +18,13 @@ namespace PredatorPreyHunter
         }
         this->ptrGridWorld = ptrGridWorld;
         this->agentId = agentId;
+        this->position = p;
     }
     AgentInformation Agent::getAgentInformation()
     {
         AgentInformation agentInformation;
         agentInformation.agentId = this->agentId;
-        agentInformation.typeAgent = this->typeAgent;
+        agentInformation.agentType = this->typeAgent;
         agentInformation.position = this->position;
         return agentInformation;
     }

@@ -3,12 +3,14 @@
 
 #include "Agent.h"
 
-namespace PredatorPreyHunter {
-  class Predator : public Agent {
+namespace PredatorPreyHunter
+{
+    class Predator: public Agent
+    {
     public:
-      Predator( const GridWorld* ptrGridWorld, const uint& agentId, const Position& p ); 
-      Position move( const std::vector<AgentInformation>& vAgentInformation );
-  };
+        Predator(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p);
+        Position move(const std::vector<AgentInformation>& vAgentInformation);
+    };
 }
 
 #endif // PPH_PREDATOR_H

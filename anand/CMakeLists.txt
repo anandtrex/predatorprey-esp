@@ -51,3 +51,6 @@ target_link_libraries(esp-predprey ${CORELIBS} glog config++)
 
 ADD_DEPENDENCIES(esp-predprey glog-0.3.2)
 ADD_DEPENDENCIES(esp-predprey libconfig-1.4.8)
+
+configure_file(${CMAKE_SOURCE_DIR}/esp_predprey.cfg
+    ${CMAKE_BINARY_DIR}/esp_predprey.cfg COPYONLY)
