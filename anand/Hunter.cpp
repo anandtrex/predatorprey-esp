@@ -8,8 +8,8 @@ namespace PredatorPreyHunter
     using std::endl;
     using std::abs;
     Hunter::Hunter(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p,
-            const double& moveProbability) :
-            Agent(ptrGridWorld, agentId, p)
+            const double& moveProbability)
+            : Agent(ptrGridWorld, agentId, p)
     {
         this->typeAgent = HUNTER;
         this->moveProbability = moveProbability;
@@ -27,8 +27,9 @@ namespace PredatorPreyHunter
         int minDist, dist;
         minDist = MAX_DISTANCE;
         VAICI itPredatorClosest = vAgentInformation.end();
-        for (VAICI itAgent = vAgentInformation.begin(); itAgent != vAgentInformation.end(); ++itAgent) {
-            if (PREDATOR == itAgent->agentType) {
+        for (VAICI itAgent = vAgentInformation.begin(); itAgent != vAgentInformation.end();
+                ++itAgent) {
+            if (itAgent->agentType == PREDATOR) {
                 dist = ptrGridWorld->distance(this->position, itAgent->position);
                 if (dist < minDist) {
                     minDist = dist;

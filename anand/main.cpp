@@ -12,10 +12,23 @@
 
 using namespace PredatorPreyHunter;
 
+void reseed(int val)
+{
+    unsigned short seed[3];
+
+    seed[0] = val;
+    seed[1] = val + 1;
+    seed[2] = val + 2;
+    seed48(seed);
+    srand48(val);
+}
+
 int main(int argc, char **argv)
 {
     google::InitGoogleLogging("");
     LOG(INFO) << "Main function";
+
+    reseed(getpid());
 
     int c;
     char* configFilePath;
@@ -33,4 +46,3 @@ int main(int argc, char **argv)
     Experiment experiment(configFilePath);
     return experiment.run();
 }
-

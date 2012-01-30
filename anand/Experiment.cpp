@@ -6,6 +6,8 @@
  */
 
 #include "Experiment.h"
+#include "PredatorRandom.h"
+#include "PredatorNaive.h"
 #include <iostream>
 #include <fstream>
 #include <libconfig.h++>
@@ -14,9 +16,7 @@ namespace PredatorPreyHunter
 {
     using std::endl;
     using std::vector;
-    using std::string;
-    using std::ofstream;
-    using std::string;
+    //using std::ofstream;
 
     Experiment::Experiment(const char* configFilePath)
     {
@@ -34,6 +34,8 @@ namespace PredatorPreyHunter
     	this->numPredators = cfg.lookup("agents:predator:number");
     	this->numPrey = cfg.lookup("agents:prey:number");
 
+    	int predType = cfg.lookup("agents:predator:type");
+
     	this->maxSteps = cfg.lookup("experiment:max_steps");
     	LOG(INFO) << "Max steps in experiemnt is " << static_cast<uint>(cfg.lookup("experiment:max_steps"));
 
@@ -47,7 +49,16 @@ namespace PredatorPreyHunter
 		Position position;
 		position.x = static_cast<int>(fetchRandomNumber() * gridWidth);
 		position.y = static_cast<int>(fetchRandomNumber() * gridHeight);
-		this->ptrPredator = new Predator(ptrGridWorld, 1, position);
+
+		if(predType == 0){ // Random predator
+		    LOG(INFO) << "Initializing random predator";
+		    this->ptrPredator = dynamic_cast<Predator*>(new PredatorRandom(ptrGridWorld, 1, position));
+		}
+		if(predType == 1){ // Naive predator
+		    LOG(INFO) << "Initializing naive predator";
+		    this->ptrPredator = dynamic_cast<Predator*>(new PredatorNaive(ptrGridWorld, 1, position, cfg.lookup("agents:predator:move_probability")));
+		    LOG(INFO) << "Predator move probability is " << static_cast<double>(cfg.lookup("agents:predator:move_probability"));
+		}
 		LOG(INFO) << "[CREATED] Predator at " << position.x << ", " << position.y << endl;
 		// initialize prey
 		position.x = static_cast<int>(fetchRandomNumber() * gridWidth);
@@ -78,9 +89,9 @@ namespace PredatorPreyHunter
         aiPredator = ptrPredator->getAgentInformation();
         aiPrey = ptrPrey->getAgentInformation();
         aiHunter = ptrHunter->getAgentInformation();
-        VLOG(1) << "Predator at " << aiPredator.position.x << "," << aiPredator.position.y;
-        VLOG(1) << "Prey at " << aiPrey.position.x << "," << aiPrey.position.y;
-        VLOG(1) << "Hunter at " << aiHunter.position.x << "," << aiHunter.position.y;
+        VLOG(2) << "Predator at " << aiPredator.position.x << "," << aiPredator.position.y;
+        VLOG(2) << "Prey at " << aiPrey.position.x << "," << aiPrey.position.y;
+        VLOG(2) << "Hunter at " << aiHunter.position.x << "," << aiHunter.position.y;
 
         if ((aiPrey.position.x == aiPredator.position.x)
                 && (aiPrey.position.y == aiPredator.position.y)) {
@@ -127,18 +138,22 @@ namespace PredatorPreyHunter
             	LOG(INFO) << "PREY CAUGHT!!!!" << endl;
             	prevNumPreyCaught = numPreyCaught;
             	if(numPreyCaught == numPrey){
-            	    LOG(INFO) << "All prey caught!";
+            	    LOG(INFO) << "All prey caught in " << noSteps << " steps!";
             	    return fitness;
             	}
             } else if (numPredCaught > 0 && numPredCaught > prevNumPredCaught) {
             	LOG(INFO) << "PREDATOR CAUGHT!!!!" << endl;
             	prevNumPredCaught = numPredCaught;
             	if(numPredCaught == numPredators){
-            	    LOG(INFO) << "All predators caught!";
+            	    LOG(INFO) << "All predators caught in " << noSteps << " steps!";
                     return fitness;
                 }
             }
         } while (noSteps++ < maxSteps);
+
+        if(noSteps - 1 == maxSteps){
+            LOG(INFO) << maxSteps << " passed without prey/predator being caught";
+        }
 
         return fitness;
     }
