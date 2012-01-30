@@ -9,7 +9,6 @@
 #define AGENT_H_
 
 #include "GridWorld.h"
-#include "common.h"
 
 enum TypeAgent
 {

@@ -14,26 +14,30 @@ if(DOXYGEN_FOUND)
  )
 endif(DOXYGEN_FOUND)
 
-set(CMAKE_CXX_COMPILER "clang")
+set(CMAKE_CXX_COMPILER "clang++")
 
 set(CMAKE_CXX_FLAGS "-g -O3 -Wall")
 set(CORELIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${X11_LIBRARY} m)
 set(CMAKE_EXE_LINKER_FLAGS "-L${CMAKE_BINARY_DIR}/glog/lib -L${CMAKE_BINARY_DIR}/libconfig/lib")
 
-#include(ExternalProject)
-#ExternalProject_Add(
-#	glog-0.3.2
-#	URL http://google-glog.googlecode.com/files/glog-0.3.2.tar.gz
-#	CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/glog
-#	BUILD_COMMAND make -j2
-#)
-#ExternalProject_Add(
-#	libconfig-1.4.8
-#	BUILD_IN_SOURCE 1
-#	URL http://www.hyperrealm.com/libconfig/libconfig-1.4.8.tar.gz
-#	CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/libconfig
-#	BUILD_COMMAND make -j2
-#)
+if(NOT EXISTS ${CMAKE_BINARY_DIR}/glog)
+include(ExternalProject)
+ExternalProject_Add(
+	glog-0.3.2
+	URL http://google-glog.googlecode.com/files/glog-0.3.2.tar.gz
+	CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_BINARY_DIR}/glog
+	BUILD_COMMAND make -j2
+)
+endif()
+if(NOT EXISTS ${CMAKE_BINARY_DIR}/libconfig)
+ExternalProject_Add(
+	libconfig-1.4.8
+	BUILD_IN_SOURCE 1
+	URL http://www.hyperrealm.com/libconfig/libconfig-1.4.8.tar.gz
+	CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_BINARY_DIR}/libconfig
+	BUILD_COMMAND make -j2
+)
+endif()
 
 include_directories(/usr/include/x86_64-linux-gnu) # for clang
 include_directories(${CMAKE_BINARY_DIR}/glog/include)

@@ -1,4 +1,10 @@
-#include "Predator.h"
+/*
+ * RandomAgent.cpp
+ *
+ *  Created on: Jan 29, 2012
+ *      Author: anand
+ */
+#include "RandomAgent.h"
 #include <iostream>
 #include <cstdlib>
 
@@ -6,10 +12,10 @@ namespace PredatorPreyHunter {
   using std::vector;
   using std::endl;
   using std::abs;
-  Predator::Predator( const GridWorld* ptrGridWorld, const uint& agentId, const Position& p ) : Agent( ptrGridWorld, agentId, p ) {
+  RandomAgent::RandomAgent( const GridWorld* ptrGridWorld, const uint& agentId, const Position& p ) : Agent( ptrGridWorld, agentId, p ) {
     this->typeAgent = PREDATOR;
   }
-  Position Predator::move( const std::vector<AgentInformation>& vAgentInformation ) {
+  Position RandomAgent::move( const std::vector<AgentInformation>& vAgentInformation ) {
     // random predator
     Action predatorAction;
     double moveProbability = 0.5;
@@ -35,8 +41,12 @@ namespace PredatorPreyHunter {
           break;
       }
     }
-    this->position = ptrGridWorld->move( this->position, predatorAction ); 
+    this->position = ptrGridWorld->move( this->position, predatorAction );
     return this->position;
   }
 }
+
+
+
+
 

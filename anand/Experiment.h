@@ -8,7 +8,6 @@
 #ifndef EXPERIMENT_H_
 #define EXPERIMENT_H_
 
-#include "common.h"
 #include "GridWorld.h"
 #include "Predator.h"
 #include "Prey.h"
@@ -34,7 +33,7 @@ namespace PredatorPreyHunter
         Caught step();
     public:
         Experiment(const int& maxSteps, const int& width, const int& height);
-        ~Domain();
+        ~Experiment();
         double run(); // return fitness
         double run(std::string pathFile); // return fitness
     };

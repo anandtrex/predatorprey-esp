@@ -8,7 +8,6 @@
 #include <iostream>
 
 #include "GridWorld.h"
-#include "common.h"
 
 using namespace PredatorPreyHunter;
 
