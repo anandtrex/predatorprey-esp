@@ -12,6 +12,8 @@
 #include "Predator.h"
 #include "Prey.h"
 #include "Hunter.h"
+#include "Visualizer.h"
+
 #include <string>
 #include <vector>
 
@@ -21,6 +23,8 @@ namespace PredatorPreyHunter
 
     class Experiment
     { // this is for now a hack due to dearth of time. make it more general later
+	    bool displayEnabled;
+	    PredPreyHunterVisualizer::Visualizer visualizer;
     protected:
         uint maxSteps;
         GridWorld* ptrGridWorld;

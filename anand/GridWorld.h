@@ -33,7 +33,15 @@ namespace PredatorPreyHunter
         uint distance(const Position& p1, const Position& p2) const;
         uint distanceX(const Position& p1, const Position& p2) const;
         uint distanceY(const Position& p1, const Position& p2) const;
+        /**
+         * Calculates and returns the new position of the agent for the given action.
+         * NOTE: This class doesn't keep track of the current positions of the agents.
+         * @param pCurrent - Current position
+         * @param action - Action taken
+         * @return
+         */
         Position move(const Position& pCurrent, const Action& action) const;
+
         int getWidth() const
         {
             return width;
