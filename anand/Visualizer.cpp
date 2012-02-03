@@ -26,8 +26,10 @@ namespace PredPreyHunterVisualizer
     static int sAttribList[] = { GLX_RGBA, GLX_RED_SIZE, 1, GLX_GREEN_SIZE, 1, GLX_BLUE_SIZE, 1,
             None };
 
-    Visualizer::Visualizer(std::map<int, vector<double> > idColorMapping, int width, int height)
+    Visualizer::Visualizer(std::map<int, vector<double> > idColorMapping, int gridWidth, int gridHeight)
     {
+        this->pointSize = 10;
+
         // OpenGL variables
         Display *dpy;
         XVisualInfo *vi;
@@ -67,8 +69,8 @@ namespace PredPreyHunterVisualizer
         // clear window
         glClearColor(1.0, 1.0, 1.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glOrtho(0.0, width, 0.0, height, -1.0, 1.0);
-        glPointSize(10);
+        glOrtho(0.0, gridWidth * pointSize, 0.0, gridHeight * pointSize, -1.0, 1.0);
+        glPointSize(pointSize * 2.0);
         glFlush();
 
         this->idColorMapping = idColorMapping;
@@ -85,7 +87,7 @@ namespace PredPreyHunterVisualizer
             // erase old point
             glBegin(GL_POINTS);
             glColor3f(1.0f, 1.0f, 1.0f);
-            glVertex3f(agentInformationPrevious.position.x, agentInformationPrevious.position.y, 0);
+            glVertex3f(agentInformationPrevious.position.x * pointSize, agentInformationPrevious.position.y * pointSize, 0);
             glEnd();
 
             VLOG(4) << "prev x " << agentInformationPrevious.position.x;
@@ -97,10 +99,11 @@ namespace PredPreyHunterVisualizer
             // draw new pred point
             glBegin(GL_POINTS);
             glColor3f(colorMap[0], colorMap[1], colorMap[2]);
-            glVertex3f(agentInformationCurrent.position.x, agentInformationCurrent.position.y, 0);
+            glVertex3f(agentInformationCurrent.position.x * pointSize, agentInformationCurrent.position.y * pointSize, 0);
             glEnd();
             glFlush();
         }
-        sleep(1);
+        // TODO Replace this with nano sleep
+        usleep(400000); // 500ms = 500000us = 0.5s
     }
 }

@@ -18,6 +18,7 @@ namespace PredPreyHunterVisualizer
     class Visualizer
     {
         std::map<int, std::vector<double> > idColorMapping;
+        int pointSize;
     public:
         Visualizer(std::map<int, std::vector<double> > idColorMapping, int width, int height);
         Visualizer()
