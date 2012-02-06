@@ -10,10 +10,13 @@
 
 #include <vector>
 
+#include "common.h"
+
 namespace EspPredPreyHunter
 {
-    class neuron
+    class Neuron
     {
+        uint geneSize;
     public:
         // weight[0..n-1] are input weights, for n inputs
         // weight[n..n+k-1] are output weights, for k outputs
@@ -22,17 +25,18 @@ namespace EspPredPreyHunter
         double fitness;  //neuron's fitness value
         int tests;  //holds the total # of networks participated in
         double activation;  //neuron's activation level
+
         // QUE What does lesioned do?
         bool lesioned;
 
         //constructor
-        neuron();
-        ~neuron();
-        neuron operator=(const neuron &);
+        Neuron(const uint& geneSize);
+        ~Neuron();
+        Neuron operator=(const Neuron &);
         void create();
-        void perturb(const neuron &n);
-        void perturb(const neuron &n, double(*randFn)(double), double);
-        neuron* perturb();
+        void perturb(const Neuron &n);
+        void perturb(const Neuron &n, double(*randFn)(double), double);
+        Neuron* perturb();
     };
 }
 

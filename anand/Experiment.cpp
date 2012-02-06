@@ -36,7 +36,7 @@ namespace PredatorPreyHunter
         cfg.readFile(configFilePath);
 
         this->maxSteps = cfg.lookup("experiment:max_steps");
-        LOG(INFO) << "Max steps in experiemnt is "
+        LOG(INFO) << "Max steps in experiment is "
                 << static_cast<uint>(cfg.lookup("experiment:max_steps"));
 
         int gridWidth = cfg.lookup("experiment:grid:width");
@@ -48,8 +48,6 @@ namespace PredatorPreyHunter
         this->numPredators = cfg.lookup("agents:predator:number");
         this->numPrey = cfg.lookup("agents:prey:number");
 
-        int predType = cfg.lookup("agents:predator:predators:[0]:type");
-
         this->ptrGridWorld = new GridWorld(gridWidth, gridHeight);
         LOG(INFO) << "[CREATED] GridWorld of size " << gridWidth << ", " << gridHeight << endl;
         // initialize predator
@@ -57,6 +55,7 @@ namespace PredatorPreyHunter
         position.x = static_cast<int>(fetchRandomNumber() * gridWidth);
         position.y = static_cast<int>(fetchRandomNumber() * gridHeight);
 
+        int predType = cfg.lookup("agents:predator:predators:[0]:type");
         if (predType == 0) { // Random predator
             LOG(INFO) << "Initializing random predator";
             this->ptrPredator = dynamic_cast<Predator*>(new PredatorRandom(ptrGridWorld,
@@ -137,6 +136,7 @@ namespace PredatorPreyHunter
         delete ptrHunter;
         delete ptrGridWorld;
     }
+
     void Experiment::step()
     {
         // check if prey is caught
@@ -184,7 +184,6 @@ namespace PredatorPreyHunter
             static vector<AgentInformation> vAgentInformationPrevious = vector<AgentInformation>();
             if(vAgentInformationPrevious.size() == 0){
                 vAgentInformationPrevious = vAgentInformation;
-                VLOG(4) << "Null";
             }
             this->visualizer.show(vAgentInformationPrevious, vAgentInformation);
             vAgentInformationPrevious = vAgentInformation;
@@ -195,7 +194,6 @@ namespace PredatorPreyHunter
     {
         double fitness = 0.0;
         int noSteps = 0;
-        //Caught caught; // for catching caught signal
         int prevNumPreyCaught = 0;
         int prevNumPredCaught = 0;
 

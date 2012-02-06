@@ -6,8 +6,6 @@
  */
 
 #include "PredatorNaive.h"
-#include <iostream>
-#include <cstdlib>
 
 namespace PredatorPreyHunter
 {
