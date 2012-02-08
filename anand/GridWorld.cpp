@@ -15,11 +15,6 @@ namespace PredatorPreyHunter
     using std::endl;
     using std::abs;
 
-    GridWorld::GridWorld(const int& width, const int& height)
-    {
-        this->width = width;
-        this->height = height;
-    }
     uint GridWorld::distance(const Position& p1, const Position& p2) const
     {
         int distX, distY;
@@ -37,6 +32,7 @@ namespace PredatorPreyHunter
         }
         return static_cast<uint>(sqrt(distX * distX + distY * distY));
     }
+
     uint GridWorld::distanceX(const Position& p1, const Position& p2) const
     {
         int distX;
@@ -49,6 +45,7 @@ namespace PredatorPreyHunter
         }
         return static_cast<uint>(distX);
     }
+
     uint GridWorld::distanceY(const Position& p1, const Position& p2) const
     {
         int distY;
@@ -61,6 +58,7 @@ namespace PredatorPreyHunter
         }
         return static_cast<uint>(distY);
     }
+
     Position GridWorld::move(const Position& pCurrent, const Action& action) const
     {
         Position pNew = pCurrent;

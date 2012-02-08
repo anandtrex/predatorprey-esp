@@ -43,8 +43,8 @@ namespace PredatorPreyHunter
                     break;
             }
         }
-        this->position = ptrGridWorld->move(this->position, predatorAction);
-        return this->position;
+        position = ptrGridWorld->move(this->position, predatorAction);
+        return position;
     }
 }
 

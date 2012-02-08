@@ -13,6 +13,20 @@ namespace EspPredPreyHunter
     using std::vector;
     using std::endl;
 
+    Network::Network(const int& numHiddenNeurons, const int& geneSize)
+            : geneSize(geneSize), numHiddenNeurons(numHiddenNeurons)
+    {
+        activation = vector<double>(numHiddenNeurons);
+        neurons = vector<Neuron*>(numHiddenNeurons);
+
+        if (MIN)
+            fitness = 10000000;
+        else
+            fitness = 0.0;
+
+        evolvable = true;
+    }
+
     Network::~Network()
     {
         for (int i = 0; i < numHiddenNeurons; ++i)

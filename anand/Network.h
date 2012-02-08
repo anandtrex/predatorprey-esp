@@ -16,7 +16,7 @@ namespace EspPredPreyHunter
 
     class Network     //: public subPop
     {
-        const int MIN;     // = 0; 0 means higher fitness better, 1 otherwise
+        enum {MIN = 0};     // = 0; 0 means higher fitness better, 1 otherwise
 
         uint geneSize;
 
@@ -30,19 +30,7 @@ namespace EspPredPreyHunter
         double fitness;
         vector<Neuron*> neurons;
 
-        Network(const int& numHiddenNeurons, const int& geneSize)
-                : MIN(0), geneSize(geneSize), numHiddenNeurons(numHiddenNeurons), activation(numHiddenNeurons), neurons(numHiddenNeurons)     // constants! FIXME
-        {
-            if (MIN)
-                fitness = 10000000;
-            else
-                fitness = 0.0;
-
-            for (int i = 0; i < numHiddenNeurons; i++) {
-                neurons[i] = new Neuron(geneSize);
-            }
-            evolvable = true;
-        }
+        Network(const int& numHiddenNeurons, const int& geneSize);
 
         virtual ~Network();
 

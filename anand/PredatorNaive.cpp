@@ -19,9 +19,11 @@ namespace PredatorPreyHunter
         // if the random number between 0 and 1 is greater than the moveProbability
         // then don't move
         if (fetchRandomNumber() > moveProbability) {
-            return this->position;
+            return position;
         }
+
         const int MAX_DISTANCE = ptrGridWorld->getWidth() + ptrGridWorld->getHeight();
+
         // find the closest prey
         int minDist, dist;
         minDist = MAX_DISTANCE;
@@ -36,10 +38,7 @@ namespace PredatorPreyHunter
                 }
             }
         }
-        if (MAX_DISTANCE == minDist || vAgentInformation.end() == itPreyClosest) {
-            LOG(ERROR) << "Houston, we have a problem" << endl;
-            LOG(ERROR) << "Predator::move could not find the nearest prey." << endl;
-        }
+
         // move away from the closest predator
         // the following code has been taken from Padmini and Aditya
         // uses the same conventions
@@ -73,8 +72,8 @@ namespace PredatorPreyHunter
         } else {
             predatorAction = STAY;
         }
-        this->position = ptrGridWorld->move(this->position, predatorAction);
-        return this->position;
+        position = ptrGridWorld->move(this->position, predatorAction);
+        return position;
     }
 }
 

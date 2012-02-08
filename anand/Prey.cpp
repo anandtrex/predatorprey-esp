@@ -11,11 +11,9 @@ namespace PredatorPreyHunter
     using std::abs;
     Prey::Prey(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p,
             const double& moveProbability)
-            : Agent(ptrGridWorld, agentId, p)
+            : Agent(ptrGridWorld, agentId, p), moveProbability(moveProbability)
     {
         this->typeAgent = PREY;
-        //moveProbability = 0.9; // fetch this using a constructor later
-        this->moveProbability = moveProbability;
     }
 
     Position Prey::move(const std::vector<AgentInformation>& vAgentInformation)
@@ -83,8 +81,8 @@ namespace PredatorPreyHunter
         } else {
             preyAction = STAY;
         }
-        this->position = ptrGridWorld->move(this->position, preyAction);
-        return this->position;
+        position = ptrGridWorld->move(this->position, preyAction);
+        return position;
     }
 }
 

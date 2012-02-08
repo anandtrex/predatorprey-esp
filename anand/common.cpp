@@ -6,6 +6,7 @@
  */
 
 #include "common.h"
+
 namespace PredatorPreyHunter {
 	double fetchRandomNumber() {
 		return drand48();

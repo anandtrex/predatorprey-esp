@@ -7,13 +7,14 @@ namespace PredatorPreyHunter
     using std::vector;
     using std::endl;
     using std::abs;
+
     Hunter::Hunter(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p,
             const double& moveProbability)
-            : Agent(ptrGridWorld, agentId, p)
+            : Agent(ptrGridWorld, agentId, p), moveProbability(moveProbability)
     {
         this->typeAgent = HUNTER;
-        this->moveProbability = moveProbability;
     }
+
     Position Hunter::move(const std::vector<AgentInformation>& vAgentInformation)
     {
         typedef vector<AgentInformation>::const_iterator VAICI;
@@ -41,6 +42,7 @@ namespace PredatorPreyHunter
             LOG(ERROR) << "Houston, we have a problem" << endl;
             LOG(ERROR) << "Hunter::move could not find the nearest predator." << endl;
         }
+
         // move away from the closest predator
         // the following code has been taken from Padmini and Aditya
         // uses the same conventions

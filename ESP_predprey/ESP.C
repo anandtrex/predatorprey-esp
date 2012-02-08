@@ -1213,7 +1213,7 @@ void Esp::create(int num_of_predators, int num_of_prey, int num_teams_predator, 
 //  the same subpop. The neurons are then mutated.
 //
 //////////////////////////////////////////////////////////////////////
-#include <string.h>
+//#include <string.h>
 //string PLOT_STR("plot ");
 
 void Esp::evolve(int cycles, int num_of_predators, int num_of_prey, int num_teams_predator,

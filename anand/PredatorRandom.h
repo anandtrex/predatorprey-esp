@@ -23,6 +23,7 @@ namespace PredatorPreyHunter
         {
 
         }
+
         Position move(const std::vector<AgentInformation>& vAgentInformation);
     };
 }

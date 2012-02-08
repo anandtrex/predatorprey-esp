@@ -20,10 +20,10 @@ namespace PredatorPreyHunter
         double moveProbability;
     public:
         PredatorNaive(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p, const double& moveProbability )
-                : Predator(ptrGridWorld, agentId, p)
+                : Predator(ptrGridWorld, agentId, p), moveProbability(moveProbability)
         {
-            this->moveProbability = moveProbability;
         }
+
         Position move(const std::vector<AgentInformation>& vAgentInformation);
     };
 }

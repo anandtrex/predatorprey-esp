@@ -20,6 +20,7 @@ namespace EspPredPreyHunter
             FeedForwardNetwork(const uint& numHiddenNeurons, const uint& neuronGeneSize)
                     : Network(numHiddenNeurons, neuronGeneSize)
             {
+                ;
             }
             void activate(vector<double> &input, vector<double> &output, int inputSize_combiner);
             void addNeuron();
