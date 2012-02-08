@@ -112,17 +112,21 @@ double predatorpreyhunter_epoch(Population *pop,int generation,char *filename) {
   //Evaluate each organism on a test
   //store the iterator of the organism with the greatest fitness
   curorg=(pop->organisms).begin();
+  double fitnessAveragePopulation = 0.0;
   double fitnessGreatest = predatorpreyhunter_evaluate(*curorg); // get the fitness of the first organism
+  fitnessAveragePopulation = fitnessGreatest;
   vector<Organism*>::iterator itPtrOrgChamp = curorg;
   ++curorg; // move to the next organism
   for( ;curorg!=(pop->organisms).end(); ++curorg) {
     double fitnessOrganism = predatorpreyhunter_evaluate(*curorg);
+    fitnessAveragePopulation = fitnessAveragePopulation + fitnessOrganism;
     cout << "FITNESS: " << fitnessOrganism << endl;
     if ( fitnessGreatest < fitnessOrganism ) { // if fitness of current organism greater than the best make it the champ
       fitnessGreatest = fitnessOrganism; 
       itPtrOrgChamp = curorg;
     }
   }
+  fitnessAveragePopulation = fitnessAveragePopulation / (pop->organisms).size();
   
   // run the evaluation again but just once and store the performance to a file
   if ( itPtrOrgChamp == (pop->organisms).end() ) {
@@ -172,7 +176,7 @@ double predatorpreyhunter_epoch(Population *pop,int generation,char *filename) {
   //Create the next generation
   pop->epoch(generation);
 
-  return fitnessGreatest; 
+  return fitnessAveragePopulation; 
 }
 
 double predatorpreyhunter_evaluate(Organism *org) {
