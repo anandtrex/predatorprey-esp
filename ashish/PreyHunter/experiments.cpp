@@ -25,7 +25,7 @@ void writeChampionPopulation( Population* pop ) {
 }
 
 //Perform evolution on predator prey hunter, for gens generations
-Population *predatorpreyhunter_test(int gens, string pathFileGenome, string namePlot ) {
+Population *predatorpreyhunter_test(int gens, string pathFileGenome, string namePlot, const int mapWidth, const int mapHeight ) {
     Population *pop=0;
     Genome *start_genome;
     char curword[20];
@@ -74,7 +74,7 @@ Population *predatorpreyhunter_test(int gens, string pathFileGenome, string name
         //cout<<"name of fname: "<<fnamebuf->str()<<endl;
         char temp[50];
         sprintf (temp, "PositionsGenerationChamp%d", gen);
-        championFitness=predatorpreyhunter_epoch(pop,gen,temp);
+        championFitness=predatorpreyhunter_epoch(pop,gen,temp,mapWidth,mapHeight);
         vGenerationChamptionFitness.push_back( championFitness );
         //fnamebuf->clear();
         //delete fnamebuf;
@@ -98,7 +98,7 @@ Population *predatorpreyhunter_test(int gens, string pathFileGenome, string name
     return pop;
 }
 
-double predatorpreyhunter_epoch(Population *pop,int generation,char *filename) {
+double predatorpreyhunter_epoch(Population *pop,int generation,char *filename, const int mapWidth, const int mapHeight) {
   vector<Organism*>::iterator curorg;
   vector<Species*>::iterator curspecies;
   //char cfilename[100];
@@ -113,12 +113,12 @@ double predatorpreyhunter_epoch(Population *pop,int generation,char *filename) {
   //store the iterator of the organism with the greatest fitness
   curorg=(pop->organisms).begin();
   double fitnessAveragePopulation = 0.0;
-  double fitnessGreatest = predatorpreyhunter_evaluate(*curorg); // get the fitness of the first organism
+  double fitnessGreatest = predatorpreyhunter_evaluate(*curorg, mapWidth, mapHeight); // get the fitness of the first organism
   fitnessAveragePopulation = fitnessGreatest;
   vector<Organism*>::iterator itPtrOrgChamp = curorg;
   ++curorg; // move to the next organism
   for( ;curorg!=(pop->organisms).end(); ++curorg) {
-    double fitnessOrganism = predatorpreyhunter_evaluate(*curorg);
+    double fitnessOrganism = predatorpreyhunter_evaluate(*curorg, mapWidth, mapHeight);
     fitnessAveragePopulation = fitnessAveragePopulation + fitnessOrganism;
     cout << "FITNESS: " << fitnessOrganism << endl;
     if ( fitnessGreatest < fitnessOrganism ) { // if fitness of current organism greater than the best make it the champ
@@ -134,7 +134,7 @@ double predatorpreyhunter_epoch(Population *pop,int generation,char *filename) {
     throw 1; // throw something meaningful later
   }
   string pathFile = string( filename ) + ".txt";
-  double fitnessOrganism = predatorpreyhunter_evaluate_storeperformance( *itPtrOrgChamp, pathFile ); 
+  double fitnessOrganism = predatorpreyhunter_evaluate_storeperformance( *itPtrOrgChamp, pathFile, mapWidth, mapHeight ); 
   ostringstream sout;
   sout << "NetworkGenerationChamp" << generation << ".txt"; 
   ofstream foutGenome( sout.str().c_str() );
@@ -179,7 +179,7 @@ double predatorpreyhunter_epoch(Population *pop,int generation,char *filename) {
   return fitnessGreatest; // fitnessAveragePopulation; 
 }
 
-double predatorpreyhunter_evaluate(Organism *org) {
+double predatorpreyhunter_evaluate(Organism *org, const int mapWidth, const int mapHeight) {
   Network *net;
 
   int numnodes;  /* Used to figure out how many nodes
@@ -188,16 +188,16 @@ double predatorpreyhunter_evaluate(Organism *org) {
 		  (for loop detection) */
 
   //  int MAX_STEPS=120000;
-  int MAX_STEPS=1000; // grid size will be smaller like 10x10
+  int MAX_STEPS=mapWidth*mapHeight; // grid size will be smaller like 10x10
   
   net=org->net;
   numnodes=((org->gnome)->nodes).size();
-  thresh=numnodes*2;  //Max number of visits allowed per activation
+  thresh=numnodes*2;  // Max number of visits allowed per activation
   
   //Try to balance a pole now
   double sumFitness = 0.0;
-  int MAP_WIDTH = 10;
-  int MAP_HEIGHT = 10;
+  int MAP_WIDTH = mapWidth; // whole code needs to be reorganized
+  int MAP_HEIGHT = mapHeight; // whole code needs to be reorganized
   int noTrials = 5;
   for ( int i = 0; i < noTrials; i++ ) {
     PredatorPreyHunter::Domain domain( MAX_STEPS, MAP_WIDTH, MAP_HEIGHT, net );   
@@ -210,7 +210,7 @@ double predatorpreyhunter_evaluate(Organism *org) {
   return org->fitness;
 }
 
-double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathFile ) {
+double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathFile, const int mapWidth, const int mapHeight ) {
   Network *net;
 
   int numnodes;  /* Used to figure out how many nodes
@@ -219,7 +219,7 @@ double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathF
 		  (for loop detection) */
 
   //  int MAX_STEPS=120000;
-  int MAX_STEPS=1000; // grid size will be smaller like 10x10
+  int MAX_STEPS=mapWidth*mapHeight; // grid size will be smaller like 10x10
   
   net=org->net;
   numnodes=((org->gnome)->nodes).size();
@@ -227,8 +227,8 @@ double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathF
   
   //Try to balance a pole now
   double fitnessOrganism = 0.0;
-  int MAP_WIDTH = 10;
-  int MAP_HEIGHT = 10;
+  int MAP_WIDTH = mapWidth; // whole code needs to change
+  int MAP_HEIGHT = mapHeight; // whole code needs to change
   PredatorPreyHunter::Domain domain( MAX_STEPS, MAP_WIDTH, MAP_HEIGHT, net );   
   fitnessOrganism = domain.run( pathFile ); 
   org->fitness = fitnessOrganism; 
