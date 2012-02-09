@@ -28,11 +28,14 @@ namespace PredatorPreyHunter
     {
     protected:
         const GridWorld* ptrGridWorld;
-        uint agentId;
+        const uint agentId;
         TypeAgent typeAgent;
         Position position;
     public:
-        Agent(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p);
+        Agent(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p)
+            :ptrGridWorld(ptrGridWorld), agentId(agentId), position(p)
+        {
+        }
         virtual ~Agent();
         virtual Position move(const std::vector<AgentInformation>& vAgentInformation) = 0;
         AgentInformation getAgentInformation();

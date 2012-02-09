@@ -25,18 +25,18 @@ namespace PredatorPreyHunter
 
     Experiment::Experiment(const char* configFilePath)
     {
-        this->numPredCaught = 0;
-        this->numPreyCaught = 0;
-        this->predatorCaughtIds = vector<uint>();
-        this->preyCaughtIds = vector<uint>();
+        numPredCaught = 0;
+        numPreyCaught = 0;
+        predatorCaughtIds = vector<uint>();
+        preyCaughtIds = vector<uint>();
 
         libconfig::Config cfg;
 
         LOG(INFO) << "Reading from config file " << configFilePath;
         cfg.readFile(configFilePath);
 
-        this->maxSteps = cfg.lookup("experiment:max_steps");
-        LOG(INFO) << "Max steps in experiemnt is "
+        maxSteps = cfg.lookup("experiment:max_steps");
+        LOG(INFO) << "Max steps in experiment is "
                 << static_cast<uint>(cfg.lookup("experiment:max_steps"));
 
         int gridWidth = cfg.lookup("experiment:grid:width");
@@ -44,25 +44,27 @@ namespace PredatorPreyHunter
         LOG(INFO) << "Grid size is " << static_cast<int>(gridWidth) << "x"
                 << static_cast<int>(gridHeight);
 
-        this->numHunters = cfg.lookup("agents:hunter:number");
-        this->numPredators = cfg.lookup("agents:predator:number");
-        this->numPrey = cfg.lookup("agents:prey:number");
-
-        int predType = cfg.lookup("agents:predator:predators:[0]:type");
+        numHunters = cfg.lookup("agents:hunter:number");
+        numPredators = cfg.lookup("agents:predator:number");
+        numPrey = cfg.lookup("agents:prey:number");
 
         this->ptrGridWorld = new GridWorld(gridWidth, gridHeight);
         LOG(INFO) << "[CREATED] GridWorld of size " << gridWidth << ", " << gridHeight << endl;
+
         // initialize predator
         Position position;
         position.x = static_cast<int>(fetchRandomNumber() * gridWidth);
         position.y = static_cast<int>(fetchRandomNumber() * gridHeight);
 
-        if (predType == 0) { // Random predator
+        int predType = cfg.lookup("agents:predator:predators:[0]:type");
+
+        if (predType == 0) {     // Random predator
             LOG(INFO) << "Initializing random predator";
             this->ptrPredator = dynamic_cast<Predator*>(new PredatorRandom(ptrGridWorld,
                     cfg.lookup("agents:predator:predators:[0]:id"), position));
         }
-        if (predType == 1) { // Naive predator
+
+        else if (predType == 1) {     // Naive predator
             LOG(INFO) << "Initializing naive predator";
             this->ptrPredator = dynamic_cast<Predator*>(new PredatorNaive(ptrGridWorld,
                     cfg.lookup("agents:predator:predators:[0]:id"), position,
@@ -72,8 +74,10 @@ namespace PredatorPreyHunter
                     << static_cast<double>(cfg.lookup(
                             "agents:predator:predators:[0]:move_probability"));
         }
+
         LOG(INFO) << "[CREATED] Predator at " << position.x << ", " << position.y << " with id "
                 << static_cast<int>(cfg.lookup("agents:predator:predators:[0]:id")) << endl;
+
         // initialize prey
         position.x = static_cast<int>(fetchRandomNumber() * gridWidth);
         position.y = static_cast<int>(fetchRandomNumber() * gridHeight);
@@ -83,6 +87,7 @@ namespace PredatorPreyHunter
                 << static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability"));
         LOG(INFO) << "[CREATED] Prey at " << position.x << ", " << position.y << " with id "
                 << static_cast<int>(cfg.lookup("agents:prey:preys:[0]:id")) << endl;
+
         // initialize hunter
         position.x = static_cast<int>(fetchRandomNumber() * gridWidth);
         position.y = static_cast<int>(fetchRandomNumber() * gridHeight);
@@ -94,7 +99,7 @@ namespace PredatorPreyHunter
                 << static_cast<int>(cfg.lookup("agents:hunter:hunters:[0]:id")) << endl;
 
         // Display related stuff
-        this->displayEnabled = cfg.lookup("experiment:display");
+        displayEnabled = cfg.lookup("experiment:display");
 
         if (displayEnabled) {
             LOG(INFO) << "Display enabled";
@@ -102,28 +107,42 @@ namespace PredatorPreyHunter
             pair<int, vector<double> > p = pair<int, vector<double> >();
 
             vector<double> color = vector<double>();
-            color.push_back(static_cast<double>(cfg.lookup("agents:predator:predators:[0]:color:r")));
-            color.push_back(static_cast<double>(cfg.lookup("agents:predator:predators:[0]:color:g")));
-            color.push_back(static_cast<double>(cfg.lookup("agents:predator:predators:[0]:color:b")));
-            p = pair<int, vector<double> >(static_cast<int>(cfg.lookup("agents:predator:predators:[0]:id")), color);
+            color.push_back(
+                    static_cast<double>(cfg.lookup("agents:predator:predators:[0]:color:r")));
+            color.push_back(
+                    static_cast<double>(cfg.lookup("agents:predator:predators:[0]:color:g")));
+            color.push_back(
+                    static_cast<double>(cfg.lookup("agents:predator:predators:[0]:color:b")));
+            p = pair<int, vector<double> >(
+                    static_cast<int>(cfg.lookup("agents:predator:predators:[0]:id")), color);
             idColorMapping.insert(p);
-            VLOG(4) << "Id -> r,g,b is " << static_cast<int>(cfg.lookup("agents:predator:predators:[0]:id")) << " -> "
-                    << static_cast<float>(cfg.lookup("agents:predator:predators:[0]:color:r")) << ", "
-                    << static_cast<float>(cfg.lookup("agents:predator:predators:[0]:color:g")) << ", "
-                    << static_cast<float>(cfg.lookup("agents:predator:predators:[0]:color:b"));
+            VLOG(4)
+                            << "Id -> r,g,b is "
+                            << static_cast<int>(cfg.lookup("agents:predator:predators:[0]:id"))
+                            << " -> "
+                            << static_cast<float>(cfg.lookup(
+                                    "agents:predator:predators:[0]:color:r"))
+                            << ", "
+                            << static_cast<float>(cfg.lookup(
+                                    "agents:predator:predators:[0]:color:g"))
+                            << ", "
+                            << static_cast<float>(cfg.lookup(
+                                    "agents:predator:predators:[0]:color:b"));
 
             color = vector<double>();
             color.push_back(static_cast<double>(cfg.lookup("agents:prey:preys:[0]:color:r")));
             color.push_back(static_cast<double>(cfg.lookup("agents:prey:preys:[0]:color:g")));
             color.push_back(static_cast<double>(cfg.lookup("agents:prey:preys:[0]:color:b")));
-            p = pair<int, vector<double> >(static_cast<int>(cfg.lookup("agents:prey:preys:[0]:id")), color);
+            p = pair<int, vector<double> >(static_cast<int>(cfg.lookup("agents:prey:preys:[0]:id")),
+                    color);
             idColorMapping.insert(p);
 
             color = vector<double>();
             color.push_back(static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:color:r")));
             color.push_back(static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:color:g")));
             color.push_back(static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:color:b")));
-            p = pair<int, vector<double> >(static_cast<int>(cfg.lookup("agents:hunter:hunters:[0]:id")), color);
+            p = pair<int, vector<double> >(
+                    static_cast<int>(cfg.lookup("agents:hunter:hunters:[0]:id")), color);
             idColorMapping.insert(p);
 
             this->visualizer = Visualizer(idColorMapping, gridWidth, gridHeight);
@@ -137,6 +156,7 @@ namespace PredatorPreyHunter
         delete ptrHunter;
         delete ptrGridWorld;
     }
+
     void Experiment::step()
     {
         // check if prey is caught
@@ -145,6 +165,7 @@ namespace PredatorPreyHunter
         aiPredator = ptrPredator->getAgentInformation();
         aiPrey = ptrPrey->getAgentInformation();
         aiHunter = ptrHunter->getAgentInformation();
+
         VLOG(2) << "Predator at " << aiPredator.position.x << "," << aiPredator.position.y;
         VLOG(2) << "Prey at " << aiPrey.position.x << "," << aiPrey.position.y;
         VLOG(2) << "Hunter at " << aiHunter.position.x << "," << aiHunter.position.y;
@@ -156,6 +177,7 @@ namespace PredatorPreyHunter
             this->preyCaughtIds.push_back(aiPrey.agentId);
             this->numPreyCaught++;
         }
+
         // check if predator is caught
         // return appropriate caught signal
         if ((aiHunter.position.x == aiPredator.position.x)
@@ -165,12 +187,14 @@ namespace PredatorPreyHunter
             this->predatorCaughtIds.push_back(aiPredator.agentId);
             this->numPredCaught++;
         }
+
         // build vector<AgentInformation>
         vector<AgentInformation> vAgentInformation;
         vAgentInformation.clear();
         vAgentInformation.push_back(aiPredator);
         vAgentInformation.push_back(aiPrey);
         vAgentInformation.push_back(aiHunter);
+
         // move prey
         ptrPrey->move(vAgentInformation);
         // move hunter
@@ -179,12 +203,11 @@ namespace PredatorPreyHunter
         ptrPredator->move(vAgentInformation);
 
         // Show display
-        if(displayEnabled){
+        if (displayEnabled) {
             // FIXME Need to do this in a better way
             static vector<AgentInformation> vAgentInformationPrevious = vector<AgentInformation>();
-            if(vAgentInformationPrevious.size() == 0){
+            if (vAgentInformationPrevious.size() == 0) {
                 vAgentInformationPrevious = vAgentInformation;
-                VLOG(4) << "Null";
             }
             this->visualizer.show(vAgentInformationPrevious, vAgentInformation);
             vAgentInformationPrevious = vAgentInformation;
@@ -195,7 +218,6 @@ namespace PredatorPreyHunter
     {
         double fitness = 0.0;
         int noSteps = 0;
-        //Caught caught; // for catching caught signal
         int prevNumPreyCaught = 0;
         int prevNumPredCaught = 0;
 
@@ -277,4 +299,3 @@ namespace PredatorPreyHunter
  return fitness;
  }*/
 }
-

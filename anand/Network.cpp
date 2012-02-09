@@ -4,74 +4,78 @@
  *  Created on: Feb 3, 2012
  *      Author: anands
  */
-#include "neuron.h"
+#include "Neuron.h"
 #include "common.h"
+#include "Network.h"
 
 namespace EspPredPreyHunter
 {
     using std::vector;
     using std::endl;
 
+    Network::Network(const int& numHiddenNeurons, const int& geneSize)
+            : geneSize(geneSize), numHiddenNeurons(numHiddenNeurons)
+    {
+        activation = vector<double>(numHiddenNeurons);
+        neurons = vector<Neuron*>(numHiddenNeurons);
+
+        if (MIN)
+            fitness = 10000000;
+        else
+            fitness = 0.0;
+
+        evolvable = true;
+    }
+
     Network::~Network()
     {
-        for (int i = 0; i < numNeurons; ++i)
-            pop[i] = NULL;
+        for (int i = 0; i < numHiddenNeurons; ++i)
+            neurons[i] = NULL;
         //pop.clear();
     }
 
-//copy a network
+    //copy a network
     void Network::operator=(Network &n)
     {
         fitness = n.fitness;
-        for (int i = 0; i < numNeurons; ++i)
-            *pop[i] = *n.pop[i];
+        for (int i = 0; i < numHiddenNeurons; ++i)
+            *neurons[i] = *n.neurons[i];
 
         //  return this;
     }
 
-// Places neuron n into this network
-    void Network::setNeuron(neuron *n, int position)
+    // Places neuron n into this network
+    void Network::setNeuron(Neuron *n, int position)
     {
-        pop[position] = n;
+        neurons[position] = n;
     }
 
-// assigns this to n
+    // assigns this to n
     void Network::setNetwork(Network *n)
     {
         fitness = n->fitness;
-        for (int i = 0; i < numNeurons; ++i)
-            pop[i] = n->pop[i];
+        for (int i = 0; i < numHiddenNeurons; ++i)
+            neurons[i] = n->neurons[i];
     }
 
-// add network fitness to its neurons
+    // add network fitness to its neurons
     void Network::addFitness()
     {
-        for (int i = 0; i < numNeurons; ++i)
-            pop[i]->fitness += fitness;
+        for (int i = 0; i < numHiddenNeurons; ++i)
+            neurons[i]->fitness += fitness;
     }
 
     void Network::resetActivation()
     {
-        for (int i = 0; i < numNeurons; ++i)
+        for (int i = 0; i < numHiddenNeurons; ++i)
             activation[i] = 0.0;
     }
 
-// increment net's neurons' tests field
+    // increment net's neurons' tests field
     void Network::incrementTests()
     {
-        for (int i = 0; i < numNeurons; ++i)
-            ++pop[i]->tests;
-    }
-
-    SecondOrderRecurrentNetwork::SecondOrderRecurrentNetwork(int size) :
-            Network(size), newWeights(size)
-    {
-        int j;
-
-        outOffset = NUM_INPUTS * numNeurons;
-        for (int i = 0; i < size; ++i)
-            for (j = 0; j < outOffset; ++j)
-                newWeights[i].push_back(0.0);
+        for (int i = 0; i < numHiddenNeurons; ++i)
+            ++neurons[i]->tests;
     }
 
     inline double sigmoid(double x, double slope = 1.0)
@@ -79,332 +83,10 @@ namespace EspPredPreyHunter
         return (1 / (1 + exp(-(slope * x))));
     }
 
-// NOTE Does the calculation of the output of the network here
-    void FeedForwardNetwork::activate(vector<double> &input, vector<double> &output, /*int num_of_prey,
-     int num_of_predators, int num_teams_prey, int num_teams_predator,*/int inputSize_combiner)
-    {
-        register int i, j, neuron_input_connections, output_weight_index;
-        if (!IS_PREY) {
-            if (IS_COMBINER_NW == 1) {
-                neuron_input_connections = inputSize_combiner; //Number of inputs to each combiner neural network
-            } else {
-                neuron_input_connections = 2;  //Number of inputs to each sensory neural network
-            }
-            // evaluate hidden/output layer
-            for (i = 0; i < numNeurons; ++i) {  //for each hidden unit
-                //if(!pop[i]->lesioned){
-                activation[i] = 0.0;
-                for (j = 0; j < neuron_input_connections; ++j) {
-                    activation[i] += pop[i]->weight[j] * input[j];
-                    //printf("%f\n", activation[i]);
-                }
-                //inner_product(pop[i]->weight.begin(),
-                //    pop[i]->weight.end(),
-                //    input.begin(), 0.0);
-                activation[i] = sigmoid(activation[i]);
-                //printf("%f\n", activation[i]);
-                //}
-            }
-
-            // If there is a second hidden layer
-            // NOTE FIXME Will work only if the size of both the hidden layers are the same!
-            vector<double> oldActivation = vector<double>(activation);
-            if (numNeurons2 > 0) {
-                if (IS_COMBINER_NW) {
-                    LOG(ERROR) << "Second layer of combiner network!!";
-                }
-                //DLOG(INFO) << "pop2 size is " << pop2.size();
-                //DLOG(INFO) << "numNeurons2 is " << numNeurons2;
-                for (int i = 0; i < numNeurons2; i++) {
-                    activation[i] = 0.0;
-                    // take the activation of each of the first layer of hidden neurons
-                    //DLOG(INFO) << "pop2[" << i <<"]->weight size is " << pop2[i]->weight.size();
-                    for (int j = 0; j < numNeurons2; j++) {
-                        //DLOG(INFO) << "pop2[i]->weight[j] is " << pop2[i]->weight[j];
-                        activation[i] += pop2[i]->weight[j] * oldActivation[i];
-                    }
-                    activation[i] = sigmoid(activation[i]);
-                }
-            }
-
-            output_weight_index = neuron_input_connections;
-
-            if (IS_COMBINER_NW == 1) {
-                for (i = 0; i < NUM_OUTPUT_PRED_COMBINER; ++i) {
-                    output[i] = 0.0;
-                    for (j = 0; j < numNeurons; ++j) {
-                        output[i] += activation[j] * pop[j]->weight[output_weight_index];
-                    }
-                    output_weight_index++;
-                    output[i] = sigmoid(output[i]);
-                    //printf("%f\n", output[0]); //->weight[j]);
-                }
-            } else {
-                for (i = 0; i < NUM_OUTPUTS; ++i) {
-                    output[i] = 0.0;
-                    for (j = 0; j < numNeurons; ++j) {
-                        output[i] += activation[j] * pop[j]->weight[output_weight_index];
-                    }
-                    output_weight_index++;
-                    output[i] = sigmoid(output[i]);
-                    //printf("%f\n", output[0]); //->weight[j]);
-                }
-            }
-        }
-
-        else if (IS_PREY) {
-            LOG(FATAL) << "Shouldn't be here";
-//        if (IS_COMBINER_NW == 1) {
-//            neuron_input_connections = inputSize_combiner;  //Number of inputs to each combiner neural network
-//        } else {
-//            neuron_input_connections = 2;  //Number of inputs to each sensory neural network
-//        }
-//        // evaluate hidden/output layer
-//        for (i = 0; i < numNeurons; ++i) {  //for each hidden unit
-//            //if(!pop[i]->lesioned){
-//            activation[i] = 0.0;
-//            for (j = 0; j < neuron_input_connections; ++j) {
-//                activation[i] += pop[i]->weight[j] * input[j];
-//                //printf("%f\n", activation[i]);
-//            }
-//            //inner_product(pop[i]->weight.begin(),
-//            //      pop[i]->weight.end(),
-//            //      input.begin(), 0.0);
-//            activation[i] = sigmoid(activation[i]);
-//            //printf("%f\n", activation[i]);
-//            //}
-//        }
-//
-//        output_weight_index = neuron_input_connections;
-//
-//        if (IS_COMBINER_NW == 1) {
-//            for (i = 0; i < NUM_OUTPUT_PREY_COMBINER; ++i) {
-//                output[i] = 0.0;
-//                for (j = 0; j < numNeurons; ++j) {
-//                    output[i] += activation[j] * pop[j]->weight[output_weight_index];
-//                }
-//                output[i] = sigmoid(output[i]);
-//                output_weight_index++;
-//            }
-//        }
-//
-//        else {
-//            for (i = 0; i < NUM_OUTPUTS_PREY; ++i) {
-//                output[i] = 0.0;
-//                for (j = 0; j < numNeurons; ++j) {
-//                    output[i] += activation[j] * pop[j]->weight[output_weight_index];
-//                }
-//                output[i] = sigmoid(output[i]);
-//                output_weight_index++;
-//            }
-//        }
-
-        }
-
-    }
-
-    void FullyRecurrentNetwork::activate(vector<double> &input, vector<double> &output)
-    {
-        register int i, j, r;
-
-        /* evaluate hidden/output layer */
-        for (r = 0; r < 1; ++r) {
-            for (i = 0; i < numNeurons; ++i)
-                input[NUM_INPUTS + i] = activation[i];
-            for (i = 0; i < numNeurons; ++i) { /*for each hidden unit*/
-                activation[i] = 0.0;
-                if (!pop[i]->lesioned) {
-                    for (j = 0; j < NUM_INPUTS - 1; ++j)
-                        activation[i] += pop[i]->weight[j] * input[j];
-                    activation[i] = sigmoid(activation[i]);
-                }
-            }
-            for (i = 0; i < NUM_OUTPUTS; ++i)
-                output[i] = activation[i];
-        }
-    }
-
-    void SimpleRecurrentNetwork::activate(vector<double> &input, vector<double> &output)
-    {
-        register int i, j;
-
-        /* evaluate hidden/output layer */
-        for (i = 0; i < numNeurons; ++i) {
-            input[NUM_INPUTS + i] = activation[i];
-            /* printf("%f \n", net[i]->activation);   */
-        }
-        for (i = 0; i < numNeurons; ++i) { /*for each hidden unit*/
-            activation[i] = 0.0;
-            if (!pop[i]->lesioned) {
-                for (j = 0; j < NUM_INPUTS; ++j) {
-                    activation[i] += pop[i]->weight[j] * input[j];
-                    //printf("%f\n", activation[i]);
-                }
-                //inner_product(pop[i]->weight.begin(),
-                //    pop[i]->weight.end(),
-                //    input.begin(), 0.0);
-                activation[i] = sigmoid(activation[i]);
-                // fabs(pop[i]->weight[NUM_INPUTS+1]/6.0)) * 2 - 1.0;
-                //printf("%f\n", activation[i]);
-            }
-        }
-        for (i = 0; i < NUM_OUTPUTS; ++i) {
-            output[i] = 0.0;
-            for (j = 0; j < numNeurons; ++j) {
-                output[i] += activation[j] * pop[j]->weight[NUM_INPUTS + i];
-            }
-            output[i] = sigmoid(output[i]);
-            //printf("%f\n", output[0]); //->weight[j]);
-        }
-    }
-
-    void SecondOrderRecurrentNetwork::activate(vector<double> &input, vector<double> &output)
-
-    {
-        register int i, j, k;
-
-        // calculate new weights wij
-        for (i = 0; i < numNeurons; ++i)
-            if (!pop[i]->lesioned) {
-                for (j = 0; j < NUM_INPUTS; ++j) {
-                    (newWeights[i])[j] = 0.0;
-                    for (k = 0; k < numNeurons; ++k) {
-                        (newWeights[i])[j] += activation[k] * pop[i]->weight[j * numNeurons + k];
-                    }
-                }
-            }
-        // activate hidden layer
-        for (i = 0; i < numNeurons; ++i) {
-            activation[i] = 0.0;
-            if (!pop[i]->lesioned) {
-                for (j = 0; j < NUM_INPUTS; ++j) {
-                    activation[i] += (newWeights[i])[j] * input[j];
-                    //printf("%f\n", activation[i]);
-                }
-                activation[i] = sigmoid(activation[i]);  //, fabs(pop[i]->weight[0]/6.0));
-            }
-        }
-        // for (i=0;i<NUM_OUTPUTS;++i)
-        //output[i] = activation[i];
-        for (i = 0; i < NUM_OUTPUTS; ++i) {
-            output[i] = 0.0;
-            for (j = 0; j < numNeurons; ++j) {
-                output[i] += activation[j] * pop[j]->weight[outOffset + i];
-            }
-            output[i] = sigmoid(output[i]);
-            //printf("%f\n", output[0]); //->weight[j]);
-        }
-    }
-
-    void SecondOrderRecurrentNetwork::save(char *filename)
-    {
-        char newname[40];
-
-        strcpy(newname, filename);
-        strcat(newname, "_2ndOrder");
-        //saveText(newname);
-    }
-
-    void FullyRecurrentNetwork::save(char *filename)
-    {
-        char newname[40];
-
-        strcpy(newname, filename);
-        strcat(newname, "_FR");
-        //saveText(newname);
-    }
-
-    void FeedForwardNetwork::save(char *filename)
-    {
-        char newname[40];
-
-        strcpy(newname, filename);
-        strcat(newname, "_FF");
-        //saveText(newname);
-    }
-
-    void SimpleRecurrentNetwork::save(char *filename)
-    {
-        char newname[40];
-
-        strcpy(newname, filename);
-        strcat(newname, "_SRN");
-        //saveText(newname);
-    }
-
-    void SecondOrderRecurrentNetwork::addNeuron()
-    {
-        int i;
-
-        for (i = 1; i < NUM_INPUTS + 1; ++i)  // add connection to neurons in spops
-            addConnection(numNeurons * i + i - 1);
-        ++numNeurons;
-        pop.push_back(new neuron);
-    }
-
-    void FeedForwardNetwork::addNeuron()
-    {
-
-//  addConnection(NUM_INPUTS-1);
-        ++numNeurons;
-        pop.push_back(new neuron);
-    }
-
-    void FullyRecurrentNetwork::addNeuron()
-    {
-
-        addConnection(NUM_INPUTS - 1);
-        ++numNeurons;
-        pop.push_back(new neuron);
-    }
-
-    void SimpleRecurrentNetwork::addNeuron()
-    {
-
-        addConnection(NUM_INPUTS - 1);
-        ++numNeurons;
-        pop.push_back(new neuron);
-    }
-
-    void FeedForwardNetwork::removeNeuron(int sp)
-    {
-//  removeConnection(NUM_INPUTS+sp);
-        --numNeurons;
-//  delete pop[sp];
-        pop.erase(pop.begin() + sp);
-    }
-
-    void FullyRecurrentNetwork::removeNeuron(int sp)
-    {
-        removeConnection(NUM_INPUTS + sp);
-        --numNeurons;
-        delete pop[sp];
-        pop.erase(pop.begin() + sp);
-    }
-
-    void SimpleRecurrentNetwork::removeNeuron(int sp)
-    {
-        removeConnection(NUM_INPUTS + sp);
-        --numNeurons;
-        delete pop[sp];
-        pop.erase(pop.begin() + sp);
-    }
-
-    void SecondOrderRecurrentNetwork::removeNeuron(int sp)
-    {
-        --numNeurons;
-        for (int i = 1; i < NUM_INPUTS + 1; ++i)  // remove connection to neurons in spops
-            removeConnection(numNeurons * i);
-
-        delete pop[sp];
-        pop.erase(pop.begin() + sp);
-    }
-
 #define LESION_THRESHOLD 0.9
 #define LESION_EVALTRIALS 20
 
-    int Network::lesion(Environment &e, vector<Network*>& team, int num_of_predators,
-            int num_of_prey)
+    int Network::lesion()
     {
         int sp = -1;
         double max = 0;
@@ -413,14 +95,14 @@ namespace EspPredPreyHunter
         vector<Network*> team_prey;
         vector<double> temp_return_value;
 
-        for (int j = 0; j < 2; j++) {  //Initializing the vector
+        for (int j = 0; j < 2; j++) {         //Initializing the vector
             tempFitness.push_back(0.0);
             temp_return_value.push_back(0.0);
         }
 
         for (int i = 0; i < LESION_EVALTRIALS; i++) {
             //temp_return_value = e.evalNet(team, team_prey);
-            for (int j = 0; j < 2; j++) {  //Initializing the vector
+            for (int j = 0; j < 2; j++) {         //Initializing the vector
                 tempFitness[0] = tempFitness[0] + temp_return_value[0];
                 tempFitness[1] = tempFitness[1] + temp_return_value[1];
             }
@@ -430,8 +112,8 @@ namespace EspPredPreyHunter
 
         printf("Unlesioned : %f\n", tempFitness[0]);
 
-        for (int i = 0; i < numNeurons; ++i) {
-            pop[i]->lesioned = true;
+        for (int i = 0; i < numHiddenNeurons; ++i) {
+            neurons[i]->lesioned = true;
 
             lesionFitness = 0;
             for (int j = 0; j < LESION_EVALTRIALS; j++)
@@ -441,16 +123,27 @@ namespace EspPredPreyHunter
             LOG(INFO) << "Neuron " << i << " lesioned. Remaining fitness: " << lesionFitness
                     << endl;
 
-            pop[i]->lesioned = false;
+            neurons[i]->lesioned = false;
             if (lesionFitness > max) {
                 max = lesionFitness;
                 sp = i;
             }
         }
-
         if (max >= (tempFitness[0] * LESION_THRESHOLD))
             return sp;
         else
             return -1;
+    }
+
+    /**
+     * create the neurons, initial their weights, and put them in the subpop.
+     */
+    void Network::create()
+    {
+        if (evolvable)
+            for (int i = 0; i < numHiddenNeurons; ++i) {
+                neurons[i] = new Neuron(geneSize);
+                neurons[i]->create();
+            }
     }
 }

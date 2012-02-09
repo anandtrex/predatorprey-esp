@@ -16,7 +16,7 @@ endif(DOXYGEN_FOUND)
 
 set(CMAKE_CXX_COMPILER "clang")
 
-set(CMAKE_CXX_FLAGS "-g -O3 -Wall")
+set(CMAKE_CXX_FLAGS "-g -pg")
 set(CORELIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${X11_LIBRARY} m)
 set(CMAKE_EXE_LINKER_FLAGS "-L${CMAKE_BINARY_DIR}/glog/lib -L${CMAKE_BINARY_DIR}/libconfig/lib")
 

@@ -27,8 +27,9 @@ namespace PredPreyHunterVisualizer
             None };
 
     Visualizer::Visualizer(std::map<int, vector<double> > idColorMapping, int gridWidth, int gridHeight)
+        :idColorMapping(idColorMapping)
     {
-        this->pointSize = 10;
+        pointSize = 10;
 
         // OpenGL variables
         Display *dpy;
@@ -72,8 +73,6 @@ namespace PredPreyHunterVisualizer
         glOrtho(0.0, gridWidth * pointSize, 0.0, gridHeight * pointSize, -1.0, 1.0);
         glPointSize(pointSize * 2.0);
         glFlush();
-
-        this->idColorMapping = idColorMapping;
     }
 
     void Visualizer::show(const std::vector<AgentInformation>& vAgentInformationPrevious,
@@ -104,6 +103,7 @@ namespace PredPreyHunterVisualizer
             glFlush();
         }
         // TODO Replace this with nano sleep
+        // TODO add as parameter
         usleep(400000); // 500ms = 500000us = 0.5s
     }
 }

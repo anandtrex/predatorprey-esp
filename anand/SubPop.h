@@ -8,38 +8,37 @@
 #ifndef SUBPOP_H_
 #define SUBPOP_H_
 
-#include "neuron.h"
+#include "Neuron.h"
+
+#include "common.h"
 
 namespace EspPredPreyHunter
 {
-    class subPop
+    class SubPop
     {
+        uint geneSize;
+        // FIXME
+        const double MUT_RATE; // = 0.4;  // mutation rate in %  EVOLVE_PREY
+        const int MIN;  // = 0; 0 means higher fitness better, 1 otherwise
 
     public:
-        //protected:
-        std::vector<neuron*> pop;
+        std::vector<Neuron*> pop;
 
-        // Second Hidden layer
-        //std::vector<neuron*> pop2;
-
-//public:
         int numNeurons;
-        //int numNeurons2;
 
-        subPop(int size);
-        ~subPop();
+        SubPop(const int& size, const int& geneSize);
+        ~SubPop();
         //  subPop(const subPop &s);
         //void addHiddenLayer(int size);
         void create();  // creates a random subpopulation of neurons
         void evalReset();
-        neuron *selectNeuron();
+        Neuron *selectNeuron();
         void average();
         void qsortNeurons();
         void recombine();
-        void recombine_hall_of_fame(int pred_or_prey_team, int pred_or_prey_number, int pop_number); //EVOLVE_PREY
         void burstMutate();
         void mutate();
-        void deltify(neuron *bestNeuron);
+        void deltify(Neuron *bestNeuron);
         void save(char *fname);
         void addConnection(int locus);
         void removeConnection(int locus);

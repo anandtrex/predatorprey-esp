@@ -29,10 +29,15 @@ namespace PredatorPreyHunter
         int height;
 
     public:
-        GridWorld(const int& width, const int& height);
+        GridWorld(const int& width, const int& height)
+            :width(width), height(height)
+        {
+        }
+
         uint distance(const Position& p1, const Position& p2) const;
         uint distanceX(const Position& p1, const Position& p2) const;
         uint distanceY(const Position& p1, const Position& p2) const;
+
         /**
          * Calculates and returns the new position of the agent for the given action.
          * NOTE: This class doesn't keep track of the current positions of the agents.

@@ -43,6 +43,7 @@ int main(int argc, char **argv)
                 break;
         }
     }
+
     Experiment experiment(configFilePath);
     return experiment.run();
 }

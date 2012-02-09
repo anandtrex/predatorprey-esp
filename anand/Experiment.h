@@ -32,12 +32,12 @@ namespace PredatorPreyHunter
         Hunter* ptrHunter;
         Prey* ptrPrey;
     public:
-        int numPredators;
-        int numPrey;
-        int numHunters;
+        uint numPredators;
+        uint numPrey;
+        uint numHunters;
 
-        int numPredCaught;
-        int numPreyCaught;
+        uint numPredCaught;
+        uint numPreyCaught;
 
         vector<uint> preyCaughtIds;
         vector<uint> predatorCaughtIds;

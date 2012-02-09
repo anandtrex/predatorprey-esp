@@ -11,5 +11,4 @@ namespace PredatorPreyHunter {
       Position move( const std::vector<AgentInformation>& vAgentInformation );
   };
 }
-
 #endif // PPH_PREY_H
