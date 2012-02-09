@@ -17,8 +17,8 @@
 #include <vector>
 using namespace std;
 
-#define MAP_LENGTH 9
-#define MAP_HEIGHT 9
+#define MAP_LENGTH 99
+#define MAP_HEIGHT 99
 
 extern int NUM_OUTPUT_PRED_COMBINER;
 extern int NUM_OUTPUT_PREY_COMBINER;

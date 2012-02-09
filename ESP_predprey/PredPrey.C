@@ -193,7 +193,7 @@ vector<vector<vector<double> > > PredPrey::evalNet(vector<vector<Network*> >& te
     //Randomly initialize the positions of predators and prey
     init(true, true, true, generation);
 
-    maxSteps = 1000;  //300;
+    maxSteps = 10000;  //300;
 
     bool temp_break_while = false;
 

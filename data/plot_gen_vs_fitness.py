@@ -47,7 +47,7 @@ if __name__ == '__main__':
                 sys.exit(0)
                 
         for o in others:
-                per_improvement = [(float(base[i].split(" ")[1]) - float(o[i].split(" ")[1])) * 100 /float(base[i].split(" ")[1]) for i in xrange(0,100)]
+                per_improvement = [(float(o[i].split(" ")[1]) - float(base[i].split(" ")[1])) * 100 /float(base[i].split(" ")[1]) for i in xrange(0,100)]
                 plt.plot(xrange(0,100), per_improvement, label=o[101])
         plt.xlabel('generations')
         plt.ylabel('Percentage improvement over monolithic network')

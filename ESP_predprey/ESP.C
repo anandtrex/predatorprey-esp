@@ -2681,7 +2681,7 @@ int main(int argc, char *argv[])
             LOG(INFO) << "Done with subtask one" << endl << endl;
 
             file_prefix = "st2_";
-            // Sub-task 1
+            // Sub-task 2
             PredPreyST2 *predprey_st2 = new PredPreyST2(num_of_predators, num_teams_predator,
                     num_of_hunters, 1, hunter_move_probability);  // this is our environment.
             Esp *esp2 = new Esp(num_of_predators, 0, num_teams_predator, 0, 1 /*num_teams_hunters*/,
@@ -2705,7 +2705,7 @@ int main(int argc, char *argv[])
                     num_teams_predator, num_teams_prey, 1 /*num_teams_hunters*/, num_of_hunters,
                     num_hidden_neurons /*nPops*/, popSize/*nSize*/, *predprey/*environment*/,
                     netType);
-            esp->evolve(100 /*maxGenerations*/, num_of_predators, num_of_prey, num_teams_predator,
+            esp->evolve(maxGenerations, num_of_predators, num_of_prey, num_teams_predator,
                     num_teams_prey, 1, num_of_hunters);  // evolve
             LOG(INFO) << "Done with overall task";
         } else {
@@ -2715,7 +2715,7 @@ int main(int argc, char *argv[])
             Esp *esp = new Esp(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey,
                     1 /*num_teams_hunters*/, num_of_hunters, num_hidden_neurons /*nPops*/,
                     popSize/*nSize*/, *predprey/*environment*/, netType);
-            esp->evolve(100, num_of_predators, num_of_prey, num_teams_predator,
+            esp->evolve(maxGenerations, num_of_predators, num_of_prey, num_teams_predator,
                     num_teams_prey, 1, num_of_hunters);  // evolve
         }
 
@@ -2725,7 +2725,6 @@ int main(int argc, char *argv[])
          exit(1);
          }
          */
-
     }
     // --- Load an old ESP from file ---
     else {

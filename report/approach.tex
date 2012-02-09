@@ -9,4 +9,4 @@ separately on each of these subtasks i.e. we first train the agent in an environ
 
 The sub-networks and the combiner networks are evolved using both NEAT and multi agent ESP as mentioned above.
 
-The network structure is shown below:
+In the case of ESP, the subnetworks are first evolved separately using the separate subtasks, and then for the overall task, the subnetworks are fixed, and only the top coordination network is evolved. In the case of NEAT, while the subnetworks are evolved separately and used to construct the initial overall network, after that the entire network for the overall task is evolved, including the subnetworks.

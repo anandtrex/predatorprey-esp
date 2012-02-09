@@ -193,7 +193,7 @@ vector<vector<vector<double> > > PredPreyST1::evalNet(vector<vector<Network*> >&
 //
 // ave_initial_dist /= num_of_predators;
 
-    maxSteps = 300;
+    maxSteps = 10000;
 
     bool temp_break_while = false;
 
