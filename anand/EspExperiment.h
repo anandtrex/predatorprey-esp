@@ -26,7 +26,7 @@ namespace EspPredPreyHunter
      * This class contains functions to evolve networks for a whole team of predators. So this should be shared across all agents that
      * belong to a given team. This assumes that this whole thing is used only for a single team.
      */
-    class Esp
+    class EspExperiment: Experiment
     {
         uint inputDimensions;
 
@@ -105,6 +105,11 @@ namespace EspPredPreyHunter
         uint numTrials;
 
         /**
+         * Initializes the esp code
+         */
+        void init();
+
+        /**
          * output a new network of the appropriate type
          * @param networkType
          * @param numHiddenNeurons
@@ -112,7 +117,7 @@ namespace EspPredPreyHunter
          * @return
          */
         Network* generateNetwork(const uint& networkType, const uint& numHiddenNeurons,
-                        const uint& neuronGeneSize);
+                const uint& neuronGeneSize);
         uint getNeuronGeneSize();
         uint getCombinerNeuronGeneSize();
 
@@ -132,7 +137,7 @@ namespace EspPredPreyHunter
         // NOTE Below are existing private member functions
         void recombine_hall_of_fame(Network* network);     //EVOLVE_PREY
         //Esp(const Esp &);     // just for safety
-        Esp &operator=(const Esp &);
+        EspExperiment &operator=(const EspExperiment &);
         void save(char* fname, int num_of_predators, int num_of_prey, int num_teams_predator,
                 int num_teams_prey);
         SubPop* load(char *fname);
@@ -145,39 +150,6 @@ namespace EspPredPreyHunter
         void addConnections();
         void removeConnections(int sp);
         void printStats();
-
-    public:
-
-        /**
-         * Constructor
-         * @param numNetworks - total number of networks
-         * @param nHiddenNeurons - number of hidden neurons for all the networks
-         * @param popSize - Population size for each neuron in the networks
-         * @param netTp - Type of the network. Only FF for now.
-         * @param numInputs - Number of inputs for each network (not the combiner network, which is managed internally)
-         * @param numOutputs - Number of outputs for each network (not the combiner network, which is managed internally)
-         * @param neuronGeneSize
-         */
-        Esp(const uint& numTeamAgents, const uint& nHiddenNeurons, const uint& popSize,
-                const uint& netTp, const uint& numOtherAgents, const uint& numActions, const Experiment& experiment);
-
-        /**
-         * Constructor
-         * @param fileName
-         * @param numNetworks - total number of networks
-         * @param nHiddenNeurons - number of hidden neurons for all the networks
-         * @param popSize - Population size for each neuron in the networks
-         * @param netTp - Type of the network. Only FF for now.
-         */
-        Esp(const char* fileName, const uint& numNetworks, const uint& nHiddenNeurons,
-                const uint& popSize, const uint& netTp);
-
-        uint getAction(const uint& agentNo);
-
-        /**
-         * Destructor
-         */
-        ~Esp();
 
         /**
          * evolve is the main genetic function.  The subpopulations are first
@@ -197,13 +169,64 @@ namespace EspPredPreyHunter
          */
         void evalPop();
 
-
-
         void findChampion();
         void loadSeedNet(char *);
         void addSubPop(int pred, int num_of_predators, int num_of_prey);
         void endEvolution();
-        static vector<vector<vector<Network*> > > hall_of_fame_pred;     // EVOLVE_PREY vector of vector of best networks
+        static vector<vector<vector<Network*> > > hall_of_fame_pred; // EVOLVE_PREY vector of vector of best networks
+
+    public:
+
+        /**
+         * Constructor
+         * This sets all the esp-specific parameters read from the configuration file. Rest of the parameters are
+         * set by the parent class
+         */
+        EspExperiment(const char* configFilePath);
+
+        /**
+         * Constructor
+         * @param numAgents - total number of networks
+         * @param nHiddenNeurons - number of hidden neurons for all the networks
+         * @param popSize - Population size for each neuron in the networks
+         * @param netTp - Type of the network. Only FF for now.
+         * @param numInputs - Number of inputs for each network (not the combiner network, which is managed internally)
+         * @param numOutputs - Number of outputs for each network (not the combiner network, which is managed internally)
+         * @param neuronGeneSize
+         */
+        EspExperiment(const uint& numAgents, const uint& nHiddenNeurons, const uint& popSize,
+                const uint& netTp, const uint& numOtherAgents, const uint& numActions,
+                const Experiment& experiment);
+
+        /**
+         * Constructor
+         * @param fileName
+         * @param numNetworks - total number of networks
+         * @param nHiddenNeurons - number of hidden neurons for all the networks
+         * @param popSize - Population size for each neuron in the networks
+         * @param netTp - Type of the network. Only FF for now.
+         */
+        EspExperiment(const char* fileName, const uint& numNetworks, const uint& nHiddenNeurons,
+                const uint& popSize, const uint& netTp);
+
+        EspExperiment(const EspExperiment& espExperiment);
+
+        /**
+         * Destructor
+         */
+        ~EspExperiment();
+
+        // NOTE: The below functions are implementations of the Experiment interface
+        /**
+         * Starts running the experiment -- running the episode n number of times.
+         */
+        double start(const uint& maxSteps = -1, const uint& numGenerations = -1);
+
+        /**
+         * Runs the domain for one episode, and returns the fitness.
+         */
+        double run(); // return fitness
+        double run(std::string stepsFilePath); // return fitness
     };
 }
 

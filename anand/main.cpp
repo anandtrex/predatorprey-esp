@@ -7,10 +7,13 @@
 
 #include <iostream>
 
+#include "common.h"
 #include "GridWorld.h"
 #include "Experiment.h"
+#include "EspExperiment.h"
 
 using namespace PredatorPreyHunter;
+using namespace EspPredPreyHunter;
 
 void reseed(int val)
 {
@@ -32,11 +35,15 @@ int main(int argc, char **argv)
 
     int c;
     char* configFilePath;
+    bool isEsp = false;
 
-    while ((c = getopt(argc, argv, "c:")) != -1) {
+    while ((c = getopt(argc, argv, "c:e")) != -1) {
         switch(c){
             case 'c':
                 configFilePath = optarg;
+                break;
+            case 'e':
+                isEsp = true;
                 break;
             default:
                 abort();
@@ -44,6 +51,12 @@ int main(int argc, char **argv)
         }
     }
 
-    Experiment experiment(configFilePath);
-    return experiment.run();
+    if(isEsp){
+        EspExperiment espExperiment(configFilePath);
+        espExperiment.start();
+    }
+    else {
+        Experiment experiment(configFilePath);
+        return experiment.start();
+    }
 }

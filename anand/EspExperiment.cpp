@@ -5,7 +5,7 @@
  *      Author: anands
  */
 
-#include "Esp.h"
+#include "EspExperiment.h"
 #include "common.h"
 #include "Network.h"
 #include "FeedForwardNetwork.h"
@@ -30,14 +30,40 @@ namespace EspPredPreyHunter
     using std::vector;
     using std::endl;
 
-    Esp::Esp(const uint& numTeamAgents, const uint& nHiddenNeurons, const uint& popSize,
-            const uint& netTp, const uint& numOtherAgents, const uint& numActions)
-            : numAgents(numTeamAgents), numHiddenNeurons(nHiddenNeurons), popSize(popSize), netTp(
-                    netTp), numOtherAgents(numOtherAgents), numActions(numActions)
+    EspExperiment::EspExperiment(const char* configFilePath) :
+            Experiment(configFilePath)
+    {
+        libconfig::Config cfg;
+
+        LOG(INFO) << "Reading from esp parameters from the config file " << configFilePath;
+        cfg.readFile(configFilePath);
+
+        numAgents = numPredators;
+
+        numHiddenNeurons = cfg.lookup("experiment:esp:num_hidden_neurons");
+        LOG(INFO) << "Number of hidden neurons set to " << numHiddenNeurons;
+
+        popSize = cfg.lookup("experiment:esp:population_size");
+        LOG(INFO) << "ESP population size set to " << popSize;
+
+        netTp = (cfg.lookup("experiment:esp:net_type") == "FF") ? FF : LOG(ERROR) << "Unknown net type";
+        LOG(INFO) << "Network type set to " << cfg.lookup("experiment:esp:net_type");
+
+        // TODO Make this valid for teams of predators, prey and hunters too
+        numOtherAgents = numPredators + numPrey + numHunters;
+
+        // NOTE Hardcoding it right now. Will be 5 for the grid world, and will change only for a different domain.
+        // TODO Take this as a parameter
+        numActions = 5;
+
+        init();
+    }
+
+    EspExperiment::init() :
     {
         generation = 0;
         inputDimensions = 2;
-        numInputs = numOtherAgents * inputDimensions;     // NOTE: Assuming (x,y) gives position of agent.
+        numInputs = numOtherAgents * inputDimensions; // NOTE: Assuming (x,y) gives position of agent.
         // NOTE: (contd.) Should change it for other problems/ problems with more than 2 dimensions
         numOutputs = numActions;
         totalNumNetworks = numOtherAgents * numAgents + COMBINE * numAgents;
@@ -54,12 +80,12 @@ namespace EspPredPreyHunter
         // Only one team here
         for (uint i = 0; i < totalNumNetworks - COMBINE * numAgents; i++) {
             overall_best_networks.push_back(
-                    generateNetwork(netTp, numHiddenNeurons, neuronGeneSize));     // generate new network
+                    generateNetwork(netTp, numHiddenNeurons, neuronGeneSize)); // generate new network
             overall_best_networks[i]->create();     // create the network
         }
         for (uint i = totalNumNetworks - COMBINE * numAgents; i < totalNumNetworks; i++) {
             overall_best_networks.push_back(
-                    generateNetwork(netTp, numHiddenNeurons, combinerNeuronGeneSize));     // generate new network
+                    generateNetwork(netTp, numHiddenNeurons, combinerNeuronGeneSize)); // generate new network
             overall_best_networks[i]->create();     // create the network
         }
         LOG(INFO) << "Initialized and created overall_best_networks";
@@ -88,7 +114,7 @@ namespace EspPredPreyHunter
 
     }
 
-    Esp::~Esp()
+    EspExperiment::~EspExperiment()
     {
         for (uint i = 0; i < totalNumNetworks; i++) {
             for (uint j = 0; j < numHiddenNeurons; j++) {
@@ -100,19 +126,19 @@ namespace EspPredPreyHunter
         overall_best_networks.clear();
     }
 
-    uint Esp::getNeuronGeneSize()
+    uint EspExperiment::getNeuronGeneSize()
     {
         // Assume network type is FF
         return inputDimensions + numOutputs;
     }
 
-    uint Esp::getCombinerNeuronGeneSize()
+    uint EspExperiment::getCombinerNeuronGeneSize()
     {
         // Assume network type is FF
         return (numOutputs * numOtherAgents + numOutputs);
     }
 
-    Network* Esp::generateNetwork(const uint& networkType, const uint& numHiddenNeurons,
+    Network* EspExperiment::generateNetwork(const uint& networkType, const uint& numHiddenNeurons,
             const uint& neuronGeneSize)
     {
         switch (networkType) {
@@ -133,7 +159,7 @@ namespace EspPredPreyHunter
         }
     }
 
-    void Esp::evolve(const uint& cycles)
+    void EspExperiment::evolve(const uint& cycles)
     {
         LOG(INFO) << "Starting evolve and running " << cycles << " cycles" << endl;
         while (/*gInterrupt == false && */++generation <= cycles) {
@@ -157,7 +183,7 @@ namespace EspPredPreyHunter
         LOG(INFO) << "Ending evolve" << endl;
     }
 
-    void Esp::evalPop()
+    void EspExperiment::evalPop()
     {
 
         evalReset();            // reset fitness and test values of each neuron
@@ -166,7 +192,7 @@ namespace EspPredPreyHunter
 
     }
 
-    void Esp::evalReset()
+    void EspExperiment::evalReset()
     {
         for (uint i = 0; i < totalNumNetworks; i++) {
             for (uint j = 0; j < numHiddenNeurons; j++) {
@@ -175,23 +201,23 @@ namespace EspPredPreyHunter
         }
     }
 
-    void Esp::performEval()
+    void EspExperiment::performEval()
     {
         static int evaluations = 0;
         vector<Network*> temp_networks;     // vector of current networks
         vector<Network*> temp_bestNetworks;     // vector of best networks
 
         vector<Network*> current_networks;     // current pred teams
-        vector<Network*> generation_best_networks;     // vector of best pred teams in a given generation
+        vector<Network*> generation_best_networks; // vector of best pred teams in a given generation
 
-        vector<double> temp_individual_fitness;     //Temporary variable for storing predator/prey team fitness
-        vector<double> temp_team_fitness;     //Temporary variable for storing predator/prey team fitness
-        vector<vector<double> > predator_prey_teams_fitness;     //Vector for all teams fitness together after averaging over 6 trials
-        vector<vector<double> > average_predator_prey_teams_fitness;     //Vector for all teams fitness together after averaging over 6000 trials
-        vector<vector<vector<double> > > teams_fitness;     //temporary variable for all teams fitness together per trial
+        vector<double> temp_individual_fitness; //Temporary variable for storing predator/prey team fitness
+        vector<double> temp_team_fitness; //Temporary variable for storing predator/prey team fitness
+        vector<vector<double> > predator_prey_teams_fitness; //Vector for all teams fitness together after averaging over 6 trials
+        vector<vector<double> > average_predator_prey_teams_fitness; //Vector for all teams fitness together after averaging over 6000 trials
+        vector<vector<vector<double> > > teams_fitness; //temporary variable for all teams fitness together per trial
 
-        vector<double> current_teams_sum_individual_fitness;     //Sum of individual network fitnesses
-        vector<double> generation_best_teams_sum_individual_fitness;     //Sum of individual network fitnesses
+        vector<double> current_teams_sum_individual_fitness;   //Sum of individual network fitnesses
+        vector<double> generation_best_teams_sum_individual_fitness; //Sum of individual network fitnesses
 
         temp_networks.clear();
         temp_bestNetworks.clear();
@@ -209,7 +235,7 @@ namespace EspPredPreyHunter
         generation_best_networks = temp_bestNetworks;
 
         //***************START Initialize average fitness (calculated across 1000 trials) to zero********************//
-        for(uint i = 0; i < numAgents; i++){
+        for (uint i = 0; i < numAgents; i++) {
             temp_individual_fitness.push_back(0.0);
         }
         temp_team_fitness = temp_individual_fitness;
@@ -231,7 +257,7 @@ namespace EspPredPreyHunter
                     int sub_total_predator_networks_per_team =
                             sub_hall_of_fame_pred[0][sub_hall_of_fame_pred_size - 1][j].size();
                     // Takes care of prey sub networks
-                    for (i = 0; i < sub_total_predator_networks_per_team;     //num_of_predators * num_teams_prey * num_of_prey /*actually, number of prey networks. Should be num_teams_prey * num_of_prey*/;
+                    for (i = 0; i < sub_total_predator_networks_per_team; //num_of_predators * num_teams_prey * num_of_prey /*actually, number of prey networks. Should be num_teams_prey * num_of_prey*/;
                             i++) {
                         if (i < num_of_predators * num_teams_prey * num_of_prey) {
                             current_networks[j][i]->setNetwork(
@@ -250,7 +276,7 @@ namespace EspPredPreyHunter
                     i = num_of_predators * num_teams_prey * num_of_prey;
                     sub_total_predator_networks_per_team =
                             sub_hall_of_fame_pred[1][sub_hall_of_fame_pred_size - 1][j].size();
-                    for (k = i; k < i + sub_total_predator_networks_per_team;     //num_of_predators * num_teams_hunters * num_of_hunters /*actually, number of hunter networks. Should be num_teams_hunter * num_of_hunter*/;
+                    for (k = i; k < i + sub_total_predator_networks_per_team; //num_of_predators * num_teams_hunters * num_of_hunters /*actually, number of hunter networks. Should be num_teams_hunter * num_of_hunter*/;
                             k++) {
                         if (k < i + num_of_predators * num_teams_hunters * num_of_hunters) {
                             current_networks[j][k]->setNetwork(
@@ -280,7 +306,7 @@ namespace EspPredPreyHunter
                     }
                 }
 
-            } else {     // If there are no existing subnetworks already evolved, set neurons for all the hidden layers (including combiner network)
+            } else { // If there are no existing subnetworks already evolved, set neurons for all the hidden layers (including combiner network)
 
                 for (int p = 0; p < num_teams_predator; p++) {
                     for (int j = 0; j < total_predator_networks_per_team; j++) {
@@ -288,7 +314,7 @@ namespace EspPredPreyHunter
                             current_networks[p][j]->setNeuron(
                                     hidden_neuron_populations[p][j][k]->selectNeuron(), k);
                         }
-                        current_networks[p][j]->incrementTests();     //Counting the number of trials for a neuron (to compute average later)
+                        current_networks[p][j]->incrementTests(); //Counting the number of trials for a neuron (to compute average later)
                     }
                 }
             }
@@ -323,7 +349,7 @@ namespace EspPredPreyHunter
             for (int p = 0; p < EVALTRIALS; p++) {
                 teams_fitness = Envt.evalNet(current_networks, generation);
                 for (int q = 0; q < num_teams_predator; q++) {
-                    for (int r = 0; r < num_of_predators; r++) {     //Individual predator fitness is used in case of competing predators
+                    for (int r = 0; r < num_of_predators; r++) { //Individual predator fitness is used in case of competing predators
                         predator_prey_teams_fitness[0][q][r] = predator_prey_teams_fitness[0][q][r]
                                 + teams_fitness[0][q][r];
                     }
@@ -341,15 +367,15 @@ namespace EspPredPreyHunter
                             j++) {
                         current_networks[q][r
                                 * (total_predator_networks_per_team / num_of_predators - 1) + j]->fitness =
-                                predator_prey_teams_fitness[0][q][r];     // distribute each predator's fitness to constituent networks
+                                predator_prey_teams_fitness[0][q][r]; // distribute each predator's fitness to constituent networks
                         current_networks[q][r
-                                * (total_predator_networks_per_team / num_of_predators - 1) + j]->addFitness();     // add network fitness to its neurons
+                                * (total_predator_networks_per_team / num_of_predators - 1) + j]->addFitness(); // add network fitness to its neurons
                     }
 
                     //Following two lines are for the combiner network
                     current_networks[q][(total_predator_networks_per_team - num_of_predators) + r]->fitness =
-                            predator_prey_teams_fitness[0][q][r];     // distribute each predator's fitness to constituent networks
-                    current_networks[q][(total_predator_networks_per_team - num_of_predators) + r]->addFitness();     // add network fitness to its neurons
+                            predator_prey_teams_fitness[0][q][r]; // distribute each predator's fitness to constituent networks
+                    current_networks[q][(total_predator_networks_per_team - num_of_predators) + r]->addFitness(); // add network fitness to its neurons
                 }
 
                 //Computing Generation Best - current team with highest total fitness.
@@ -362,7 +388,7 @@ namespace EspPredPreyHunter
                                             * (total_predator_networks_per_team / num_of_predators
                                                     - 1)]->fitness;
                 }
-                current_teams_sum_individual_fitness[q] /= num_of_predators;     //Averaging over team
+                current_teams_sum_individual_fitness[q] /= num_of_predators;   //Averaging over team
 
                 // if team outperforms bestTeam, set bestTeam = team (Note: all networks in a individual have same fitness)
                 if (current_teams_sum_individual_fitness[q]
@@ -414,7 +440,7 @@ namespace EspPredPreyHunter
         fout_champfitness << generation << " "
                 << average_predator_prey_teams_fitness[0][0][0] / numTrials << "\n";
 
-        vector<vector<double> > testNet_result;     //number of prey caught by all the predators teams in each of the 20 trials
+        vector<vector<double> > testNet_result; //number of prey caught by all the predators teams in each of the 20 trials
 
         //GENERATION BEST
         testNet_result = Envt.testNet(generation_best_teams, 20);
@@ -517,7 +543,7 @@ namespace EspPredPreyHunter
 //----------------------------------------------------------------------
 // Make a decision about what to do when performace stagnates.
 // bestNetwork is basically the network during the last delta phase
-    void Esp::handleStagnation(int num_of_predators, int num_of_prey)
+    void EspExperiment::handleStagnation(int num_of_predators, int num_of_prey)
     {
 
         //perfQ.clear();
@@ -556,7 +582,7 @@ namespace EspPredPreyHunter
 
 //----------------------------------------------------------------------
 // Start a new delta phase
-    void Esp::newDeltaPhase(int pred)
+    void EspExperiment::newDeltaPhase(int pred)
     {
         // LOG(INFO) << "DELTA started on predator " << pred << endl;
         // SKIP = 1;
@@ -578,7 +604,7 @@ namespace EspPredPreyHunter
 
 //----------------------------------------------------------------------
 // get average fitness level.
-    void Esp::average(int num_teams_predator, int num_teams_prey)
+    void EspExperiment::average(int num_teams_predator, int num_teams_prey)
     {
         for (int k = 0; k < num_teams_predator; k++) {
             for (int i = 0; i < total_predator_networks_per_team; i++)
@@ -590,7 +616,7 @@ namespace EspPredPreyHunter
 /////////////////////////////////////////////////////////////////////
 //
 // ESP I/O fns
-    void Esp::printNeurons()
+    void EspExperiment::printNeurons()
     {
         LOG(INFO) << "ESP::printNeurons() is commented out" << endl;
         /*  char filename[50];
@@ -611,7 +637,7 @@ namespace EspPredPreyHunter
 
 //----------------------------------------------------------------------
 //
-    void Esp::loadSeedNet(char *filename)
+    void EspExperiment::loadSeedNet(char *filename)
     {
         LOG(INFO) << "ESP::loadSeedNet (char* filename) is commented out" << endl;
         /*  netType = SCDORDER;  //change this to read the type from the filename;
@@ -621,8 +647,8 @@ namespace EspPredPreyHunter
          */
     }
 
-    void Esp::save(char* fname, int num_of_predators, int num_of_prey, int num_teams_predator,
-            int num_teams_prey)
+    void EspExperiment::save(char* fname, int num_of_predators, int num_of_prey,
+            int num_teams_predator, int num_teams_prey)
     {
         FILE* fptr;
         fname = (char*) file_prefix.append(fname).c_str();
@@ -658,7 +684,7 @@ namespace EspPredPreyHunter
         LOG(INFO) << endl << "Saved to " << fname << endl << endl;
     }
 
-    void Esp::findChampion()
+    void EspExperiment::findChampion()
     {
         LOG(INFO) << "ESP::findChampion() is commented out" << endl;
         /*
@@ -699,7 +725,7 @@ namespace EspPredPreyHunter
 
     }
 
-    void Esp::endEvolution()
+    void EspExperiment::endEvolution()
     {
         //save ("end.bin", num_of_predators, num_of_prey);
         printStats();
@@ -708,7 +734,7 @@ namespace EspPredPreyHunter
         //exit(0);
     }
 
-    void Esp::printStats()
+    void EspExperiment::printStats()
     {
         LOG(INFO) << "ESP::printStats() is commented out" << endl;
 //  printf("\nTotal number of network evaluations : %d\n", generation*numTrials);
@@ -717,7 +743,7 @@ namespace EspPredPreyHunter
 //----------------------------------------------------------------------
 // add the appropriate connection wieghts that are needed to add
 // a unit to each type of network.
-    void Esp::addConnections()
+    void EspExperiment::addConnections()
     {
         switch (netType) {
             case FF:
@@ -738,7 +764,7 @@ namespace EspPredPreyHunter
 
 //----------------------------------------------------------------------
 // opposite of addConnections.
-    void Esp::removeConnections(int sp)
+    void EspExperiment::removeConnections(int sp)
     {
         switch (netType) {
             case FF:
@@ -758,7 +784,7 @@ namespace EspPredPreyHunter
 
 //----------------------------------------------------------------------
 // add a new subbpop. In effect: add a unit to the networks.
-    void Esp::addSubPop(int pred, int num_of_predators, int num_of_prey)
+    void EspExperiment::addSubPop(int pred, int num_of_predators, int num_of_prey)
     {
         // subPop *newSp;    //pointer to new subpop.
         // addConnections();
@@ -785,7 +811,8 @@ namespace EspPredPreyHunter
 
 //----------------------------------------------------------------------
 // opposite of addSubPop.
-    int Esp::removeSubPop(vector<Network*>& team, int pred, int num_of_predators, int num_of_prey)
+    int EspExperiment::removeSubPop(vector<Network*>& team, int pred, int num_of_predators,
+            int num_of_prey)
     {
         int sp;
 
@@ -795,7 +822,7 @@ namespace EspPredPreyHunter
     }
 
 //----------------------------------------------------------------------
-    int Esp::removeSubPop(int sp, int pred, int num_of_predators, int num_of_prey)
+    int EspExperiment::removeSubPop(int sp, int pred, int num_of_predators, int num_of_prey)
     {
 //  if (sp >= 0)
 //    {
@@ -822,7 +849,7 @@ namespace EspPredPreyHunter
      * recombine neurons with members of their subpop using crossover. EVOLVE_PREY
      * @param network
      */
-    void Esp::recombine_hall_of_fame(Network* network)
+    void EspExperiment::recombine_hall_of_fame(Network* network)
     {
         int i = 0;
         for (; i < numBreed - 5; ++i) {

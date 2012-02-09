@@ -157,6 +157,11 @@ namespace PredatorPreyHunter
         delete ptrGridWorld;
     }
 
+    double Experiment::start()
+    {
+        return run();
+    }
+
     void Experiment::step()
     {
         // check if prey is caught

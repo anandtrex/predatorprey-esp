@@ -9,22 +9,22 @@
 #define PREDATORESP_H_
 
 #include "Predator.h"
-#include "Esp.h"
+#include "EspExperiment.h"
 
 namespace PredatorPreyHunter
 {
-    using EspPredPreyHunter::Esp;
+    using EspPredPreyHunter::EspExperiment;
 
     /**
      * This predator moves towards the prey with the given probability, the movement being random otherwise
      */
-    class PredatorEsp: public Predator
+    class PredatorEspNetwork: public Predator
     {
         double moveProbability;
         Experiment experiment;
-        Esp esp;
+        EspExperiment esp;
     public:
-        PredatorEsp(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p,
+        PredatorEspNetwork(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p,
                 const double& moveProbability, const Experiment& experiment, const uint& numTeamAgents,
                 const uint& numHiddenNeurons, const uint& popSize, const uint& netTp,
                 const uint& numOtherAgents, const uint& numActions);

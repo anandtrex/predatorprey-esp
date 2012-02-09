@@ -5,7 +5,7 @@
  *      Author: anand
  */
 
-#include "PredatorEsp.h"
+#include "PredatorEspNetwork.h"
 
 namespace PredatorPreyHunter
 {
@@ -13,18 +13,18 @@ namespace PredatorPreyHunter
     using std::endl;
     using std::abs;
 
-    PredatorEsp::PredatorEsp(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p,
+    PredatorEspNetwork::PredatorEspNetwork(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p,
             const double& moveProbability, const Experiment& experiment, const uint& numTeamAgents,
             const uint& numHiddenNeurons, const uint& popSize, const uint& netTp,
             const uint& numOtherAgents, const uint& numActions)
             : Predator(ptrGridWorld, agentId, p), moveProbability(moveProbability), experiment(
                     experiment)
     {
-        esp = Esp(numTeamAgents, numHiddenNeurons, popSize, netTp, numOtherAgents, numActions,
+        esp = EspExperiment(numTeamAgents, numHiddenNeurons, popSize, netTp, numOtherAgents, numActions,
                 experiment);
     }
 
-    Position PredatorEsp::move(const std::vector<AgentInformation>& vAgentInformation)
+    Position PredatorEspNetwork::move(const std::vector<AgentInformation>& vAgentInformation)
     {
         // random predator
         Action predatorAction = esp.getAction(this->agentId);
@@ -128,7 +128,7 @@ namespace PredatorPreyHunter
                 // Sub-task 1
                 PredPreyST1 *predprey_st1 = new PredPreyST1(num_of_predators, num_of_prey,
                         num_teams_predator, num_teams_prey, prey_move_probability);     // this is our environment.
-                Esp *esp1 = new Esp(num_of_predators, num_of_prey, num_teams_predator,
+                EspExperiment *esp1 = new EspExperiment(num_of_predators, num_of_prey, num_teams_predator,
                         num_teams_prey, 0 /*num_teams_hunters*/, 0, num_hidden_neurons /*nPops*/,
                         popSize/*nSize*/, *predprey_st1/*environment*/, netType);
                 esp1->evolve(maxGenerations, num_of_predators, num_of_prey, num_teams_predator,
@@ -140,7 +140,7 @@ namespace PredatorPreyHunter
                 // Sub-task 1
                 PredPreyST2 *predprey_st2 = new PredPreyST2(num_of_predators, num_teams_predator,
                         num_of_hunters, 1, hunter_move_probability);     // this is our environment.
-                Esp *esp2 = new Esp(num_of_predators, 0, num_teams_predator, 0,
+                EspExperiment *esp2 = new EspExperiment(num_of_predators, 0, num_teams_predator, 0,
                         1 /*num_teams_hunters*/, num_of_hunters, num_hidden_neurons /*nPops*/,
                         popSize/*nSize*/, *predprey_st2/*environment*/, netType);
                 esp2->evolve(maxGenerations, num_of_predators, 0, num_teams_predator, 0, 1,
@@ -158,7 +158,7 @@ namespace PredatorPreyHunter
                 PredPrey *predprey = new PredPrey(num_of_predators, num_of_prey, num_teams_predator,
                         num_teams_prey, prey_move_probability, num_of_hunters,
                         hunter_move_probability);     // this is our environment.
-                Esp *esp = new Esp(hall_of_fame_pred_both, num_of_predators, num_of_prey,
+                EspExperiment *esp = new EspExperiment(hall_of_fame_pred_both, num_of_predators, num_of_prey,
                         num_teams_predator, num_teams_prey, 1 /*num_teams_hunters*/, num_of_hunters,
                         num_hidden_neurons /*nPops*/, popSize/*nSize*/, *predprey/*environment*/,
                         netType);
@@ -170,7 +170,7 @@ namespace PredatorPreyHunter
                 PredPrey *predprey = new PredPrey(num_of_predators, num_of_prey, num_teams_predator,
                         num_teams_prey, prey_move_probability, num_of_hunters,
                         hunter_move_probability);     // this is our environment.
-                Esp *esp = new Esp(num_of_predators, num_of_prey, num_teams_predator,
+                EspExperiment *esp = new EspExperiment(num_of_predators, num_of_prey, num_teams_predator,
                         num_teams_prey, 1 /*num_teams_hunters*/, num_of_hunters,
                         num_hidden_neurons /*nPops*/, popSize/*nSize*/, *predprey/*environment*/,
                         netType);
@@ -200,7 +200,7 @@ namespace PredatorPreyHunter
             if (use_monolithic_network) {
                 PredPrey predprey(num_of_predators, num_of_prey, num_teams_predator, num_teams_prey,
                         prey_move_probability, num_of_hunters, hunter_move_probability);     // this is our environment.
-                Esp esp(filename, num_of_predators, num_of_prey, num_teams_predator, num_teams_prey,
+                EspExperiment esp(filename, num_of_predators, num_of_prey, num_teams_predator, num_teams_prey,
                         1 /*num_teams_hunters*/, num_of_hunters, num_hidden_neurons, popSize,
                         predprey, netType);
                 esp.evolve(maxGenerations, num_of_predators, num_of_prey, num_teams_predator,

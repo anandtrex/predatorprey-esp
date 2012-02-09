@@ -46,9 +46,18 @@ namespace PredatorPreyHunter
     public:
         //Experiment(const int& maxSteps, const int& width, const int& height);
         Experiment(const char* configFilePath);
-        ~Experiment();
-        double run(); // return fitness
-        double run(std::string stepsFilePath); // return fitness
+        virtual ~Experiment();
+
+        /**
+         * Starts running the experiment -- running the episode n number of times.
+         */
+        virtual double start(const uint& maxSteps = -1);
+
+        /**
+         * Runs the domain for one episode, and returns the fitness.
+         */
+        virtual double run(); // return fitness
+        virtual double run(std::string stepsFilePath); // return fitness
     };
 }
 
