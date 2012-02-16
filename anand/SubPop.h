@@ -8,23 +8,28 @@
 #ifndef SUBPOP_H_
 #define SUBPOP_H_
 
-#include "Neuron.h"
-
 #include "common.h"
+
+#include "Neuron.h"
+#include "Network.h"
 
 namespace EspPredPreyHunter
 {
+    class Network;
     class SubPop
     {
-        uint geneSize;
+
         // FIXME
-        const double MUT_RATE; // = 0.4;  // mutation rate in %  EVOLVE_PREY
+        const double MUT_RATE; // = 0.4;  // mutation rate
         const int MIN;  // = 0; 0 means higher fitness better, 1 otherwise
+
+        uint geneSize;
 
     public:
         std::vector<Neuron*> pop;
 
         int numNeurons;
+        bool evolvable;
 
         SubPop(const int& size, const int& geneSize);
         ~SubPop();
@@ -48,8 +53,7 @@ namespace EspPredPreyHunter
         void print();
         void printWeight(FILE *file);
         void printDelta(FILE *file);
-        bool evolvable;
-
+        void recombineHallOfFame(Network* hallOfFameNetwork, const uint& neuronNumber);     //EVOLVE_PREY
     private:
         int numBreed;  //number of neurons to be mated in subpop
         void crossover(const std::vector<double> &parent1, const std::vector<double> &parent2,

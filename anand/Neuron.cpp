@@ -12,7 +12,6 @@
 
 namespace EspPredPreyHunter
 {
-
     /**
      * Neuron constructor
      */

@@ -26,7 +26,7 @@ namespace PredPreyHunterVisualizer
     static int sAttribList[] = { GLX_RGBA, GLX_RED_SIZE, 1, GLX_GREEN_SIZE, 1, GLX_BLUE_SIZE, 1,
             None };
 
-    Visualizer::Visualizer(std::map<int, vector<double> > idColorMapping, int gridWidth, int gridHeight)
+    Visualizer::Visualizer(std::map<int, vector<double> > idColorMapping, uint gridWidth, uint gridHeight)
         :idColorMapping(idColorMapping)
     {
         pointSize = 10;

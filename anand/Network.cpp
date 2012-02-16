@@ -8,13 +8,16 @@
 #include "common.h"
 #include "Network.h"
 
+#include <stdio.h>
+
 namespace EspPredPreyHunter
 {
     using std::vector;
     using std::endl;
 
-    Network::Network(const int& numHiddenNeurons, const int& geneSize)
-            : geneSize(geneSize), numHiddenNeurons(numHiddenNeurons)
+    Network::Network(const uint& numHiddenNeurons, const uint& geneSize, const uint& subPopSize) :
+            geneSize(geneSize), numHiddenNeurons(numHiddenNeurons), subPopSize(subPopSize), networkSubPop(
+                    subPopSize)
     {
         activation = vector<double>(numHiddenNeurons);
         neurons = vector<Neuron*>(numHiddenNeurons);
@@ -25,6 +28,7 @@ namespace EspPredPreyHunter
             fitness = 0.0;
 
         evolvable = true;
+        create();
     }
 
     Network::~Network()
@@ -76,11 +80,6 @@ namespace EspPredPreyHunter
     {
         for (int i = 0; i < numHiddenNeurons; ++i)
             ++neurons[i]->tests;
-    }
-
-    inline double sigmoid(double x, double slope = 1.0)
-    {
-        return (1 / (1 + exp(-(slope * x))));
     }
 
 #define LESION_THRESHOLD 0.9
@@ -135,15 +134,60 @@ namespace EspPredPreyHunter
             return -1;
     }
 
-    /**
-     * create the neurons, initial their weights, and put them in the subpop.
-     */
     void Network::create()
     {
-        if (evolvable)
-            for (int i = 0; i < numHiddenNeurons; ++i) {
-                neurons[i] = new Neuron(geneSize);
-                neurons[i]->create();
-            }
+        for (int i = 0; i < numHiddenNeurons; i++) {
+            networkSubPop[i]->create();
+        }
+    }
+
+    void Network::setNeurons()
+    {
+        for (int i = 0; i < numHiddenNeurons; i++) {
+            setNeuron(networkSubPop[i]->selectNeuron(), i);
+        }
+    }
+
+    void Network::setFitness(const double& fitness)
+    {
+        for (int i = 0; i < numHiddenNeurons; i++) {
+            neurons[i]->fitness += fitness;
+        }
+    }
+
+    void Network::evalReset()
+    {
+        for (int i = 0; i < numHiddenNeurons; i++) {
+            networkSubPop[i]->evalReset();
+        }
+    }
+
+    void Network::average()
+    {
+        // TODO Check if this has to be done for all the subpop neurons
+        for (int i = 0; i < networkSubPop.size(); i++) {
+            networkSubPop[i]->average();
+        }
+    }
+
+    void Network::qsortNeurons()
+    {
+        for (int i = 0; i < networkSubPop.size(); i++) {
+            networkSubPop[i]->qsortNeurons();
+        }
+    }
+
+    void Network::mutate()
+    {
+        for (int i = 0; i < networkSubPop.size(); i++) {
+            networkSubPop[i]->mutate();
+        }
+    }
+
+    void Network::recombineHallOfFame(Network* network)
+    {
+        for (int i = 0; i < networkSubPop.size(); i++) {
+            networkSubPop[i]->recombineHallOfFame(network, i);
+        }
     }
 }

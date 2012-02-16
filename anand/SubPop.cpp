@@ -7,8 +7,9 @@
 #include <algorithm>
 #include <vector>
 
-#include "SubPop.h"
 #include "common.h"
+#include "SubPop.h"
+
 
 namespace EspPredPreyHunter
 {
@@ -37,11 +38,11 @@ namespace EspPredPreyHunter
      * @param size
      */
     SubPop::SubPop(const int& size, const int& geneSize)
-            : pop(size), geneSize(geneSize)
+            : MUT_RATE(0.4), MIN(0), geneSize(geneSize), pop(size)
     {
         // constants! FIXME
-        MIN = 0;
-        MUT_RATE = 0.4;
+        //MIN = 0;
+        //MUT_RATE = 0.4;
 
         evolvable = true;
         numNeurons = size;
@@ -243,6 +244,25 @@ namespace EspPredPreyHunter
                 pop[i]->weight.erase(pop[i]->weight.begin() + locus);
             }
 
+    }
+
+    // QUE Why does it do it like this??
+    /**
+     * recombine neurons with members of their subpop using crossover.
+     */
+    void SubPop::recombineHallOfFame(Network* hallOfFameNetwork, const uint& neuronNumber)
+    {
+        int i = 0;
+        for (; i < numBreed - 5; ++i) {
+            crossover(pop[i]->weight, pop[findMate(i)]->weight,
+                    pop[numNeurons - (1 + i * 2)]->weight,
+                    pop[numNeurons - (2 + i * 2)]->weight);
+        }
+        for (; i < numBreed; ++i) {
+            crossover(pop[i]->weight, hallOfFameNetwork->neurons[neuronNumber]->weight,
+                    pop[numNeurons - (1 + i * 2)]->weight,
+                    pop[numNeurons - (2 + i * 2)]->weight);
+        }
     }
 }
 

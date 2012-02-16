@@ -10,11 +10,13 @@
 
 #include <fstream>
 #include <vector>
+#include <math.h>
 
 #include "common.h"
 #include "Network.h"
 #include "SubPop.h"
 #include "Experiment.h"
+#include "NetworkContainer.h"
 
 namespace EspPredPreyHunter
 {
@@ -22,9 +24,13 @@ namespace EspPredPreyHunter
     using std::ofstream;
     using PredatorPreyHunter::Experiment;
 
+    enum
+    {
+        NUM_ACTIONS = 5
+    };
+
     /**
-     * This class contains functions to evolve networks for a whole team of predators. So this should be shared across all agents that
-     * belong to a given team. This assumes that this whole thing is used only for a single team.
+     * This class contains functions to evolve networks for a predator.
      */
     class Esp
     {
@@ -34,8 +40,7 @@ namespace EspPredPreyHunter
          * This is equal to the total number of EVOLVING agents for which networks have to be evolved using ESP (excluding combiner networks)
          * For predator-prey-hunter, this is equal to (num_predators)
          */
-        const uint numAgents;
-
+        //const uint numAgents;
         /**
          * This is equal to ( numNetworks * numInputs + COMBINE * numInputs )
          */
@@ -62,7 +67,7 @@ namespace EspPredPreyHunter
 
         const uint popSize;
 
-        const uint netTp;
+        const uint netType;
 
         /**
          * This is equal to the number of all the other agents in the task excluding this team of agents
@@ -93,33 +98,28 @@ namespace EspPredPreyHunter
         vector<Network*> networks;
 
         /**
-         * i-th element corresponds to the vector of Subpop, where in the vector of SubPop,
-         *  the i-th element corresponds to the i-th neuron in the corresponding network
+         * i-th element corresponds to the vector of Subpop for the i-th network, where in the vector of SubPop,
+         *  the j-th element corresponds to the j-th neuron in the corresponding network
          */
-        vector<vector<SubPop*> > hidden_neuron_populations; // num networks x num hidden neurons per network
-
+//        vector<vector<SubPop*> > hidden_neuron_populations; // num networks x num hidden neurons per network
         uint generation;
 
         vector<Network*> overall_best_networks;
 
         uint numTrials;
 
-        /**
-         * output a new network of the appropriate type
-         * @param networkType
-         * @param numHiddenNeurons
-         * @param neuronGeneSize
-         * @return
-         */
-        Network* generateNetwork(const uint& networkType, const uint& numHiddenNeurons,
-                        const uint& neuronGeneSize);
-        uint getNeuronGeneSize();
-        uint getCombinerNeuronGeneSize();
+        NetworkContainer* networkContainer;
 
         /**
-         * reset fitness vals
+         * output a new network of the appropriate type.
+         * @param networkType
+         * @param neuronGeneSize - this parameter is  taken, because the network can either be a combiner network
+         * or not
+         * @return
          */
-        void evalReset();
+        Network* generateNetwork(const uint& networkType, const uint& neuronGeneSize);
+        uint getNeuronGeneSize();
+        uint getCombinerNeuronGeneSize();
 
         /**
          * evaluation stage.  Create numTrials networks, each containing
@@ -130,7 +130,6 @@ namespace EspPredPreyHunter
         void performEval();
 
         // NOTE Below are existing private member functions
-        void recombine_hall_of_fame(Network* network);     //EVOLVE_PREY
         //Esp(const Esp &);     // just for safety
         Esp &operator=(const Esp &);
         void save(char* fname, int num_of_predators, int num_of_prey, int num_teams_predator,
@@ -148,18 +147,18 @@ namespace EspPredPreyHunter
 
     public:
 
+        Esp();
+
         /**
          * Constructor
-         * @param numNetworks - total number of networks
          * @param nHiddenNeurons - number of hidden neurons for all the networks
          * @param popSize - Population size for each neuron in the networks
          * @param netTp - Type of the network. Only FF for now.
-         * @param numInputs - Number of inputs for each network (not the combiner network, which is managed internally)
-         * @param numOutputs - Number of outputs for each network (not the combiner network, which is managed internally)
-         * @param neuronGeneSize
+         * @param numOtherAgents - Number of inputs for each network (not the combiner network, which is managed internally)
+         * @param numActions - Number of outputs for each network (not the combiner network, which is managed internally)
          */
-        Esp(const uint& numTeamAgents, const uint& nHiddenNeurons, const uint& popSize,
-                const uint& netTp, const uint& numOtherAgents, const uint& numActions, const Experiment& experiment);
+        Esp(const uint& nHiddenNeurons, const uint& popSize, const uint& netTp,
+                const uint& numOtherAgents, const uint& numActions);
 
         /**
          * Constructor
@@ -172,12 +171,22 @@ namespace EspPredPreyHunter
         Esp(const char* fileName, const uint& numNetworks, const uint& nHiddenNeurons,
                 const uint& popSize, const uint& netTp);
 
-        uint getAction(const uint& agentNo);
+        /**
+         * reset fitness vals
+         */
+        void evalReset();
 
         /**
          * Destructor
          */
         ~Esp();
+
+        /**
+         * Gets the vector of networks to be used for evaluation after
+         * setting the neurons appropriately from the subpopulation
+         * @return
+         */
+        NetworkContainer* getNetwork();
 
         /**
          * evolve is the main genetic function.  The subpopulations are first
@@ -196,8 +205,6 @@ namespace EspPredPreyHunter
          * (pop[i]->fitness).
          */
         void evalPop();
-
-
 
         void findChampion();
         void loadSeedNet(char *);

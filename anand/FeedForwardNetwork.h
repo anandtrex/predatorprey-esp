@@ -17,12 +17,13 @@ namespace EspPredPreyHunter
     class FeedForwardNetwork: public Network
         {
         public:
-            FeedForwardNetwork(const uint& numHiddenNeurons, const uint& neuronGeneSize)
-                    : Network(numHiddenNeurons, neuronGeneSize)
+            FeedForwardNetwork(const uint& numHiddenNeurons, const uint& neuronGeneSize, const uint& subPopSize)
+                    : Network(numHiddenNeurons, neuronGeneSize, subPopSize)
             {
                 ;
             }
-            void activate(vector<double> &input, vector<double> &output, int inputSize_combiner);
+//            void activate(vector<double> &input, vector<double> &output, int inputSize_combiner);
+            void activate(const vector<double> &input, vector<double> &output);
             void addNeuron();
             void removeNeuron(int sp);
             void save(char *filename);

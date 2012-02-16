@@ -25,12 +25,12 @@ namespace PredatorPreyHunter
 {
     class GridWorld
     {
-        int width;
-        int height;
-
     public:
+        uint width;
+        uint height;
+
         GridWorld(const int& width, const int& height)
-            :width(width), height(height)
+                : width(width), height(height)
         {
         }
 
@@ -47,14 +47,16 @@ namespace PredatorPreyHunter
          */
         Position move(const Position& pCurrent, const Action& action) const;
 
-        int getWidth() const
+        uint getWidth() const
         {
             return width;
         }
-        int getHeight() const
+        uint getHeight() const
         {
             return height;
         }
+
+        Position getRandomPosition();
     };
 }
 

@@ -8,9 +8,10 @@
 #include <iostream>
 
 #include "GridWorld.h"
-#include "Experiment.h"
+#include "EspExperiment.h"
 
 using namespace PredatorPreyHunter;
+using namespace EspPredPreyHunter;
 
 void reseed(int val)
 {
@@ -44,6 +45,7 @@ int main(int argc, char **argv)
         }
     }
 
-    Experiment experiment(configFilePath);
-    return experiment.run();
+    EspExperiment experiment(configFilePath);
+    experiment.start();
+    return 0;
 }

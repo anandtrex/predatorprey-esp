@@ -25,17 +25,12 @@ namespace PredatorPreyHunter
 
     Experiment::Experiment(const char* configFilePath)
     {
-        numPredCaught = 0;
-        numPreyCaught = 0;
-        predatorCaughtIds = vector<uint>();
-        preyCaughtIds = vector<uint>();
-
         libconfig::Config cfg;
 
         LOG(INFO) << "Reading from config file " << configFilePath;
         cfg.readFile(configFilePath);
 
-        maxSteps = cfg.lookup("experiment:max_steps");
+        uint maxSteps = cfg.lookup("experiment:max_steps");
         LOG(INFO) << "Max steps in experiment is "
                 << static_cast<uint>(cfg.lookup("experiment:max_steps"));
 
@@ -44,20 +39,13 @@ namespace PredatorPreyHunter
         LOG(INFO) << "Grid size is " << static_cast<int>(gridWidth) << "x"
                 << static_cast<int>(gridHeight);
 
-        numHunters = cfg.lookup("agents:hunter:number");
-        numPredators = cfg.lookup("agents:predator:number");
-        numPrey = cfg.lookup("agents:prey:number");
-
-        this->ptrGridWorld = new GridWorld(gridWidth, gridHeight);
-        LOG(INFO) << "[CREATED] GridWorld of size " << gridWidth << ", " << gridHeight << endl;
-
-        // initialize predator
-        Position position;
-        position.x = static_cast<int>(fetchRandomNumber() * gridWidth);
-        position.y = static_cast<int>(fetchRandomNumber() * gridHeight);
+        uint numHunters = cfg.lookup("agents:hunter:number");
+        uint numPredators = cfg.lookup("agents:predator:number");
+        uint numPrey = cfg.lookup("agents:prey:number");
 
         int predType = cfg.lookup("agents:predator:predators:[0]:type");
 
+        /*
         if (predType == 0) {     // Random predator
             LOG(INFO) << "Initializing random predator";
             this->ptrPredator = dynamic_cast<Predator*>(new PredatorRandom(ptrGridWorld,
@@ -73,7 +61,7 @@ namespace PredatorPreyHunter
                     << "Predator move probability is "
                     << static_cast<double>(cfg.lookup(
                             "agents:predator:predators:[0]:move_probability"));
-        }
+        }*/
 
         LOG(INFO) << "[CREATED] Predator at " << position.x << ", " << position.y << " with id "
                 << static_cast<int>(cfg.lookup("agents:predator:predators:[0]:id")) << endl;

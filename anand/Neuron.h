@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "common.h"
+#include <math.h>
 
 namespace EspPredPreyHunter
 {
