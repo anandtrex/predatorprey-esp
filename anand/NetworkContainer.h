@@ -8,7 +8,6 @@
 #ifndef NETWORKESPCOMBINER_H_
 #define NETWORKESPCOMBINER_H_
 
-
 #include "Network.h"
 
 namespace EspPredPreyHunter
@@ -33,14 +32,6 @@ namespace EspPredPreyHunter
 
         void setNetworks(const vector<Network*>& networks);
 
-        /**
-         * Returns the output from the given input and outputs
-         * @param input
-         * @param output
-         * @return
-         */
-        void getOutput(const vector<double>& input, vector<double>& output);
-
         void setFitness(const double& fitness);
 
         void incrementTests();
@@ -57,9 +48,14 @@ namespace EspPredPreyHunter
 
         Network* getNetwork(uint i);
 
+        /**
+         * Returns the output from the given input and outputs
+         * @param input
+         * @param output
+         * @return
+         */
         void activate(const vector<double>& input, vector<double>& output);
     };
 }
-
 
 #endif /* NETWORKESPCOMBINER_H_ */

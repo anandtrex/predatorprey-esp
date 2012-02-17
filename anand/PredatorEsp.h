@@ -23,7 +23,13 @@ namespace PredatorPreyHunter
     class PredatorEsp: public Predator
     {
         NetworkContainer* networkContainer;
-        // TODO Take this as a parameter to Predator class
+
+        /**
+         * Returns the index of the maximum element in a given vector. If there are more than one maximum elements,
+         * it returns a random index among the maximum elements
+         * @param vec
+         * @return
+         */
         uint getMaxIndex(const vector<double>& vec);
     public:
         PredatorEsp(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p, NetworkContainer *network);

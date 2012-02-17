@@ -16,12 +16,6 @@
 #define SCDORDER 2
 #define FR 3
 
-//////////////////////////////////////////////////////////////////////
-//
-// Esp
-//
-//////////////////////////////////////////////////////////////////////
-
 // Assume combiner network used.
 // Assume number of hidden neurons is the same for all networks
 
@@ -54,6 +48,8 @@ namespace EspPredPreyHunter
                 << totalNumNetworks << endl << " neuron gene size for a normal neuron is "
                 << neuronGeneSize << endl << " neuron gene size for a combiner neuron is "
                 << combinerNeuronGeneSize << endl;
+
+        networks = vector<Network*>();
 
         // Initialize and create networks
         for (uint i = 0; i < totalNumNetworks - COMBINE; i++) {
@@ -103,22 +99,26 @@ namespace EspPredPreyHunter
 
     Network* Esp::generateNetwork(const uint& networkType, const uint& neuronGeneSize)
     {
+        VLOG(4) << "Generating new network with network type " << networkType << ", population size " << popSize
+                << " and neuron gene size " << neuronGeneSize;
+        return new FeedForwardNetwork(numHiddenNeurons, neuronGeneSize, popSize);
+        /*
         switch (networkType) {
             case FF:
                 return new FeedForwardNetwork(numHiddenNeurons, neuronGeneSize, popSize);
                 //break;
-                /*  case FR :
+                /--  case FR :
                  return( new FullyRecurrentNetwork(nPops) ); break;
                  case SRN :
                  return( new SimpleRecurrentNetwork(nPops) ); break;
                  case SCDORDER :
                  return( new SecondOrderRecurrentNetwork(nPops) );
-                 */
+                 --/
 
             default:
                 return new FeedForwardNetwork(numHiddenNeurons, neuronGeneSize, popSize);
                 //break;
-        }
+        }*/
     }
 
     NetworkContainer* Esp::getNetwork()

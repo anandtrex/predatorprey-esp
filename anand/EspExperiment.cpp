@@ -49,7 +49,7 @@ namespace EspPredPreyHunter
                 << " prey and " << numHunters << " hunters.";
         LOG(INFO) << "Hunter move probability is "
                 << static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability"))
-                << "and prey move probability is "
+                << " and prey move probability is "
                 << static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability"));
 
         uint popSize = cfg.lookup("experiment:esp:population_size");
@@ -101,7 +101,7 @@ namespace EspPredPreyHunter
 
             domain.enableDisplay(colors[0], colors[1], colors[2]);
         }
-        domain.disableDisplay();
+        //domain.disableDisplay();
     }
 
     /**
@@ -158,6 +158,7 @@ namespace EspPredPreyHunter
                 overallMaxFitness = genMaxFitness;
                 overallBestNetwork = generationBestNetwork;
             }
+            VLOG(3) << "Generation " << generation << " done.";
         }
     }
 }

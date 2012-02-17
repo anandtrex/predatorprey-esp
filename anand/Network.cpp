@@ -19,6 +19,7 @@ namespace EspPredPreyHunter
             geneSize(geneSize), numHiddenNeurons(numHiddenNeurons), subPopSize(subPopSize), networkSubPop(
                     subPopSize)
     {
+        VLOG(4) << "Creating generic network";
         activation = vector<double>(numHiddenNeurons);
         neurons = vector<Neuron*>(numHiddenNeurons);
 
@@ -33,8 +34,10 @@ namespace EspPredPreyHunter
 
     Network::~Network()
     {
+        /*
         for (int i = 0; i < numHiddenNeurons; ++i)
             neurons[i] = NULL;
+            */
         //pop.clear();
     }
 
@@ -109,7 +112,7 @@ namespace EspPredPreyHunter
         tempFitness[0] /= LESION_EVALTRIALS;
         tempFitness[1] /= LESION_EVALTRIALS;
 
-        printf("Unlesioned : %f\n", tempFitness[0]);
+        LOG(INFO) << "Unlesioned: " << tempFitness[0] << endl;
 
         for (int i = 0; i < numHiddenNeurons; ++i) {
             neurons[i]->lesioned = true;
@@ -136,7 +139,9 @@ namespace EspPredPreyHunter
 
     void Network::create()
     {
+        VLOG(4) << "Running create in generic network";
         for (int i = 0; i < numHiddenNeurons; i++) {
+            networkSubPop[i] = new SubPop(subPopSize, geneSize);
             networkSubPop[i]->create();
         }
     }

@@ -19,9 +19,9 @@ namespace EspPredPreyHunter
     class SubPop
     {
 
-        // FIXME
-        const double MUT_RATE; // = 0.4;  // mutation rate
-        const int MIN;  // = 0; 0 means higher fitness better, 1 otherwise
+        // constants! FIXME
+        static const double MUT_RATE;  // mutation rate
+        static const int MIN = 0; //0 means higher fitness better, 1 otherwise
 
         uint geneSize;
 
@@ -53,7 +53,8 @@ namespace EspPredPreyHunter
         void print();
         void printWeight(FILE *file);
         void printDelta(FILE *file);
-        void recombineHallOfFame(Network* hallOfFameNetwork, const uint& neuronNumber);     //EVOLVE_PREY
+        // FIXME Pass an array of neurons instead of a constructor
+        void recombineHallOfFame(Network* hallOfFameNetwork, const uint& neuronNumber);
     private:
         int numBreed;  //number of neurons to be mated in subpop
         void crossover(const std::vector<double> &parent1, const std::vector<double> &parent2,

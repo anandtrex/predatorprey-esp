@@ -93,7 +93,7 @@ namespace PredPreyHunterVisualizer
             VLOG(4) << "prev y " << agentInformationPrevious.position.y;
 
             vector<double> colorMap = idColorMapping[agentInformationCurrent.agentId];
-            VLOG(4) << "r,g,b " << colorMap[0] << ", " << colorMap[1] << ", " << colorMap[2] << endl;
+            VLOG(5) << "r,g,b " << colorMap[0] << ", " << colorMap[1] << ", " << colorMap[2] << endl;
 
             // draw new pred point
             glBegin(GL_POINTS);

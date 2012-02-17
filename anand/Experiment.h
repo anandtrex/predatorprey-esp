@@ -14,11 +14,11 @@ namespace PredatorPreyHunter
 {
     class Experiment
     {
-    public:
+    protected:
         Experiment(const char* configFilePath)
         {
         }
-        ~Experiment()
+        virtual ~Experiment()
         {
         }
         virtual void start() = 0;

@@ -5,14 +5,14 @@
  *      Author: anands
  */
 
-#include "Domain.h"
-#include "PredatorEsp.h"
-#include "NetworkContainer.h"
-
 #include <iostream>
 #include <fstream>
 
 #include <libconfig.h++>
+
+#include "Domain.h"
+#include "PredatorEsp.h"
+#include "NetworkContainer.h"
 
 namespace PredatorPreyHunter
 {
@@ -21,7 +21,6 @@ namespace PredatorPreyHunter
     using std::map;
     using std::pair;
     using PredPreyHunterVisualizer::Visualizer;
-    //using std::ofstream;
 
     Domain::Domain()
     {
@@ -33,27 +32,25 @@ namespace PredatorPreyHunter
             maxSteps(maxSteps), numPredators(numPredators), numPrey(numPrey), numHunters(
                     numHunters), preyMoveProb(preyMoveProb), hunterMoveProb(hunterMoveProb)
     {
-        numPredCaught = 0;
-        numPreyCaught = 0;
-        predatorCaughtIds = vector<uint>();
-        preyCaughtIds = vector<uint>();
-
         this->ptrGridWorld = new GridWorld(width, height);
         LOG(INFO) << "[CREATED] GridWorld of size " << width << ", " << height << endl;
     }
 
     Domain::~Domain()
     {
-        delete ptrPredator;
-        delete ptrPrey;
-        delete ptrHunter;
-        delete ptrGridWorld;
+        /*
+         delete ptrPredator;
+         delete ptrPrey;
+         delete ptrHunter;
+         delete ptrGridWorld;
+         */
     }
 
     void Domain::init(NetworkContainer* espNetwork)
     {
         Position randomPosition = ptrGridWorld->getRandomPosition();
-        this->ptrPredator = dynamic_cast<Predator*>(new PredatorEsp(ptrGridWorld, 1, randomPosition, espNetwork));
+        this->ptrPredator = dynamic_cast<Predator*>(new PredatorEsp(ptrGridWorld, 1, randomPosition,
+                espNetwork));
 
         // initialize prey
         randomPosition = ptrGridWorld->getRandomPosition();
@@ -83,8 +80,7 @@ namespace PredatorPreyHunter
         p = pair<int, vector<double> >(2, preyColour);
         idColorMapping.insert(p);
 
-        p = pair<int, vector<double> >(3,
-                hunterColour);
+        p = pair<int, vector<double> >(3, hunterColour);
         idColorMapping.insert(p);
 
         visualizer = Visualizer(idColorMapping, ptrGridWorld->width, ptrGridWorld->height);
@@ -97,8 +93,6 @@ namespace PredatorPreyHunter
 
     void Domain::step()
     {
-        // check if prey is caught
-        // return appropriate caught signal
         AgentInformation aiPredator, aiPrey, aiHunter;
         aiPredator = ptrPredator->getAgentInformation();
         aiPrey = ptrPrey->getAgentInformation();
@@ -111,17 +105,13 @@ namespace PredatorPreyHunter
         if ((aiPrey.position.x == aiPredator.position.x)
                 && (aiPrey.position.y == aiPredator.position.y)) {
             LOG(INFO) << "Prey caught by Predator";
-            //return PREY_CAUGHT;
             this->preyCaughtIds.push_back(aiPrey.agentId);
             this->numPreyCaught++;
         }
 
-        // check if predator is caught
-        // return appropriate caught signal
         if ((aiHunter.position.x == aiPredator.position.x)
                 && (aiHunter.position.y == aiPredator.position.y)) {
             LOG(INFO) << "Predator caught by Hunter";
-            //return PREDATOR_CAUGHT;
             this->predatorCaughtIds.push_back(aiPredator.agentId);
             this->numPredCaught++;
         }
@@ -158,12 +148,19 @@ namespace PredatorPreyHunter
         uint noSteps = 0;
         uint prevNumPreyCaught = 0;
         uint prevNumPredCaught = 0;
+        numPredCaught = 0;
+        numPreyCaught = 0;
+        predatorCaughtIds = vector<uint>();
+        preyCaughtIds = vector<uint>();
 
         do {
             VLOG(1) << "step: " << noSteps << endl;
             (void) step();
             if (numPreyCaught > 0 && numPreyCaught > prevNumPreyCaught) {
                 LOG(INFO) << "PREY CAUGHT!!!!" << endl;
+                VLOG(5)
+                        << "Number of prey caught is " << numPreyCaught
+                                << " and the total number of prey is " << numPrey;
                 prevNumPreyCaught = numPreyCaught;
                 if (numPreyCaught == numPrey) {
                     LOG(INFO) << "All prey caught in " << noSteps << " steps!";
@@ -172,6 +169,9 @@ namespace PredatorPreyHunter
             } else if (numPredCaught > 0 && numPredCaught > prevNumPredCaught) {
                 LOG(INFO) << "PREDATOR CAUGHT!!!!" << endl;
                 prevNumPredCaught = numPredCaught;
+                VLOG(5)
+                        << "Number of prey caught is " << numPredCaught
+                                << " and the total number of prey is " << numPredators;
                 if (numPredCaught == numPredators) {
                     LOG(INFO) << "All predators caught in " << noSteps << " steps!";
                     return fitness;

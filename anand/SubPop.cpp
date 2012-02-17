@@ -33,17 +33,16 @@ namespace EspPredPreyHunter
         }
     };
 
+    // FIXME! Constants
+    const double SubPop::MUT_RATE = 0.4;
+
     /**
      * subPop constructor
      * @param size
      */
     SubPop::SubPop(const int& size, const int& geneSize)
-            : MUT_RATE(0.4), MIN(0), geneSize(geneSize), pop(size)
+            : geneSize(geneSize), pop(size)
     {
-        // constants! FIXME
-        //MIN = 0;
-        //MUT_RATE = 0.4;
-
         evolvable = true;
         numNeurons = size;
         numBreed = (int) numNeurons / 4;
@@ -210,13 +209,6 @@ namespace EspPredPreyHunter
         child2 = parent1;
         swap_ranges(child1.begin(), child1.begin() + cross1, child2.begin());
     }
-
-    ////////////////////////////////////////////////////////////////////////////
-    //
-    //
-    //
-    //
-    ///////////////////////////////////////////////////////////////////////////
 
     /**
      * Code to add subpops
