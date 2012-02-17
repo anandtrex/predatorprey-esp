@@ -37,10 +37,18 @@ using namespace std;
 using namespace NEAT;
 
 // PredatorPreyHunter routines ***************************************
-Population* predatorpreyhunter_test( int gens, string pathFileGenome, string namePlot, const int mapWidth, const int mapHeight );
-double predatorpreyhunter_epoch( Population* pop, int generation, char* filename, const int mapWidth, const int mapHeight );
-double predatorpreyhunter_evaluate( Organism* org, const int mapWidth, const int mapHeight );
-double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathFile, const int mapWidth, const int mapHeight );
+Population* predatorpreyhunter_test( 
+    int gens,
+    string pathFileGenomeHigher,
+    string pathFileGenomePrey,
+    string pathFileGenomeHunter,
+    string namePlot,
+    const int mapWidth,
+    const int mapHeight
+);
+double predatorpreyhunter_epoch( Population* pop, int generation, char* filename, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter );
+double predatorpreyhunter_evaluate( Organism* org, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter );
+double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathFile, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter );
 void writeChampionPopulation( Population* pop );
 
 //The XOR evolution routines *****************************************

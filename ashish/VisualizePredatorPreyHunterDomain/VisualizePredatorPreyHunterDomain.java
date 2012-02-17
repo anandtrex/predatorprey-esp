@@ -30,6 +30,7 @@ public class VisualizePredatorPreyHunterDomain {
           contentPane.add( agentCanvas );
           agentCanvas.setMinimumSize( new Dimension( 100, 100 ) );
           agentCanvas.setPreferredSize( new Dimension( 100, 100 ) );
+          frameVisualizeAgents.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
           frameVisualizeAgents.setVisible( true );
           GridWorld gridWorld = new GridWorld( 10, 10 );
           try {

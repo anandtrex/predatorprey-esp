@@ -25,7 +25,7 @@ void writeChampionPopulation( Population* pop ) {
 }
 
 //Perform evolution on predator prey hunter, for gens generations
-Population *predatorpreyhunter_test(int gens) {
+Population *predatorpreyhunter_test( int gens, string namePlot ) {
     Population *pop=0;
     Genome *start_genome;
     char curword[20];
@@ -41,7 +41,7 @@ Population *predatorpreyhunter_test(int gens) {
 
     cout<<"START SINGLE PREDATOR PREY HUNTER EVOLUTION"<<endl;
     cout<<"Reading in the start genome"<<endl;
-    string pathFileGenomeStart = "singlehunter_startgenes";
+    string pathFileGenomeStart = "/home/ashish/Data/courses/cs394n/project/actual/cs394n-project/ashish/Hunter/build/singlehunter_startgenes";
     ifstream iFile( pathFileGenomeStart.c_str(), ios::in );
     if ( !iFile.is_open() ) {
       cerr << "I could not open " << pathFileGenomeStart << " for reading the starter genome" << endl;
@@ -72,7 +72,7 @@ Population *predatorpreyhunter_test(int gens) {
         //(*fnamebuf)<<"gen_"<<gen<<"_"; // ends;  //needs end marker
         //cout<<"name of fname: "<<fnamebuf->str()<<endl;
         char temp[50];
-        sprintf (temp, "gen_%d", gen);
+        sprintf (temp, "PositionsGenerationChamp%d", gen);
         championFitness=predatorpreyhunter_epoch(pop,gen,temp);
         vGenerationChamptionFitness.push_back( championFitness );
         //fnamebuf->clear();
@@ -80,14 +80,15 @@ Population *predatorpreyhunter_test(int gens) {
       } // end of for loop generations
       // write chamption fitness scores of generations to file
       ostringstream sout;
-      sout << "E" << expcount << ".txt";
+      sout << "PlotExperiment" << expcount << "-" << namePlot << ".txt";
       ofstream fout( sout.str().c_str() );
       if ( !fout.is_open() ) {
         cerr << "Could not open file " << sout.str() << " for writing." << endl;
         throw 1; // throw something meaningful later
       }
+      gen = 1;
       for ( vector<double>::const_iterator it = vGenerationChamptionFitness.begin(); it != vGenerationChamptionFitness.end(); ++it ) {
-        fout << *it << endl;
+        fout << gen << " " << *it << endl;
       }
       fout.close();
       if ( expcount < NEAT::num_runs - 1 ) delete pop; // delete all but the last population
@@ -126,10 +127,10 @@ double predatorpreyhunter_epoch(Population *pop,int generation,char *filename) {
     cerr << "predatorpreyhunter_epoch(): itPtrOrgChamp is null!" << endl;
     throw 1; // throw something meaningful later
   }
-  string pathFile = string( filename ) + ".champ.txt";
+  string pathFile = string( filename ) + ".txt";
   double fitnessOrganism = predatorpreyhunter_evaluate_storeperformance( *itPtrOrgChamp, pathFile ); 
   ostringstream sout;
-  sout << "GenerationChamp" << generation << ".txt"; 
+  sout << "NetworkGenerationChamp" << generation << ".txt"; 
   ofstream foutGenome( sout.str().c_str() );
   Genome* genomeChamp = ( *itPtrOrgChamp )->gnome;
   genomeChamp->print_to_file( foutGenome );

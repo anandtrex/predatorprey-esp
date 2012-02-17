@@ -41,13 +41,15 @@ int main(int argc, char *argv[]) {
       the numbers will be different every time we run.    */
   srand( (unsigned)time( NULL ) );
 
-  if (argc < 7) {
+  if (argc < 9) {
     cerr << "1. A NEAT parameters file (.ne file) is required to run the experiments!" << endl; // ARG 1
     cerr << "2. number of generations is expected" << endl; // ARG 2
     cerr << "3. map width is expected" << endl; // ARG 3
     cerr << "4. map height is expected" << endl; // ARG 4
-    cerr << "5. path of starter genome file is expected" << endl; // ARG 5
-    cerr << "6. name for plotting is expected" << endl; // ARG 6
+    cerr << "5. path of starter genome file for predator higher network is expected" << endl; // ARG 5
+    cerr << "6. path of starter genome file for predator prey only network is expected" << endl; 
+    cerr << "7. path of starter genome file for predator hunter only network is expected" << endl; 
+    cerr << "8. name for plotting is expected" << endl; // ARG 6
     return -1;
   }
 
@@ -65,10 +67,12 @@ int main(int argc, char *argv[]) {
   int gens = extract( argv[2] ); 
   int mapWidth = extract( argv[3] );
   int mapHeight = extract( argv[4] );
-  string pathStarterGenomeFile( argv[5] );
-  string namePlotFile( argv[6] );
+  string pathStarterGenomeFileHigher( argv[5] );
+  string pathStarterGenomeFilePreyOnly( argv[6] );
+  string pathStarterGenomeFileHunterOnly( argv[7] );
+  string namePlotFile( argv[8] );
   cout << "Beginnning predatorpreyhunter_test";
-  p = predatorpreyhunter_test( gens, pathStarterGenomeFile, namePlotFile, mapWidth, mapHeight ); // running for 100 generations
+  p = predatorpreyhunter_test( gens, pathStarterGenomeFileHigher, pathStarterGenomeFilePreyOnly, pathStarterGenomeFileHunterOnly, namePlotFile, mapWidth, mapHeight );
 
   if (p)
     delete p;
