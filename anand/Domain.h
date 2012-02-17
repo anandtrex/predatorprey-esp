@@ -1,70 +1,57 @@
 /*
- * Experiment.h
+ * Domain.h
  *
- *  Created on: Jan 27, 2012
- *      Author: anands
+ *  Created on: Feb 16, 2012
+ *      Author: anand
  */
 
 #ifndef DOMAIN_H_
 #define DOMAIN_H_
 
-#include "GridWorld.h"
-#include "Predator.h"
-#include "Prey.h"
-#include "Hunter.h"
-#include "Visualizer.h"
 #include "NetworkContainer.h"
-
-#include <string>
-#include <vector>
+#include "Visualizer.h"
 
 namespace PredatorPreyHunter
 {
     using std::vector;
     using EspPredPreyHunter::NetworkContainer;
 
-    // TODO Split this up for each subtask
     class Domain
     {
-        bool displayEnabled;
-        PredPreyHunterVisualizer::Visualizer visualizer;
-
-        uint maxSteps;
-
-        uint numPredators;
-        uint numPrey;
-        uint numHunters;
-
-        uint numPredCaught;
-        uint numPreyCaught;
-
-        vector<uint> preyCaughtIds;
-        vector<uint> predatorCaughtIds;
-
-        double preyMoveProb;
-        double hunterMoveProb;
-
     protected:
         GridWorld* ptrGridWorld;
-        Predator* ptrPredator;
-        Hunter* ptrHunter;
-        Prey* ptrPrey;
-        void step();
+        PredPreyHunterVisualizer::Visualizer visualizer;
+        const uint maxSteps;
+        bool displayEnabled;
+
+        virtual void step() = 0;
+        virtual double calculateFitness(const uint& stepCurrent) = 0;
 
     public:
-        Domain();
-        Domain(const uint& maxSteps, const uint& width, const uint& height,
-                const uint& numPredators, const uint& numPrey, const uint& numHunters,
-                const double& preyMoveProb, const double& hunterMoveProb);
-        //Domain(const char* configFilePath);
-        ~Domain();
-        void init(NetworkContainer* espNetwork);
-        void enableDisplay(const vector<double>& predatorColour, const vector<double>& preyColour,
-                const vector<double>& hunterColour);
-        void disableDisplay();
-        double run(); // return fitness
-        double run(std::string stepsFilePath); // return fitness
-        double calculateFitness(const uint& stepCurrent );
+        Domain()
+            :maxSteps(0), displayEnabled(false)
+        {
+        }
+
+        Domain(const uint& maxSteps, const uint& width, const uint& height)
+                : maxSteps(maxSteps)
+        {
+            displayEnabled = false;
+            ptrGridWorld = new GridWorld(width, height);
+            LOG(INFO) << "[CREATED] GridWorld of size " << width << ", " << height;
+        }
+
+        virtual ~Domain()
+        {
+        }
+
+        virtual void init(NetworkContainer* espNetwork) = 0;
+        void disableDisplay()
+        {
+            displayEnabled = false;
+        }
+        virtual double run() = 0;     // return fitness
+        //virtual double run(std::string stepsFilePath) = 0;     // return fitness
     };
 }
 

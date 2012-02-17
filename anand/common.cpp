@@ -7,10 +7,16 @@
 
 #include "common.h"
 
-namespace PredatorPreyHunter {
-	double fetchRandomNumber() {
-		return drand48();
-	}
+namespace PredatorPreyHunter
+{
+    double fetchRandomDouble()
+    {
+        return drand48();
+    }
+    long fetchRandomLong()
+    {
+        return lrand48();
+    }
 }
 
 double rndCauchy(double wtrange)

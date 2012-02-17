@@ -10,18 +10,18 @@
 
 #include "Experiment.h"
 #include "Esp.h"
-#include "Domain.h"
+#include "DomainTotal.h"
 
 namespace EspPredPreyHunter
 {
     using PredatorPreyHunter::Experiment;
-    using PredatorPreyHunter::Domain;
+    using PredatorPreyHunter::DomainTotal;
 
     class EspExperiment: Experiment
     {
         uint numGenerations;
         Esp* esp;
-        Domain domain;
+        DomainTotal* domain;
 
         uint numTrialsPerGen;
         uint numEvalTrials;

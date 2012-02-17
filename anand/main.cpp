@@ -32,7 +32,7 @@ int main(int argc, char **argv)
     reseed(getpid());
 
     int c;
-    char* configFilePath;
+    char* configFilePath = "";
 
     while ((c = getopt(argc, argv, "c:")) != -1) {
         switch(c){

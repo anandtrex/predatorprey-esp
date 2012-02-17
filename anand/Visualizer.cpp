@@ -38,7 +38,6 @@ namespace PredPreyHunterVisualizer
         Window win;
         GLXContext cx;
 
-        //Switching off display for condor runs - ADITYA
         {
             GLint err = glGetError();
             if (err != GL_NO_ERROR)
@@ -57,10 +56,6 @@ namespace PredPreyHunterVisualizer
         swa.colormap = XCreateColormap(dpy, RootWindow(dpy, vi->screen), vi->visual, AllocNone);
         swa.border_pixel = 0;
         swa.event_mask = StructureNotifyMask;
-        //  win = XCreateSimpleWindow(dpy, RootWindow(dpy,DefaultScreen(dpy)),
-        //                      0, 0, 1000, 1000, 1,
-        //                      BlackPixel(dpy, DefaultScreen(dpy)),
-        //                      WhitePixel(dpy, DefaultScreen(dpy)));
         win = XCreateWindow(dpy, RootWindow(dpy, vi->screen), 30, 30, 500, 500, 0, vi->depth,
                 CopyFromParent, vi->visual, CWBackPixel | CWBorderPixel | CWColormap, &swa);
         XMapWindow(dpy, win);
@@ -79,7 +74,7 @@ namespace PredPreyHunterVisualizer
             const std::vector<AgentInformation>& vAgentInformationCurrent)
     {
         AgentInformation agentInformationPrevious, agentInformationCurrent;
-        for (int i = 0; i < vAgentInformationCurrent.size(); i++) {
+        for (uint i = 0; i < vAgentInformationCurrent.size(); i++) {
             agentInformationPrevious = vAgentInformationPrevious[i];
             agentInformationCurrent = vAgentInformationCurrent[i];
 
@@ -88,9 +83,6 @@ namespace PredPreyHunterVisualizer
             glColor3f(1.0f, 1.0f, 1.0f);
             glVertex3f(agentInformationPrevious.position.x * pointSize, agentInformationPrevious.position.y * pointSize, 0);
             glEnd();
-
-            VLOG(4) << "prev x " << agentInformationPrevious.position.x;
-            VLOG(4) << "prev y " << agentInformationPrevious.position.y;
 
             vector<double> colorMap = idColorMapping[agentInformationCurrent.agentId];
             VLOG(5) << "r,g,b " << colorMap[0] << ", " << colorMap[1] << ", " << colorMap[2] << endl;

@@ -19,7 +19,8 @@ typedef unsigned int uint;
 // wrapper for drand48() so that you can change this function later
   // fetch random number between 0 and 1
 namespace PredatorPreyHunter {
-	double fetchRandomNumber();
+	double fetchRandomDouble();
+	long fetchRandomLong();
 }
 
 template< typename T, size_t N >

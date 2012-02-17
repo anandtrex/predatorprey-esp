@@ -67,8 +67,8 @@ namespace PredatorPreyHunter
                 << static_cast<int>(cfg.lookup("agents:predator:predators:[0]:id")) << endl;
 
         // initialize prey
-        position.x = static_cast<int>(fetchRandomNumber() * gridWidth);
-        position.y = static_cast<int>(fetchRandomNumber() * gridHeight);
+        position.x = static_cast<int>(fetchRandomDouble() * gridWidth);
+        position.y = static_cast<int>(fetchRandomDouble() * gridHeight);
         this->ptrPrey = new Prey(ptrGridWorld, cfg.lookup("agents:prey:preys:[0]:id"), position,
                 cfg.lookup("agents:prey:preys:[0]:move_probability"));
         LOG(INFO) << "Prey move probability is "
@@ -77,8 +77,8 @@ namespace PredatorPreyHunter
                 << static_cast<int>(cfg.lookup("agents:prey:preys:[0]:id")) << endl;
 
         // initialize hunter
-        position.x = static_cast<int>(fetchRandomNumber() * gridWidth);
-        position.y = static_cast<int>(fetchRandomNumber() * gridHeight);
+        position.x = static_cast<int>(fetchRandomDouble() * gridWidth);
+        position.y = static_cast<int>(fetchRandomDouble() * gridHeight);
         this->ptrHunter = new Hunter(ptrGridWorld, cfg.lookup("agents:hunter:hunters:[0]:id"),
                 position, cfg.lookup("agents:hunter:hunters:[0]:move_probability"));
         LOG(INFO) << "Hunter move probability is "

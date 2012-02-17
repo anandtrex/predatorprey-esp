@@ -19,7 +19,7 @@ namespace EspPredPreyHunter
     using std::pair;
     using std::numeric_limits;
     using PredatorPreyHunter::Domain;
-    using PredatorPreyHunter::fetchRandomNumber;
+    using PredatorPreyHunter::fetchRandomDouble;
 
     EspExperiment::EspExperiment(const char* configFilePath)
         :Experiment(configFilePath)
@@ -42,7 +42,7 @@ namespace EspPredPreyHunter
         uint numPredators = static_cast<uint>(cfg.lookup("agents:predator:number"));
         uint numPrey = static_cast<uint>(cfg.lookup("agents:prey:number"));
 
-        domain = Domain(maxSteps, gridWidth, gridHeight, numPredators, numPrey, numHunters,
+        domain = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey, numHunters,
                 static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability")),
                 static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability")));
         LOG(INFO) << "Initialized domain with " << numPredators << " predators," << numPrey
@@ -99,7 +99,7 @@ namespace EspPredPreyHunter
             color.push_back(static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:color:b")));
             colors.push_back(color);
 
-            domain.enableDisplay(colors[0], colors[1], colors[2]);
+            domain->enableDisplay(colors[0], colors[1], colors[2]);
         }
         //domain.disableDisplay();
     }
@@ -128,24 +128,26 @@ namespace EspPredPreyHunter
         // mutate
 
         NetworkContainer* networkContainer = new NetworkContainer();
-        double fitness = 0.0;
-        double genMaxFitness = -numeric_limits<double>::max(); // Minimum possible float value
+        double fitness;
+        double genMaxFitness = static_cast<double>(-1) * numeric_limits<double>::max(); // Minimum possible float value
         double genAverageFitness = 0.0;
-        double overallMaxFitness = -numeric_limits<double>::max(); // Minimum possible float value
+        double overallMaxFitness = static_cast<double>(-1) * numeric_limits<double>::max(); // Minimum possible float value
         for (uint generation = 0; generation < numGenerations; generation++) {
+            LOG(INFO) << "Generation max for generation " << generation << " is " << genMaxFitness;
             esp->evalReset();
             for (uint trial = 0; trial < numTrialsPerGen; trial++) {
                 networkContainer = esp->getNetwork();     // selects random neurons from subpopulation for each network
                 networkContainer->incrementTests();
                 fitness = 0.0;
-                domain.init(networkContainer);
+                domain->init(networkContainer);
                 for (uint evalTrial = 0; evalTrial < numEvalTrials; evalTrial++) {
-                    fitness += domain.run();
+                    fitness += domain->run();
                 }
                 fitness /= numEvalTrials;
                 genAverageFitness += fitness;
                 networkContainer->setFitness(fitness);
                 if(fitness > genMaxFitness){
+                    LOG(INFO) << "Fitness is " << fitness << " and gen max fitness is " << genMaxFitness;
                     genMaxFitness = fitness;
                     generationBestNetwork = networkContainer;
                 }
@@ -153,7 +155,7 @@ namespace EspPredPreyHunter
             hallOfFame.push_back(generationBestNetwork);
             networkContainer->average();
             networkContainer->qsortNeurons();
-            networkContainer->recombineHallOfFame(hallOfFame[fetchRandomNumber() * (hallOfFame.size() - 1)]);
+            networkContainer->recombineHallOfFame(hallOfFame[fetchRandomDouble() * (hallOfFame.size() - 1)]);
             networkContainer->mutate();
 
             if(genMaxFitness > overallMaxFitness){
@@ -161,9 +163,9 @@ namespace EspPredPreyHunter
                 overallBestNetwork = generationBestNetwork;
             }
             LOG(INFO) << "Generation: " << generation;
-            LOG(INFO) << "Generation max fitness was: " << genMaxFitness;
+            LOG(INFO) << "Generation max fitness was: " << static_cast<double>(genMaxFitness);
             genAverageFitness /= numTrialsPerGen;
-            LOG(INFO) << "Generation average fitness was: " << genAverageFitness;
+            LOG(INFO) << "Generation average fitness was: " << static_cast<double>(genAverageFitness);
         }
     }
 }

@@ -21,10 +21,10 @@ namespace PredatorPreyHunter
         // random predator
         Action predatorAction;
         double moveProbability = 0.5;
-        if (fetchRandomNumber() > moveProbability) {
+        if (fetchRandomDouble() > moveProbability) {
             predatorAction = NORTH;
         } else {
-            int choice = static_cast<int>(fetchRandomNumber() * 5);
+            int choice = static_cast<int>(fetchRandomDouble() * 5);
             switch (choice) {
                 case 0:
                     predatorAction = NORTH;

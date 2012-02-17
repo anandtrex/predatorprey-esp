@@ -16,6 +16,7 @@ namespace EspPredPreyHunter
     using std::sort;
     using std::binary_function;
     using std::vector;
+    using PredatorPreyHunter::fetchRandomLong;
 
     struct maximize_fit: public binary_function<Neuron*, Neuron*, bool>
     {
@@ -114,7 +115,7 @@ namespace EspPredPreyHunter
      */
     Neuron *SubPop::selectNeuron()
     {
-        return pop[lrand48() % numNeurons];
+        return pop[fetchRandomLong() % numNeurons];
     }
 
     /**
@@ -165,7 +166,7 @@ namespace EspPredPreyHunter
         // TODO Remember combiner network details
         for (int i = numBreed * 2; i < numNeurons; ++i)
             if (drand48() < MUT_RATE)
-                pop[i]->weight[lrand48() % geneSize] += rndCauchy(0.3);
+                pop[i]->weight[fetchRandomLong() % geneSize] += rndCauchy(0.3);
     }
 
     /**
@@ -176,7 +177,7 @@ namespace EspPredPreyHunter
         // TODO Remember combiner network details
         for (int i = 0; i < numNeurons; ++i)
             if (drand48() < MUT_RATE)
-                pop[i]->weight[lrand48() % geneSize] += rndCauchy(0.3);
+                pop[i]->weight[fetchRandomLong() % geneSize] += rndCauchy(0.3);
     }
 
     /**
@@ -186,7 +187,7 @@ namespace EspPredPreyHunter
      */
     int SubPop::findMate(int num)
     {
-        return (lrand48() % numBreed);
+        return (fetchRandomLong() % numBreed);
 //  if (num) {
 //    return (lrand48()%numBreed);
 //  }
@@ -208,7 +209,7 @@ namespace EspPredPreyHunter
         int cross1;
         //find crossover point
         // TODO Remember combiner network details
-        cross1 = lrand48() % geneSize;
+        cross1 = fetchRandomLong() % geneSize;
         child1 = parent2;
         child2 = parent1;
         swap_ranges(child1.begin(), child1.begin() + cross1, child2.begin());
@@ -236,7 +237,7 @@ namespace EspPredPreyHunter
     void SubPop::removeConnection(int locus)
     {
         if (locus < geneSize)
-            for (int i = 0; i < numNeurons; ++i) {
+            for (uint i = 0; i < numNeurons; ++i) {
                 pop[i]->weight.erase(pop[i]->weight.begin() + locus);
             }
 

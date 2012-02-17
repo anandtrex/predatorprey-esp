@@ -28,7 +28,6 @@ namespace PredatorPreyHunter
         vector<double> tempInput = vector<double>();
 
         // TODO Important!! This has to be a properly ordered list given as input later on.
-        VAICI itPreyClosest = vAgentInformation.end();
         for (VAICI itAgent = vAgentInformation.begin(); itAgent != vAgentInformation.end();
                 ++itAgent) {
             if (itAgent->agentType == PREY) {
@@ -80,7 +79,7 @@ namespace PredatorPreyHunter
         }
         else {
             VLOG(5) << "Multiple max indexes";
-            return maxIndexes[lrand48() % (maxIndexes.size() - 1)];
+            return maxIndexes[fetchRandomLong() % (maxIndexes.size() - 1)];
         }
     }
 }
