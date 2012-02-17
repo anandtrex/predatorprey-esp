@@ -105,15 +105,15 @@ namespace PredatorPreyHunter
         if ((aiPrey.position.x == aiPredator.position.x)
                 && (aiPrey.position.y == aiPredator.position.y)) {
             LOG(INFO) << "Prey caught by Predator";
-            this->preyCaughtIds.push_back(aiPrey.agentId);
-            this->numPreyCaught++;
+            preyCaughtIds.push_back(aiPrey.agentId);
+            numPreyCaught++;
         }
 
         if ((aiHunter.position.x == aiPredator.position.x)
                 && (aiHunter.position.y == aiPredator.position.y)) {
             LOG(INFO) << "Predator caught by Hunter";
-            this->predatorCaughtIds.push_back(aiPredator.agentId);
-            this->numPredCaught++;
+            predatorCaughtIds.push_back(aiPredator.agentId);
+            numPredCaught++;
         }
 
         // build vector<AgentInformation>
@@ -144,7 +144,6 @@ namespace PredatorPreyHunter
 
     double Domain::run()
     {
-        double fitness = 0.0;
         uint noSteps = 0;
         uint prevNumPreyCaught = 0;
         uint prevNumPredCaught = 0;
@@ -164,7 +163,7 @@ namespace PredatorPreyHunter
                 prevNumPreyCaught = numPreyCaught;
                 if (numPreyCaught == numPrey) {
                     LOG(INFO) << "All prey caught in " << noSteps << " steps!";
-                    return fitness;
+                    return calculateFitness(noSteps);
                 }
             } else if (numPredCaught > 0 && numPredCaught > prevNumPredCaught) {
                 LOG(INFO) << "PREDATOR CAUGHT!!!!" << endl;
@@ -174,7 +173,7 @@ namespace PredatorPreyHunter
                                 << " and the total number of prey is " << numPredators;
                 if (numPredCaught == numPredators) {
                     LOG(INFO) << "All predators caught in " << noSteps << " steps!";
-                    return fitness;
+                    return calculateFitness(noSteps);
                 }
             }
         } while (noSteps++ < maxSteps);
@@ -183,8 +182,37 @@ namespace PredatorPreyHunter
             LOG(INFO) << maxSteps << " passed without prey/predator being caught";
         }
 
-        return fitness;
+        return  calculateFitness(noSteps);
     }
+
+    double Domain::calculateFitness(const uint& stepCurrent ) {
+        double fitness = 0.0;
+        if ( numPreyCaught != 0 ) { // Yay
+          fitness = static_cast<double>(10) * ( maxSteps - stepCurrent ) * numPreyCaught;
+          return fitness;
+        }
+        else if ( numPredCaught != 0 ) { // :-(
+          VLOG(2) << "maxSteps - stepCurrent: " << maxSteps - stepCurrent << endl;
+          fitness = static_cast<double>(-1) * 10 * ( maxSteps - stepCurrent ) * numPredCaught;
+          LOG(INFO) << "FiTness: " << fitness << endl;
+          return fitness;
+        }
+        else {
+          // calculate distance from hunter and prey
+          Position positionPredator = ptrPredator->getPosition();
+          Position positionPrey = ptrPrey->getPosition();
+          Position positionHunter = ptrHunter->getPosition();
+          uint distancePrey, distanceHunter;
+          distancePrey = ptrGridWorld->distance( positionPrey, positionPredator );
+          distanceHunter = ptrGridWorld->distance( positionHunter, positionPredator );
+          // reward for being close to prey and far away from hunter
+          distancePrey = ptrGridWorld->getWidth() + ptrGridWorld->getHeight() - distancePrey;
+          // take into account the size of the grid for rewarding later
+          fitness = static_cast<double>(distancePrey) + distanceHunter; // if by any chance it reaches here although it won't
+          return fitness;
+        }
+      }
+
 
 /*
  double Experiment::run(string pathFile)

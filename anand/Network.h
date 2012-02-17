@@ -29,8 +29,6 @@ namespace EspPredPreyHunter
             MIN = 0
         };     // = 0; 0 means higher fitness better, 1 otherwise
 
-        uint geneSize;
-        uint numHiddenNeurons;
         uint subPopSize;
 
         bool evolvable;
@@ -48,6 +46,8 @@ namespace EspPredPreyHunter
         void create();     // creates a random subpopulation of neurons
     protected:
         vector<double> activation;
+        uint geneSize;
+        uint numHiddenNeurons;
 
     public:
         vector<Neuron*> neurons;

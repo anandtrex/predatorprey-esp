@@ -16,8 +16,7 @@ namespace EspPredPreyHunter
     using std::endl;
 
     Network::Network(const uint& numHiddenNeurons, const uint& geneSize, const uint& subPopSize) :
-            geneSize(geneSize), numHiddenNeurons(numHiddenNeurons), subPopSize(subPopSize), networkSubPop(
-                    subPopSize)
+            subPopSize(subPopSize), networkSubPop(subPopSize), geneSize(geneSize), numHiddenNeurons(numHiddenNeurons)
     {
         VLOG(4) << "Creating generic network";
         activation = vector<double>(numHiddenNeurons);

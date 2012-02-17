@@ -64,6 +64,7 @@ namespace PredatorPreyHunter
         void disableDisplay();
         double run(); // return fitness
         double run(std::string stepsFilePath); // return fitness
+        double calculateFitness(const uint& stepCurrent );
     };
 }
 
