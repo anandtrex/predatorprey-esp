@@ -52,12 +52,14 @@ DomainHunter.cpp
 Esp.cpp
 EspExperiment.cpp
 EspExperimentSubtask.cpp
+EspExperimentSubtaskInverted.cpp
 FeedForwardNetwork.cpp
 GridWorld.cpp
 Hunter.cpp
 main.cpp
 NetworkContainerEsp.cpp
 NetworkContainerSubtask.cpp
+NetworkContainerSubtaskInverted.cpp
 Network.cpp
 Neuron.cpp
 PredatorEsp.cpp

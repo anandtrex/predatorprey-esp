@@ -10,6 +10,7 @@
 #include "GridWorld.h"
 #include "EspExperiment.h"
 #include "EspExperimentSubtask.h"
+#include "EspExperimentSubtaskInverted.h"
 
 using namespace PredatorPreyHunter;
 using namespace EspPredPreyHunter;
@@ -36,8 +37,9 @@ int main(int argc, char **argv)
     char* configFilePath = "";
     bool espEx = false;
     bool subTaskEx = false;
+    bool subInvTaskEx = false;
 
-    while ((c = getopt(argc, argv, "c:es")) != -1) {
+    while ((c = getopt(argc, argv, "c:esi")) != -1) {
         switch(c){
             case 'c':
                 configFilePath = optarg;
@@ -47,6 +49,9 @@ int main(int argc, char **argv)
                 break;
             case 's':
                 subTaskEx = true;
+                break;
+            case 'i':
+                subInvTaskEx = true;
                 break;
             default:
                 abort();
@@ -59,6 +64,9 @@ int main(int argc, char **argv)
         experiment.start();
     } else if (subTaskEx) {
         EspExperimentSubtask experiment(configFilePath);
+        experiment.start();
+    } else if (subInvTaskEx) {
+        EspExperimentSubtaskInverted experiment(configFilePath);
         experiment.start();
     }
     return 0;

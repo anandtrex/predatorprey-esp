@@ -26,7 +26,6 @@ namespace EspPredPreyHunter
     EspExperiment::EspExperiment(const char* configFilePath)
             : Experiment(configFilePath)
     {
-        return;
         libconfig::Config cfg;
 
         LOG(INFO) << "Reading from config file " << configFilePath;
