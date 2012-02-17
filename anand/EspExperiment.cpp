@@ -130,6 +130,7 @@ namespace EspPredPreyHunter
         NetworkContainer* networkContainer = new NetworkContainer();
         double fitness = 0.0;
         double genMaxFitness = -numeric_limits<double>::max(); // Minimum possible float value
+        double genAverageFitness = 0.0;
         double overallMaxFitness = -numeric_limits<double>::max(); // Minimum possible float value
         for (int generation = 0; generation < numGenerations; generation++) {
             esp->evalReset();
@@ -142,6 +143,7 @@ namespace EspPredPreyHunter
                     fitness += domain.run();
                 }
                 fitness /= numEvalTrials;
+                genAverageFitness += fitness;
                 networkContainer->setFitness(fitness);
                 if(fitness > genMaxFitness){
                     genMaxFitness = fitness;
@@ -158,7 +160,10 @@ namespace EspPredPreyHunter
                 overallMaxFitness = genMaxFitness;
                 overallBestNetwork = generationBestNetwork;
             }
-            VLOG(3) << "Generation " << generation << " done.";
+            LOG(INFO) << "Generation: " << generation;
+            LOG(INFO) << "Generation max fitness was: " << genMaxFitness;
+            genAverageFitness /= numTrialsPerGen;
+            LOG(INFO) << "Generation average fitness was: " << genAverageFitness;
         }
     }
 }

@@ -20,6 +20,7 @@ namespace EspPredPreyHunter
     {
         for (int i = 0; i < geneSize; ++i)
             weight.push_back(0.0);     //fill weight vector with zeros
+        tests = 0;
     }
 
     /**

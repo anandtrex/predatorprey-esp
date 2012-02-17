@@ -57,13 +57,14 @@ namespace EspPredPreyHunter
      */
     SubPop::~SubPop()
     {
-
+        /*
         // Delete pointer elements of vector pop one by one (freeing up memory only - not deleting pointers vector)
         for (int i = 0; i < numNeurons; ++i)
             delete pop[i];
 
         //Clear after freeing up the memory in the previous step
         pop.clear();
+        */
     }
 
     /**
@@ -121,6 +122,7 @@ namespace EspPredPreyHunter
      */
     void SubPop::average()
     {
+        VLOG(5) << "Averaging neuron fitness in neuron";
         for (int i = 0; i < numNeurons; ++i) {
             if (pop[i]->tests)
                 pop[i]->fitness = pop[i]->fitness / pop[i]->tests;
@@ -135,6 +137,7 @@ namespace EspPredPreyHunter
      */
     void SubPop::qsortNeurons()
     {
+        VLOG(5) << "Sorting in subpop";
         if (MIN)
             sort(pop.begin(), pop.end(), minimize_fit());
         else
@@ -158,6 +161,7 @@ namespace EspPredPreyHunter
      */
     void SubPop::mutate()
     {
+        VLOG(5) << "Doing mutate in subpop";
         // TODO Remember combiner network details
         for (int i = numBreed * 2; i < numNeurons; ++i)
             if (drand48() < MUT_RATE)
@@ -244,6 +248,7 @@ namespace EspPredPreyHunter
      */
     void SubPop::recombineHallOfFame(Network* hallOfFameNetwork, const uint& neuronNumber)
     {
+        VLOG(5) << "Doing recombine hall of fame in subpop";
         int i = 0;
         for (; i < numBreed - 5; ++i) {
             crossover(pop[i]->weight, pop[findMate(i)]->weight,

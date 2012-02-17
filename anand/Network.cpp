@@ -16,7 +16,7 @@ namespace EspPredPreyHunter
     using std::endl;
 
     Network::Network(const uint& numHiddenNeurons, const uint& geneSize, const uint& subPopSize) :
-            subPopSize(subPopSize), networkSubPop(subPopSize), geneSize(geneSize), numHiddenNeurons(numHiddenNeurons)
+            subPopSize(subPopSize), networkSubPop(numHiddenNeurons), geneSize(geneSize), numHiddenNeurons(numHiddenNeurons)
     {
         VLOG(4) << "Creating generic network";
         activation = vector<double>(numHiddenNeurons);
@@ -154,6 +154,7 @@ namespace EspPredPreyHunter
 
     void Network::setFitness(const double& fitness)
     {
+        VLOG(5) << "Setting fitness for each hidden neuron";
         for (int i = 0; i < numHiddenNeurons; i++) {
             neurons[i]->fitness += fitness;
         }
@@ -168,6 +169,7 @@ namespace EspPredPreyHunter
 
     void Network::average()
     {
+        VLOG(5) << "Averaging neuron fitness";
         // TODO Check if this has to be done for all the subpop neurons
         for (int i = 0; i < networkSubPop.size(); i++) {
             networkSubPop[i]->average();
@@ -176,6 +178,7 @@ namespace EspPredPreyHunter
 
     void Network::qsortNeurons()
     {
+        VLOG(5) << "Sorting neurons";
         for (int i = 0; i < networkSubPop.size(); i++) {
             networkSubPop[i]->qsortNeurons();
         }
@@ -183,6 +186,7 @@ namespace EspPredPreyHunter
 
     void Network::mutate()
     {
+        VLOG(5) << "Doing mutate in network";
         for (int i = 0; i < networkSubPop.size(); i++) {
             networkSubPop[i]->mutate();
         }
@@ -190,6 +194,7 @@ namespace EspPredPreyHunter
 
     void Network::recombineHallOfFame(Network* network)
     {
+        VLOG(5) << "Doing recombine hall of fame in network";
         for (int i = 0; i < networkSubPop.size(); i++) {
             networkSubPop[i]->recombineHallOfFame(network, i);
         }

@@ -194,7 +194,7 @@ namespace PredatorPreyHunter
         else if ( numPredCaught != 0 ) { // :-(
           VLOG(2) << "maxSteps - stepCurrent: " << maxSteps - stepCurrent << endl;
           fitness = static_cast<double>(-1) * 10 * ( maxSteps - stepCurrent ) * numPredCaught;
-          LOG(INFO) << "FiTness: " << fitness << endl;
+          LOG(INFO) << "Fitness: " << fitness << endl;
           return fitness;
         }
         else {

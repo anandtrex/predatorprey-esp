@@ -26,6 +26,7 @@ namespace EspPredPreyHunter
 
     void NetworkContainer::setFitness(const double& fitness)
     {
+        VLOG(5) << "Setting fitness";
         for (int i = 0; i < networks.size(); i++) {
             networks[i]->setFitness(fitness);
         }
@@ -40,6 +41,7 @@ namespace EspPredPreyHunter
 
     void NetworkContainer::average()
     {
+        VLOG(5) << "Averaging.";
         for (int i = 0; i < networks.size(); i++) {
             networks[i]->average();
         }
@@ -47,6 +49,7 @@ namespace EspPredPreyHunter
 
     void NetworkContainer::qsortNeurons()
     {
+        VLOG(5) << "Sorting.";
         for (int i = 0; i < networks.size(); i++) {
             networks[i]->qsortNeurons();
         }
@@ -54,6 +57,7 @@ namespace EspPredPreyHunter
 
     void NetworkContainer::mutate()
     {
+        VLOG(5) << "Doing mutate";
         for (int i = 0; i < networks.size(); i++) {
             networks[i]->mutate();
         }
@@ -61,6 +65,7 @@ namespace EspPredPreyHunter
 
     void NetworkContainer::recombineHallOfFame(NetworkContainer* hallOfFameNetwork)
     {
+        VLOG(5) << "Doing recombine hall of fame";
         for (int i = 0; i < networks.size(); i++) {
             networks[i]->recombineHallOfFame(hallOfFameNetwork->getNetwork(i));
         }
