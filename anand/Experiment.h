@@ -24,9 +24,15 @@ namespace PredatorPreyHunter
         Experiment(const char* configFilePath)
         {
             fout.open("average_fitness.log");
+            if (!fout.is_open()) {
+                LOG(FATAL) << "File not opened";
+            } else {
+                LOG(INFO) << "Opened file";
+            }
         }
         ~Experiment()
         {
+            fout.close();
         }
         virtual void start() = 0;
     };
