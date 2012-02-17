@@ -15,14 +15,12 @@
 #include "common.h"
 #include "Network.h"
 #include "SubPop.h"
-#include "Experiment.h"
 #include "NetworkContainer.h"
 
 namespace EspPredPreyHunter
 {
     using std::vector;
     using std::ofstream;
-    using PredatorPreyHunter::Experiment;
 
     enum
     {
@@ -45,6 +43,8 @@ namespace EspPredPreyHunter
          * This is equal to ( numNetworks * numInputs + COMBINE * numInputs )
          */
         uint totalNumNetworks;
+
+        uint numNetworks;
 
         /**
          * Number of hidden neurons. Assumed to be the same for all the networks
@@ -75,8 +75,8 @@ namespace EspPredPreyHunter
          * ( num_predators * (num_teams_predators - 1) + num_prey * num_teams_prey + num_hunters * num_teams_hunters )
          * for a team of predators
          */
-        const uint numOtherAgents;
-        const uint numActions;
+        //const uint numOtherAgents;
+        //const uint numActions;
 
         // These two store redundant information (based on numOtherAgents and numActions)
         // This is for convenience, and clearer code
@@ -90,10 +90,7 @@ namespace EspPredPreyHunter
          */
         uint numOutputs;
 
-        enum
-        {
-            COMBINE = 1
-        };     // is 0 or 1 depending on whether a combiner network is used or not
+        uint combine;
 
         vector<Network*> networks;
 
@@ -157,8 +154,12 @@ namespace EspPredPreyHunter
          * @param numOtherAgents - Number of inputs for each network (not the combiner network, which is managed internally)
          * @param numActions - Number of outputs for each network (not the combiner network, which is managed internally)
          */
+        /*
         Esp(const uint& nHiddenNeurons, const uint& popSize, const uint& netTp,
-                const uint& numOtherAgents, const uint& numActions);
+                const uint& numOtherAgents, const uint& numActions);*/
+
+        Esp(const uint& nHiddenNeurons, const uint& popSize, const uint& netTp,
+                        const uint& numNetworks, const uint& numInputsPerNetwork, const uint& numOutputsPerNetwork);
 
         /**
          * Constructor

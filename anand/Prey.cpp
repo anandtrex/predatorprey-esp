@@ -18,6 +18,7 @@ namespace PredatorPreyHunter
 
     Position Prey::move(const std::vector<AgentInformation>& vAgentInformation)
     {
+        VLOG(5) << "Moving";
         typedef vector<AgentInformation>::const_iterator VAICI;
         // if the random number between 0 and 1 is greater than the moveProbability
         // then don't move
@@ -82,6 +83,7 @@ namespace PredatorPreyHunter
             preyAction = STAY;
         }
         position = ptrGridWorld->move(this->position, preyAction);
+        VLOG(5) << "Moved";
         return position;
     }
 }

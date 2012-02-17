@@ -15,38 +15,43 @@ namespace EspPredPreyHunter
     using std::vector;
 
     /**
-     * This is the network combiner for the multi-agent ESP case. This is always used, irrespective
-     * of the combination mechanism of the sub-tasks
+     * This is a general Network container interface that can be used both for multi-agent esp case
+     * and combining subtasks
      */
     class NetworkContainer
     {
-        vector<Network*> networks;
     public:
         /**
          * Assume the last network is the combiner network for multi-agent ESP (for a given agent)
          * @param networks
          */
-        NetworkContainer();
+        NetworkContainer()
+        {
+        }
 
-        ~NetworkContainer();
+        virtual ~NetworkContainer()
+        {
+        }
 
-        void setNetworks(const vector<Network*>& networks);
+        virtual void setNetwork(const NetworkContainer& networkContainer, const bool& append) = 0;
 
-        void setFitness(const double& fitness);
+        virtual void setFitness(const double& fitness) = 0;
 
-        void incrementTests();
+        virtual void incrementTests() = 0;
 
-        void average();
+        virtual void average() = 0;
 
         // For subpop
-        void qsortNeurons();
+        virtual void qsortNeurons() = 0;
 
         // For subpop
-        void mutate();
+        virtual void mutate() = 0;
 
-        void recombineHallOfFame(NetworkContainer* hallOfFameNetwork);
+        virtual void recombineHallOfFame(NetworkContainer* hallOfFameNetwork) = 0;
 
-        Network* getNetwork(uint i);
+        //virtual Network* getNetwork(uint i) = 0;
+
+        virtual vector<Network*> getNetworks() const = 0;
 
         /**
          * Returns the output from the given input and outputs
@@ -54,7 +59,7 @@ namespace EspPredPreyHunter
          * @param output
          * @return
          */
-        void activate(const vector<double>& input, vector<double>& output);
+        virtual void activate(const vector<double>& input, vector<double>& output) = 0;
     };
 }
 

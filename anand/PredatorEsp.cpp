@@ -24,6 +24,7 @@ namespace PredatorPreyHunter
 
     Position PredatorEsp::move(const std::vector<AgentInformation>& vAgentInformation)
     {
+        VLOG(5) << "Moving";
         typedef vector<AgentInformation>::const_iterator VAICI;
         vector<double> tempInput = vector<double>();
 
@@ -35,6 +36,7 @@ namespace PredatorPreyHunter
                 tempInput.push_back(ptrGridWorld->distanceY(this->position, itAgent->position));
             }
         }
+        VLOG(5) << "Done prey";
         for (VAICI itAgent = vAgentInformation.begin(); itAgent != vAgentInformation.end();
                 ++itAgent) {
             if (itAgent->agentType == HUNTER) {
@@ -42,6 +44,7 @@ namespace PredatorPreyHunter
                 tempInput.push_back(ptrGridWorld->distanceY(this->position, itAgent->position));
             }
         }
+        VLOG(5) << "Done hunter";
 
         vector<double> input = vector<double>(tempInput);
 
@@ -50,6 +53,7 @@ namespace PredatorPreyHunter
         Action predatorAction = (Action)getMaxIndex(output);
         VLOG(2) << "Action selected is " << predatorAction;
         position = ptrGridWorld->move(position, predatorAction);
+        VLOG(5) << "Moved";
         return position;
     }
 

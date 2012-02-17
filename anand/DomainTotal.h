@@ -24,7 +24,6 @@ namespace PredatorPreyHunter
     using std::vector;
     using EspPredPreyHunter::NetworkContainer;
 
-    // TODO Split this up for each subtask
     class DomainTotal : public Domain
     {
         uint numPredators;

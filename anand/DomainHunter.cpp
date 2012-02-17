@@ -32,6 +32,7 @@ namespace PredatorPreyHunter
             : Domain(maxSteps, width, height), numPredators(numPredators), numHunters(numHunters), hunterMoveProb(
                     hunterMoveProb)
     {
+        numOtherAgents = numHunters;
     }
 
     DomainHunter::~DomainHunter()
@@ -75,7 +76,7 @@ namespace PredatorPreyHunter
 
     void DomainHunter::step()
     {
-        AgentInformation aiPredator, aiPrey, aiHunter;
+        AgentInformation aiPredator, aiHunter;
         aiPredator = ptrPredator->getAgentInformation();
         aiHunter = ptrHunter->getAgentInformation();
 
@@ -94,7 +95,6 @@ namespace PredatorPreyHunter
         vector<AgentInformation> vAgentInformation;
         vAgentInformation.clear();
         vAgentInformation.push_back(aiPredator);
-        vAgentInformation.push_back(aiPrey);
         vAgentInformation.push_back(aiHunter);
 
         // move hunter

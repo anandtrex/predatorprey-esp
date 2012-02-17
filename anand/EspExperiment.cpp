@@ -8,6 +8,8 @@
 #include "EspExperiment.h"
 #include "GridWorld.h"
 #include "Domain.h"
+#include "NetworkContainer.h"
+#include "NetworkContainerEsp.h"
 
 #include <limits>
 
@@ -22,8 +24,9 @@ namespace EspPredPreyHunter
     using PredatorPreyHunter::fetchRandomDouble;
 
     EspExperiment::EspExperiment(const char* configFilePath)
-        :Experiment(configFilePath)
+            : Experiment(configFilePath)
     {
+        return;
         libconfig::Config cfg;
 
         LOG(INFO) << "Reading from config file " << configFilePath;
@@ -52,25 +55,18 @@ namespace EspPredPreyHunter
                 << " and prey move probability is "
                 << static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability"));
 
-        uint popSize = cfg.lookup("experiment:esp:population_size");
+        popSize = cfg.lookup("experiment:esp:population_size");
         // TODO Configurable number of actions
-        esp = new Esp(static_cast<uint>(cfg.lookup("experiment:esp:num_hidden_neurons")), popSize, 0,
-                numHunters + numPrey, 5);
-        LOG(INFO) << "Initialized esp with " << static_cast<uint>(cfg.lookup("experiment:esp:num_hidden_neurons"))
+        esp = new Esp(static_cast<uint>(cfg.lookup("experiment:esp:num_hidden_neurons")), popSize,
+                0, numHunters + numPrey, 2, 5);
+        LOG(INFO) << "Initialized esp with "
+                << static_cast<uint>(cfg.lookup("experiment:esp:num_hidden_neurons"))
                 << " as number of hidden neurons, " << "population size " << popSize
                 << ", number of other agents as " << numHunters + numPrey << "and "
                 << "number of actions as " << 5;
 
         numGenerations = cfg.lookup("experiment:esp:num_generations");
         LOG(INFO) << "Number of generations is " << numGenerations;
-        // NOTE
-        numTrialsPerGen = popSize * 10;
-        LOG(INFO) << "Number of trials per generation is " << numTrialsPerGen;
-
-        numEvalTrials = 5;
-        LOG(INFO) << "Number of trials for evaluation is " << numEvalTrials;
-
-        hallOfFame = vector<NetworkContainer*>();
 
         // Display related stuff
         bool displayEnabled = cfg.lookup("experiment:display");
@@ -109,6 +105,11 @@ namespace EspPredPreyHunter
      */
     void EspExperiment::start()
     {
+        evolve(domain, new NetworkContainerEsp(), esp, false);
+    }
+
+    NetworkContainer* EspExperiment::evolve(Domain* domain, NetworkContainer* networkContainer, Esp* esp, bool append)
+    {
         // Evaluate a random population
         // Reset evaluation
         // Perform evaluation
@@ -127,16 +128,28 @@ namespace EspPredPreyHunter
         // call recombine_hall_of_fame
         // mutate
 
-        NetworkContainer* networkContainer = new NetworkContainer();
+        vector<NetworkContainer*> hallOfFame = vector<NetworkContainer*>();
+        NetworkContainer* overallBestNetwork;
+        NetworkContainer* generationBestNetwork;
+
+        uint numEvalTrials = 5;
+        LOG(INFO) << "Number of trials for evaluation is " << numEvalTrials;
+
+        // NOTE
+        uint numTrialsPerGen = popSize * 10;
+        LOG(INFO) << "Number of trials per generation is " << numTrialsPerGen;
+
         double fitness;
-        double genMaxFitness = static_cast<double>(-1) * numeric_limits<double>::max(); // Minimum possible float value
+        double genMaxFitness = static_cast<double>(-1) * numeric_limits<double>::max();     // Minimum possible float value
         double genAverageFitness = 0.0;
-        double overallMaxFitness = static_cast<double>(-1) * numeric_limits<double>::max(); // Minimum possible float value
+        double overallMaxFitness = static_cast<double>(-1) * numeric_limits<double>::max();     // Minimum possible float value
         for (uint generation = 0; generation < numGenerations; generation++) {
-            LOG(INFO) << "Generation max for generation " << generation << " is " << genMaxFitness;
+            LOG(INFO) << "Generation max for generation " << generation << " is "
+                    << genMaxFitness;
             esp->evalReset();
             for (uint trial = 0; trial < numTrialsPerGen; trial++) {
-                networkContainer = esp->getNetwork();     // selects random neurons from subpopulation for each network
+                //networkContainer = esp->getNetwork();     // selects random neurons from subpopulation for each network
+                networkContainer->setNetwork(*(esp->getNetwork()), append);
                 networkContainer->incrementTests();
                 fitness = 0.0;
                 domain->init(networkContainer);
@@ -146,8 +159,9 @@ namespace EspPredPreyHunter
                 fitness /= numEvalTrials;
                 genAverageFitness += fitness;
                 networkContainer->setFitness(fitness);
-                if(fitness > genMaxFitness){
-                    LOG(INFO) << "Fitness is " << fitness << " and gen max fitness is " << genMaxFitness;
+                if (fitness > genMaxFitness) {
+                    LOG(INFO) << "Fitness is " << fitness << " and gen max fitness is "
+                            << genMaxFitness;
                     genMaxFitness = fitness;
                     generationBestNetwork = networkContainer;
                 }
@@ -155,17 +169,21 @@ namespace EspPredPreyHunter
             hallOfFame.push_back(generationBestNetwork);
             networkContainer->average();
             networkContainer->qsortNeurons();
-            networkContainer->recombineHallOfFame(hallOfFame[fetchRandomDouble() * (hallOfFame.size() - 1)]);
+            networkContainer->recombineHallOfFame(
+                    hallOfFame[fetchRandomDouble() * (hallOfFame.size() - 1)]);
             networkContainer->mutate();
 
-            if(genMaxFitness > overallMaxFitness){
+            if (genMaxFitness > overallMaxFitness) {
                 overallMaxFitness = genMaxFitness;
                 overallBestNetwork = generationBestNetwork;
             }
             LOG(INFO) << "Generation: " << generation;
             LOG(INFO) << "Generation max fitness was: " << static_cast<double>(genMaxFitness);
             genAverageFitness /= numTrialsPerGen;
-            LOG(INFO) << "Generation average fitness was: " << static_cast<double>(genAverageFitness);
+            LOG(INFO) << "Generation average fitness was: "
+                    << static_cast<double>(genAverageFitness);
         }
+
+        return hallOfFame[hallOfFame.size() - 1];
     }
 }

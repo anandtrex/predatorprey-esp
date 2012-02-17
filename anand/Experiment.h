@@ -9,6 +9,8 @@
 #define EXPERIMENT_H_
 
 #include "common.h"
+#include "Esp.h"
+#include "NetworkContainer.h"
 
 namespace PredatorPreyHunter
 {
@@ -18,7 +20,7 @@ namespace PredatorPreyHunter
         Experiment(const char* configFilePath)
         {
         }
-        virtual ~Experiment()
+        ~Experiment()
         {
         }
         virtual void start() = 0;

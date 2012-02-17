@@ -14,7 +14,7 @@ if(DOXYGEN_FOUND)
  )
 endif(DOXYGEN_FOUND)
 
-set(CMAKE_CXX_COMPILER "clang")
+set(CMAKE_CXX_COMPILER "clang++")
 
 set(CMAKE_CXX_FLAGS "-g -O3 -Wall")
 set(CORELIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${X11_LIBRARY} m)
@@ -46,19 +46,23 @@ include_directories(${CMAKE_BINARY_DIR}/libconfig/include)
 #file(GLOB SRCS "*.cpp")
 set(SRCS Agent.cpp 
 common.cpp
-Domain.cpp
+DomainTotal.cpp
+DomainPrey.cpp
+DomainHunter.cpp
 Esp.cpp
 EspExperiment.cpp
+EspExperimentSubtask.cpp
 FeedForwardNetwork.cpp
 GridWorld.cpp
 Hunter.cpp
 main.cpp
-NetworkContainer.cpp
+NetworkContainerEsp.cpp
+NetworkContainerSubtask.cpp
 Network.cpp
 Neuron.cpp
 PredatorEsp.cpp
-PredatorNaive.cpp
-PredatorRandom.cpp
+#PredatorNaive.cpp
+#PredatorRandom.cpp
 Prey.cpp
 SubPop.cpp
 Visualizer.cpp)

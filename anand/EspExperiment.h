@@ -16,26 +16,22 @@ namespace EspPredPreyHunter
 {
     using PredatorPreyHunter::Experiment;
     using PredatorPreyHunter::DomainTotal;
+    using PredatorPreyHunter::Domain;
 
-    class EspExperiment: Experiment
+    class EspExperiment: public Experiment
     {
-        uint numGenerations;
-        Esp* esp;
         DomainTotal* domain;
-
-        uint numTrialsPerGen;
-        uint numEvalTrials;
-
-        NetworkContainer* generationBestNetwork;
-        NetworkContainer* overallBestNetwork;
-
-        vector<NetworkContainer*> hallOfFame;
+        Esp* esp;
+    protected:
+        uint numGenerations;
+        uint popSize;
     public:
         EspExperiment(const char* configFilePath);
-        ~EspExperiment()
+        virtual ~EspExperiment()
         {
         }
-        void start();
+        virtual void start();
+        NetworkContainer* evolve(Domain* domain, NetworkContainer* networkContainer, Esp* esp, bool append);
     };
 }
 

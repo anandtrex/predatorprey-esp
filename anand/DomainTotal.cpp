@@ -33,6 +33,7 @@ namespace PredatorPreyHunter
             : Domain(maxSteps, width, height), numPredators(numPredators), numPrey(numPrey), numHunters(
                     numHunters), preyMoveProb(preyMoveProb), hunterMoveProb(hunterMoveProb)
     {
+        numOtherAgents = numPrey + numHunters;
     }
 
     DomainTotal::~DomainTotal()

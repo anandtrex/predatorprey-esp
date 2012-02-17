@@ -32,6 +32,7 @@ namespace PredatorPreyHunter
             : Domain(maxSteps, width, height), numPredators(numPredators), numPrey(numPrey), preyMoveProb(
                     preyMoveProb)
     {
+        numOtherAgents = numPrey;
     }
 
     DomainPrey::~DomainPrey()
@@ -79,7 +80,7 @@ namespace PredatorPreyHunter
 
     void DomainPrey::step()
     {
-        AgentInformation aiPredator, aiPrey, aiHunter;
+        AgentInformation aiPredator, aiPrey;
         aiPredator = ptrPredator->getAgentInformation();
         aiPrey = ptrPrey->getAgentInformation();
 
@@ -98,7 +99,6 @@ namespace PredatorPreyHunter
         vAgentInformation.clear();
         vAgentInformation.push_back(aiPredator);
         vAgentInformation.push_back(aiPrey);
-        vAgentInformation.push_back(aiHunter);
 
         // move prey
         ptrPrey->move(vAgentInformation);
@@ -129,7 +129,7 @@ namespace PredatorPreyHunter
             (void) step();
             if (numPreyCaught > 0 && numPreyCaught > prevNumPreyCaught) {
                 LOG(INFO) << "PREY CAUGHT!!!!" << endl;
-                VLOG(5)
+                LOG(INFO)
                         << "Number of prey caught is " << numPreyCaught
                                 << " and the total number of prey is " << numPrey;
                 prevNumPreyCaught = numPreyCaught;
