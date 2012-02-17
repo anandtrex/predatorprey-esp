@@ -11,7 +11,9 @@ namespace PredatorPreyHunter {
     NEAT::Network* ptrNetworkPrey; // network trained only with prey
     NEAT::Network* ptrNetworkHunter; // network trained only with hunter
   protected:
-    int compute( NEAT::Network* ptrNetwork, const std::vector<AgentInformation>& vAgentInformation );
+    int computeHigher( NEAT::Network* ptrNetwork, const std::vector<AgentInformation>& vAgentInformation );
+    int computePrey( NEAT::Network* ptrNetwork, const std::vector<AgentInformation>& vAgentInformation );
+    int computeHunter( NEAT::Network* ptrNetwork, const std::vector<AgentInformation>& vAgentInformation );
   public:
     PredatorSingleOutput( 
         const GridWorld* ptrGridWorld,

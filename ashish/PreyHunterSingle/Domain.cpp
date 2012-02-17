@@ -9,7 +9,7 @@ namespace PredatorPreyHunter {
   using std::vector;
   using std::string;
   using std::ofstream;
-  Domain::Domain( const int& maxSteps, const int& width, const int& height, NEAT::Network* ptrNetwork ) {
+  Domain::Domain( const int& maxSteps, const int& width, const int& height, NEAT::Network* ptrNetworkHigher, NEAT::Network* ptrNetworkPrey, NEAT::Network* ptrNetworkHunter ) {
     this->maxSteps = maxSteps;
     ptrGridWorld = new GridWorld( width, height ); 
     cout << "[CREATED] GridWorld of size " << width << ", " << height << endl;
@@ -17,7 +17,7 @@ namespace PredatorPreyHunter {
     Position position;
     position.x = static_cast<int> ( fetchRandomNumber() * width );
     position.y = static_cast<int> ( fetchRandomNumber() * height );
-    ptrPredatorSingleOutput = new PredatorSingleOutput( ptrGridWorld, 1, position, ptrNetwork, NULL, NULL );
+    ptrPredatorSingleOutput = new PredatorSingleOutput( ptrGridWorld, 1, position, ptrNetworkHigher, ptrNetworkPrey, ptrNetworkHunter );
     cout << "[CREATED] Predator at " << position.x << ", " << position.y << endl;
     // initialize prey
     position.x = static_cast<int> ( fetchRandomNumber() * width );

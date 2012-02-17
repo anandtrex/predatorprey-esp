@@ -25,7 +25,14 @@ void writeChampionPopulation( Population* pop ) {
 }
 
 //Perform evolution on predator prey hunter, for gens generations
-Population *predatorpreyhunter_test(int gens, string pathFileGenome, string namePlot, const int mapWidth, const int mapHeight ) {
+Population *predatorpreyhunter_test(
+    int gens,
+    string pathFileGenomeHigher,
+    string pathFileGenomePrey,
+    string pathFileGenomeHunter,
+    string namePlot,
+    const int mapWidth,
+    const int mapHeight ) {
     Population *pop=0;
     Genome *start_genome;
     char curword[20];
@@ -42,7 +49,7 @@ Population *predatorpreyhunter_test(int gens, string pathFileGenome, string name
     cout<<"START SINGLE PREDATOR PREY HUNTER EVOLUTION"<<endl;
     cout<<"Reading in the start genome"<<endl;
     //string pathFileGenomeStart = "singlepreyhunter_startgenes";
-    string pathFileGenomeStart = pathFileGenome; 
+    string pathFileGenomeStart = pathFileGenomeHigher; 
     ifstream iFile( pathFileGenomeStart.c_str(), ios::in );
     if ( !iFile.is_open() ) {
       cerr << "I could not open " << pathFileGenomeStart << " for reading the starter genome" << endl;
@@ -54,6 +61,40 @@ Population *predatorpreyhunter_test(int gens, string pathFileGenome, string name
     cout<<"Reading in Genome id "<<id<<endl;
     start_genome=new Genome(id,iFile);
     iFile.close();
+
+    //Load Predator Network just trained on prey 
+    Genome* genomePrey;
+    iFile.open( pathFileGenomePrey.c_str() );
+    if ( !iFile.is_open() ) {
+      cerr << "I could not open " << pathFileGenomePrey << " for reading the predator genome trained with prey" << endl;
+      throw 1; // throw something meaningful later
+    }
+    // Read in the beginning
+    char curwordPrey[20];
+    int idPrey;
+    iFile>>curwordPrey;
+    iFile>>idPrey;
+    cout<<"Reading in Genome Predator trained on Prey with id " << idPrey << endl;
+    genomePrey = new Genome(idPrey,iFile);
+    iFile.close();
+    Organism* ptrOrganismPrey = new Organism( 0.0, genomePrey, 1 ); 
+
+    //Load Predator Network just trained with hunter
+    Genome* genomeHunter;
+    iFile.open( pathFileGenomeHunter.c_str() );
+    if ( !iFile.is_open() ) {
+      cerr << "I could not open " << pathFileGenomeHunter << " for reading the predator genome trained with hunter" << endl;
+      throw 1; // throw something meaningful later
+    }
+    // Read in the beginning
+    char curwordHunter[20];
+    int idHunter;
+    iFile>>curwordHunter;
+    iFile>>idHunter;
+    cout<<"Reading in Genome Predator trained on Hunter with id " << idHunter << endl;
+    genomeHunter = new Genome(idHunter,iFile);
+    iFile.close();
+    Organism* ptrOrganismHunter = new Organism( 0.0, genomeHunter, 1 );
   
     //Run multiple experiments
     cout << "TOTAL EXPERIMENTS: " << NEAT::num_runs << endl;
@@ -74,7 +115,7 @@ Population *predatorpreyhunter_test(int gens, string pathFileGenome, string name
         //cout<<"name of fname: "<<fnamebuf->str()<<endl;
         char temp[50];
         sprintf (temp, "PositionsGenerationChamp%d", gen);
-        championFitness=predatorpreyhunter_epoch(pop,gen,temp,mapWidth,mapHeight);
+        championFitness=predatorpreyhunter_epoch(pop,gen,temp,mapWidth,mapHeight, ptrOrganismPrey->net, ptrOrganismHunter->net);
         vGenerationChamptionFitness.push_back( championFitness );
         //fnamebuf->clear();
         //delete fnamebuf;
@@ -95,10 +136,12 @@ Population *predatorpreyhunter_test(int gens, string pathFileGenome, string name
       fout.close();
       if ( expcount < NEAT::num_runs - 1 ) delete pop; // delete all but the last population
     } // end of for loop experiments
+    delete ptrOrganismPrey;
+    delete ptrOrganismHunter;
     return pop;
 }
 
-double predatorpreyhunter_epoch(Population *pop,int generation,char *filename, const int mapWidth, const int mapHeight) {
+double predatorpreyhunter_epoch( Population* pop, int generation, char* filename, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter ) {
   vector<Organism*>::iterator curorg;
   vector<Species*>::iterator curspecies;
   //char cfilename[100];
@@ -113,12 +156,12 @@ double predatorpreyhunter_epoch(Population *pop,int generation,char *filename, c
   //store the iterator of the organism with the greatest fitness
   curorg=(pop->organisms).begin();
   double fitnessAveragePopulation = 0.0;
-  double fitnessGreatest = predatorpreyhunter_evaluate(*curorg, mapWidth, mapHeight); // get the fitness of the first organism
+  double fitnessGreatest = predatorpreyhunter_evaluate(*curorg, mapWidth, mapHeight, ptrNetworkPrey, ptrNetworkHunter); // get the fitness of the first organism
   fitnessAveragePopulation = fitnessGreatest;
   vector<Organism*>::iterator itPtrOrgChamp = curorg;
   ++curorg; // move to the next organism
   for( ;curorg!=(pop->organisms).end(); ++curorg) {
-    double fitnessOrganism = predatorpreyhunter_evaluate(*curorg, mapWidth, mapHeight);
+    double fitnessOrganism = predatorpreyhunter_evaluate(*curorg, mapWidth, mapHeight, ptrNetworkPrey, ptrNetworkHunter);
     fitnessAveragePopulation = fitnessAveragePopulation + fitnessOrganism;
     cout << "FITNESS: " << fitnessOrganism << endl;
     if ( fitnessGreatest < fitnessOrganism ) { // if fitness of current organism greater than the best make it the champ
@@ -134,7 +177,7 @@ double predatorpreyhunter_epoch(Population *pop,int generation,char *filename, c
     throw 1; // throw something meaningful later
   }
   string pathFile = string( filename ) + ".txt";
-  double fitnessOrganism = predatorpreyhunter_evaluate_storeperformance( *itPtrOrgChamp, pathFile, mapWidth, mapHeight ); 
+  double fitnessOrganism = predatorpreyhunter_evaluate_storeperformance( *itPtrOrgChamp, pathFile, mapWidth, mapHeight, ptrNetworkPrey, ptrNetworkHunter ); 
   ostringstream sout;
   sout << "NetworkGenerationChamp" << generation << ".txt"; 
   ofstream foutGenome( sout.str().c_str() );
@@ -179,7 +222,7 @@ double predatorpreyhunter_epoch(Population *pop,int generation,char *filename, c
   return fitnessGreatest; // fitnessAveragePopulation; 
 }
 
-double predatorpreyhunter_evaluate(Organism *org, const int mapWidth, const int mapHeight) {
+double predatorpreyhunter_evaluate( Organism* org, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter ) {
   Network *net;
 
   int numnodes;  /* Used to figure out how many nodes
@@ -200,7 +243,7 @@ double predatorpreyhunter_evaluate(Organism *org, const int mapWidth, const int 
   int MAP_HEIGHT = mapHeight; // whole code needs to be reorganized
   int noTrials = 5;
   for ( int i = 0; i < noTrials; i++ ) {
-    PredatorPreyHunter::Domain domain( MAX_STEPS, MAP_WIDTH, MAP_HEIGHT, net );   
+    PredatorPreyHunter::Domain domain( MAX_STEPS, MAP_WIDTH, MAP_HEIGHT, net, ptrNetworkPrey, ptrNetworkHunter );   
     sumFitness += domain.run(); 
   }
   org->fitness = sumFitness / noTrials;
@@ -210,7 +253,7 @@ double predatorpreyhunter_evaluate(Organism *org, const int mapWidth, const int 
   return org->fitness;
 }
 
-double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathFile, const int mapWidth, const int mapHeight ) {
+double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathFile, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter ) {
   Network *net;
 
   int numnodes;  /* Used to figure out how many nodes
@@ -229,7 +272,7 @@ double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathF
   double fitnessOrganism = 0.0;
   int MAP_WIDTH = mapWidth; // whole code needs to change
   int MAP_HEIGHT = mapHeight; // whole code needs to change
-  PredatorPreyHunter::Domain domain( MAX_STEPS, MAP_WIDTH, MAP_HEIGHT, net );   
+  PredatorPreyHunter::Domain domain( MAX_STEPS, MAP_WIDTH, MAP_HEIGHT, net, ptrNetworkPrey, ptrNetworkHunter );   
   fitnessOrganism = domain.run( pathFile ); 
   org->fitness = fitnessOrganism; 
 

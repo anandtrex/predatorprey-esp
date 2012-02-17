@@ -27,7 +27,7 @@ namespace PredatorPreyHunter {
     Caught step();
     double calculateFitness( const Caught& caught, const uint& stepCurrent );
   public:
-    Domain( const int& maxSteps, const int& width, const int& height, NEAT::Network* ptrNetwork );
+    Domain( const int& maxSteps, const int& width, const int& height, NEAT::Network* ptrNetworkHigher, NEAT::Network* ptrNetworkPrey, NEAT::Network* ptrNetworkHunter );
     ~Domain();
     double run(); // return fitness
     double run( std::string pathFile ); // return fitness
