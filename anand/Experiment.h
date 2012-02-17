@@ -11,14 +11,19 @@
 #include "common.h"
 #include "Esp.h"
 #include "NetworkContainer.h"
+#include <fstream>
 
 namespace PredatorPreyHunter
 {
+    using std::ofstream;
+
     class Experiment
     {
     protected:
+        ofstream fout;
         Experiment(const char* configFilePath)
         {
+            fout.open("average_fitness.log");
         }
         ~Experiment()
         {

@@ -181,6 +181,7 @@ namespace EspPredPreyHunter
             genAverageFitness /= numTrialsPerGen;
             LOG(INFO) << "Generation average fitness was: "
                     << static_cast<double>(genAverageFitness);
+            fout << generation << " " << genAverageFitness << "\n";
         }
 
         return hallOfFame[hallOfFame.size() - 1];
