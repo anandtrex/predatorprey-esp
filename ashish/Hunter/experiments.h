@@ -37,7 +37,7 @@ using namespace std;
 using namespace NEAT;
 
 // PredatorPreyHunter routines ***************************************
-Population* predatorpreyhunter_test( int gens );
+Population* predatorpreyhunter_test( int gens, string namePlot );
 double predatorpreyhunter_epoch( Population* pop, int generation, char* filename );
 double predatorpreyhunter_evaluate( Organism* org );
 double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathFile );
