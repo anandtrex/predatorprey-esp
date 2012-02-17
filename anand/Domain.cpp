@@ -24,6 +24,7 @@ namespace PredatorPreyHunter
 
     Domain::Domain()
     {
+        displayEnabled = false;
     }
 
     Domain::Domain(const uint& maxSteps, const uint& width, const uint& height,
@@ -34,6 +35,7 @@ namespace PredatorPreyHunter
     {
         this->ptrGridWorld = new GridWorld(width, height);
         LOG(INFO) << "[CREATED] GridWorld of size " << width << ", " << height << endl;
+        displayEnabled = false;
     }
 
     Domain::~Domain()
@@ -137,7 +139,7 @@ namespace PredatorPreyHunter
             if (vAgentInformationPrevious.size() == 0) {
                 vAgentInformationPrevious = vAgentInformation;
             }
-            this->visualizer.show(vAgentInformationPrevious, vAgentInformation);
+            visualizer.show(vAgentInformationPrevious, vAgentInformation);
             vAgentInformationPrevious = vAgentInformation;
         }
     }

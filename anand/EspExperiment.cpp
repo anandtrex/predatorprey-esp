@@ -132,14 +132,14 @@ namespace EspPredPreyHunter
         double genMaxFitness = -numeric_limits<double>::max(); // Minimum possible float value
         double genAverageFitness = 0.0;
         double overallMaxFitness = -numeric_limits<double>::max(); // Minimum possible float value
-        for (int generation = 0; generation < numGenerations; generation++) {
+        for (uint generation = 0; generation < numGenerations; generation++) {
             esp->evalReset();
-            for (int trial = 0; trial < numTrialsPerGen; trial++) {
+            for (uint trial = 0; trial < numTrialsPerGen; trial++) {
                 networkContainer = esp->getNetwork();     // selects random neurons from subpopulation for each network
                 networkContainer->incrementTests();
                 fitness = 0.0;
                 domain.init(networkContainer);
-                for (int evalTrial = 0; evalTrial < numEvalTrials; evalTrial++) {
+                for (uint evalTrial = 0; evalTrial < numEvalTrials; evalTrial++) {
                     fitness += domain.run();
                 }
                 fitness /= numEvalTrials;

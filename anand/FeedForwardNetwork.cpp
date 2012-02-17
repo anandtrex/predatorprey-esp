@@ -13,7 +13,7 @@ namespace EspPredPreyHunter
     // NOTE Does the calculation of the output of the network here
     void FeedForwardNetwork::activate(const vector<double> &input, vector<double> &output)
     {
-        register int i, j, neuron_input_connections, output_weight_index;
+        register uint i, j, neuron_input_connections, output_weight_index;
         neuron_input_connections = input.size() - 1;
         //neuron_input_connections = 2;  //Number of inputs to each sensory neural network
         // evaluate hidden/output layer

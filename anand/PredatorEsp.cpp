@@ -50,7 +50,7 @@ namespace PredatorPreyHunter
         networkContainer->activate(input, output);
         Action predatorAction = (Action)getMaxIndex(output);
         VLOG(2) << "Action selected is " << predatorAction;
-        position = ptrGridWorld->move(this->position, predatorAction);
+        position = ptrGridWorld->move(position, predatorAction);
         return position;
     }
 

@@ -123,7 +123,7 @@ namespace EspPredPreyHunter
 
     NetworkContainer* Esp::getNetwork()
     {
-        for (int i = 0; i < totalNumNetworks; i++) {
+        for (uint i = 0; i < totalNumNetworks; i++) {
             // Selects random neurons from subpopulation and returns it
             networks[i]->setNeurons();
         }
