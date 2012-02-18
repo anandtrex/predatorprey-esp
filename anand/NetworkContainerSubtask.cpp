@@ -10,102 +10,108 @@
 namespace EspPredPreyHunter
 {
     NetworkContainerSubtask::NetworkContainerSubtask()
+        :networkContainers(0)
     {
-
     }
 
     NetworkContainerSubtask::NetworkContainerSubtask(
             const vector<NetworkContainer*> networkContainers)
             : networkContainers(networkContainers)
     {
+        VLOG(5) << "Initialized networkContainers with " << this->networkContainers.size() << "containers";
         // NOTE: The networks to be evolved are set through setNetwork
     }
 
     NetworkContainerSubtask::~NetworkContainerSubtask()
     {
-
     }
-
-    void NetworkContainerSubtask::setNetwork(const NetworkContainer& networkContainer,
-            const bool& append)
-    {
-        // NOTE: This will be just one network!
-        networks = networkContainer.getNetworks();
-    }
-    /*
-     void NetworkContainer::setNetworks(const vector<Network*>& networks, const uint& combine)
-     {
-     this->networks = networks;
-     this->combine = combine;
-     }*/
 
     void NetworkContainerSubtask::setFitness(const double& fitness)
     {
         VLOG(5) << "Setting fitness";
-        for (int i = 0; i < networks.size(); i++) {
-            networks[i]->setFitness(fitness);
-        }
+        combinerNetwork->setFitness(fitness);
     }
 
     void NetworkContainerSubtask::incrementTests()
     {
-        for (int i = 0; i < networks.size(); i++) {
-            networks[i]->incrementTests();
-        }
+        combinerNetwork->incrementTests();
     }
 
     void NetworkContainerSubtask::average()
     {
         VLOG(5) << "Averaging.";
-        for (int i = 0; i < networks.size(); i++) {
-            networks[i]->average();
-        }
+        combinerNetwork->average();
     }
 
     void NetworkContainerSubtask::qsortNeurons()
     {
         VLOG(5) << "Sorting.";
-        for (int i = 0; i < networks.size(); i++) {
-            networks[i]->qsortNeurons();
-        }
+        combinerNetwork->qsortNeurons();
     }
 
     void NetworkContainerSubtask::mutate()
     {
         VLOG(5) << "Doing mutate";
-        for (int i = 0; i < networks.size(); i++) {
-            networks[i]->mutate();
-        }
+        combinerNetwork->mutate();
     }
 
     void NetworkContainerSubtask::recombineHallOfFame(NetworkContainer* hallOfFameNetwork)
     {
         VLOG(5) << "Doing recombine hall of fame";
         vector<Network*> hallOfFameNetworks = hallOfFameNetwork->getNetworks();
-        for (int i = 0; i < networks.size(); i++) {
-            networks[i]->recombineHallOfFame(hallOfFameNetworks[i]);
+        if (hallOfFameNetworks.size() != 1) {
+            LOG(FATAL) << "There can't be more than one hall of fame network!";
         }
+        combinerNetwork->recombineHallOfFame(hallOfFameNetworks[0]);
     }
 
     vector<Network*> NetworkContainerSubtask::getNetworks() const
     {
-        return networks;
+        vector<Network*> tempNetworks = vector<Network*>();
+        tempNetworks.push_back(combinerNetwork);
+        return tempNetworks;
+    }
+
+    vector<NetworkContainer*> NetworkContainerSubtask::getNetworkContainers() const
+    {
+        return networkContainers;
+    }
+
+    void NetworkContainerSubtask::setNetwork(const NetworkContainer& networkContainer)
+    {
+        // NOTE: This will be just one network!
+        vector<Network*> networks = networkContainer.getNetworks();
+        if (networks.size() != 1) {
+            LOG(FATAL) << "There can't be more than one hall of fame network!";
+        }
+        combinerNetwork = networks[0];
     }
 
     void NetworkContainerSubtask::activate(const vector<double>& input, vector<double>& output)
     {
+        if(networkContainers.size() == 0)
+            LOG(FATAL) << "Trying to activate empty container!";
+
         vector<double> tempSingleOutputs;
-        for (int i = 0; i < networkContainers.size(); i++) {
+        int k = input.size() / networkContainers.size();
+        for (uint i = 0; i < networkContainers.size(); i++) {
             // FIXME Assuming that the number of outputs is 5
             vector<double> tempOutput = vector<double>(5);
             // FIXME assuming number of inputs is 2
-            const double tempInput[] = { input[2 * i], input[2 * i + 1] };
-            networkContainers[i]->activate(makeVector(tempInput), tempOutput);
+            vector<double> tempInput = vector<double>();
+            for (int j = 0; j < k; j++) {
+                tempInput.push_back(input[k * i + j]);
+            }
+            VLOG(5) << "Network container size is " << networkContainers.size();
+            VLOG(5) << "Network container network size is " << networkContainers[i]->getNetworks().size();
+            VLOG(5) << "Temp input size is " << tempInput.size();
+            VLOG(5) << "Temp output size is " << tempOutput.size();
+            networkContainers[i]->activate(tempInput, tempOutput);
             tempSingleOutputs.insert(tempSingleOutputs.end(), tempOutput.begin(), tempOutput.end());
         }
 
         // Finally there is always one network
-        networks[networks.size() - 1]->activate(tempSingleOutputs, output);
+        combinerNetwork->activate(tempSingleOutputs, output);
     }
 }
 

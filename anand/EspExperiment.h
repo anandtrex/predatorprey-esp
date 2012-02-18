@@ -22,11 +22,16 @@ namespace EspPredPreyHunter
     {
         DomainTotal* domain;
         Esp* esp;
+
     protected:
         uint numGenerations;
         uint popSize;
     public:
         EspExperiment(const char* configFilePath);
+        EspExperiment()
+            :Experiment()
+        {
+        }
         virtual ~EspExperiment()
         {
         }

@@ -44,7 +44,6 @@ namespace EspPredPreyHunter
          */
         uint totalNumNetworks;
 
-        uint numNetworks;
 
         /**
          * Number of hidden neurons. Assumed to be the same for all the networks
@@ -77,6 +76,7 @@ namespace EspPredPreyHunter
          */
         //const uint numOtherAgents;
         //const uint numActions;
+        uint numNetworks;
 
         // These two store redundant information (based on numOtherAgents and numActions)
         // This is for convenience, and clearer code
@@ -151,13 +151,10 @@ namespace EspPredPreyHunter
          * @param nHiddenNeurons - number of hidden neurons for all the networks
          * @param popSize - Population size for each neuron in the networks
          * @param netTp - Type of the network. Only FF for now.
-         * @param numOtherAgents - Number of inputs for each network (not the combiner network, which is managed internally)
-         * @param numActions - Number of outputs for each network (not the combiner network, which is managed internally)
+         * @param numNetworks - Number of networks that have to be evolved
+         * @param numInputsPerNetwork - Number of inputs per network (doesn't include combiner network)
+         * @param numOutputsPerNetwork - Number of outputs per network (includes combiner network)
          */
-        /*
-        Esp(const uint& nHiddenNeurons, const uint& popSize, const uint& netTp,
-                const uint& numOtherAgents, const uint& numActions);*/
-
         Esp(const uint& nHiddenNeurons, const uint& popSize, const uint& netTp,
                         const uint& numNetworks, const uint& numInputsPerNetwork, const uint& numOutputsPerNetwork);
 
@@ -173,7 +170,7 @@ namespace EspPredPreyHunter
                 const uint& popSize, const uint& netTp);
 
         /**
-         * reset fitness vals
+         * reset fitness values
          */
         void evalReset();
 

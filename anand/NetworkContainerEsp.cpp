@@ -10,8 +10,8 @@
 namespace EspPredPreyHunter
 {
     NetworkContainerEsp::NetworkContainerEsp()
+            : networks(0)
     {
-
     }
 
     NetworkContainerEsp::NetworkContainerEsp(const vector<Network*> networks)
@@ -28,8 +28,7 @@ namespace EspPredPreyHunter
 
     }
 
-    void NetworkContainerEsp::setNetwork(const NetworkContainer& networkContainer,
-            const bool& append)
+    void NetworkContainerEsp::setNetwork(const NetworkContainer& networkContainer)
     {
         networks = networkContainer.getNetworks();
         if (networks.size() == 1)
@@ -37,24 +36,18 @@ namespace EspPredPreyHunter
         else
             combine = 1;
     }
-    /*
-     void NetworkContainer::setNetworks(const vector<Network*>& networks, const uint& combine)
-     {
-     this->networks = networks;
-     this->combine = combine;
-     }*/
 
     void NetworkContainerEsp::setFitness(const double& fitness)
     {
         VLOG(5) << "Setting fitness";
-        for (int i = 0; i < networks.size(); i++) {
+        for (uint i = 0; i < networks.size(); i++) {
             networks[i]->setFitness(fitness);
         }
     }
 
     void NetworkContainerEsp::incrementTests()
     {
-        for (int i = 0; i < networks.size(); i++) {
+        for (uint i = 0; i < networks.size(); i++) {
             networks[i]->incrementTests();
         }
     }
@@ -62,7 +55,7 @@ namespace EspPredPreyHunter
     void NetworkContainerEsp::average()
     {
         VLOG(5) << "Averaging.";
-        for (int i = 0; i < networks.size(); i++) {
+        for (uint i = 0; i < networks.size(); i++) {
             networks[i]->average();
         }
     }
@@ -70,7 +63,7 @@ namespace EspPredPreyHunter
     void NetworkContainerEsp::qsortNeurons()
     {
         VLOG(5) << "Sorting.";
-        for (int i = 0; i < networks.size(); i++) {
+        for (uint i = 0; i < networks.size(); i++) {
             networks[i]->qsortNeurons();
         }
     }
@@ -78,7 +71,7 @@ namespace EspPredPreyHunter
     void NetworkContainerEsp::mutate()
     {
         VLOG(5) << "Doing mutate";
-        for (int i = 0; i < networks.size(); i++) {
+        for (uint i = 0; i < networks.size(); i++) {
             networks[i]->mutate();
         }
     }
@@ -87,7 +80,7 @@ namespace EspPredPreyHunter
     {
         VLOG(5) << "Doing recombine hall of fame";
         vector<Network*> hallOfFameNetworks = hallOfFameNetwork->getNetworks();
-        for (int i = 0; i < networks.size(); i++) {
+        for (uint i = 0; i < networks.size(); i++) {
             networks[i]->recombineHallOfFame(hallOfFameNetworks[i]);
         }
     }
@@ -99,11 +92,11 @@ namespace EspPredPreyHunter
 
     void NetworkContainerEsp::activate(const vector<double>& input, vector<double>& output)
     {
-        VLOG(5) << "Activating";
-        VLOG(5) << "Networks size is " << networks.size();
-        VLOG(5) << "Combine is " << combine;
+        if (networks.size() == 0)
+            LOG(FATAL) << "Trying to activate empty container!";
+
         vector<double> tempSingleOutputs;
-        for (int i = 0; i < networks.size() - combine; i++) {     // sans combiner
+        for (uint i = 0; i < networks.size() - combine; i++) {     // sans combiner
             // FIXME Assuming that the number of outputs is 5
             vector<double> tempOutput = vector<double>(5);
             // FIXME assuming number of inputs is 2
@@ -119,7 +112,6 @@ namespace EspPredPreyHunter
             // It comes into else only if there is a single network overall
             output.assign(tempSingleOutputs.begin(), tempSingleOutputs.end());
         }
-        VLOG(5) << "Activated";
     }
 }
 

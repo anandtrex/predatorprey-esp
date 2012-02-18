@@ -24,7 +24,7 @@ namespace EspPredPreyHunter
     using PredatorPreyHunter::fetchRandomDouble;
 
     EspExperiment::EspExperiment(const char* configFilePath)
-            : Experiment(configFilePath)
+            : Experiment()
     {
         libconfig::Config cfg;
 
@@ -109,26 +109,7 @@ namespace EspPredPreyHunter
 
     NetworkContainer* EspExperiment::evolve(Domain* domain, NetworkContainer* networkContainer, Esp* esp, bool append)
     {
-        // Evaluate a random population
-        // Reset evaluation
-        // Perform evaluation
-        // For numtrials
-        // Select neurons for each network
-        // initialize fitnesses to 0
-        // For eval trials
-        // get fitness
-        // Distribute fitness to each neuron
-        // compute generation best
-        // computer overall best
-        // average fitness of neurons
-        // recombine hall of fame
-        // For each hidden neuron
-        // qsort
-        // call recombine_hall_of_fame
-        // mutate
-
         vector<NetworkContainer*> hallOfFame = vector<NetworkContainer*>();
-        NetworkContainer* overallBestNetwork;
         NetworkContainer* generationBestNetwork;
 
         uint numEvalTrials = 5;
@@ -148,7 +129,7 @@ namespace EspPredPreyHunter
             esp->evalReset();
             for (uint trial = 0; trial < numTrialsPerGen; trial++) {
                 //networkContainer = esp->getNetwork();     // selects random neurons from subpopulation for each network
-                networkContainer->setNetwork(*(esp->getNetwork()), append);
+                networkContainer->setNetwork(*(esp->getNetwork()));
                 networkContainer->incrementTests();
                 fitness = 0.0;
                 domain->init(networkContainer);
@@ -174,14 +155,14 @@ namespace EspPredPreyHunter
 
             if (genMaxFitness > overallMaxFitness) {
                 overallMaxFitness = genMaxFitness;
-                overallBestNetwork = generationBestNetwork;
+                //overallBestNetwork = generationBestNetwork;
             }
             LOG(INFO) << "Generation: " << generation;
             LOG(INFO) << "Generation max fitness was: " << static_cast<double>(genMaxFitness);
             genAverageFitness /= numTrialsPerGen;
             LOG(INFO) << "Generation average fitness was: "
                     << static_cast<double>(genAverageFitness);
-            fout << static_cast<int>(generation) << " " << static_cast<double>(genAverageFitness) << "\n";
+            fout << generation << " " << genAverageFitness << "\n";
         }
 
         return hallOfFame[hallOfFame.size() - 1];

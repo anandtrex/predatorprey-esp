@@ -27,7 +27,7 @@ void reseed(int val)
 }
 
 int main(int argc, char **argv)
-{
+ {
     google::InitGoogleLogging("");
     LOG(INFO) << "Main function";
 

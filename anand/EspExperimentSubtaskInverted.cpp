@@ -24,7 +24,7 @@ namespace EspPredPreyHunter
     using PredatorPreyHunter::fetchRandomDouble;
 
     EspExperimentSubtaskInverted::EspExperimentSubtaskInverted(const char* configFilePath)
-            : EspExperiment(configFilePath)
+            : EspExperiment()
     {
         libconfig::Config cfg;
 
@@ -145,7 +145,7 @@ namespace EspPredPreyHunter
         LOG(INFO) << "Evolving for subtask 2";
         NetworkContainer* networkContainerSt2 = evolve(domainHunter,  new NetworkContainerEsp(), espDomainHunter, false);
         LOG(INFO) << "Subtask 2 done";
-        vector<NetworkContainer*> networkContainers = vector<NetworkContainer*>(2);
+        vector<NetworkContainer*> networkContainers = vector<NetworkContainer*>();
         networkContainers.push_back(networkContainerSt1);
         networkContainers.push_back(networkContainerSt2);
         LOG(INFO) << "Evolving for overall task";

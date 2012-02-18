@@ -21,18 +21,13 @@ namespace PredatorPreyHunter
     {
     protected:
         ofstream fout;
-        Experiment(const char* configFilePath)
+        Experiment()
         {
             fout.open("average_fitness.log");
-            if (!fout.is_open()) {
-                LOG(FATAL) << "File not opened";
-            } else {
-                LOG(INFO) << "Opened file";
-            }
         }
         ~Experiment()
         {
-            fout.close();
+          fout.close();
         }
         virtual void start() = 0;
     };

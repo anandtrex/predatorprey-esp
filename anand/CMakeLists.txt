@@ -14,7 +14,7 @@ if(DOXYGEN_FOUND)
  )
 endif(DOXYGEN_FOUND)
 
-set(CMAKE_CXX_COMPILER "clang++")
+set(CMAKE_CXX_COMPILER "g++")
 
 set(CMAKE_CXX_FLAGS "-g -O3 -Wall")
 set(CORELIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${X11_LIBRARY} m)
@@ -26,7 +26,7 @@ ExternalProject_Add(
 	glog-0.3.2
 	URL http://google-glog.googlecode.com/files/glog-0.3.2.tar.gz
 	CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_BINARY_DIR}/glog
-	BUILD_COMMAND make -j2
+	BUILD_COMMAND make -j8
 )
 endif()
 if(NOT EXISTS ${CMAKE_BINARY_DIR}/libconfig)
@@ -35,7 +35,7 @@ ExternalProject_Add(
 	BUILD_IN_SOURCE 1
 	URL http://www.hyperrealm.com/libconfig/libconfig-1.4.8.tar.gz
 	CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_BINARY_DIR}/libconfig
-	BUILD_COMMAND make -j2
+	BUILD_COMMAND make -j8
 )
 endif()
 

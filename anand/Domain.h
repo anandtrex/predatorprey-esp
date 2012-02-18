@@ -39,7 +39,7 @@ namespace PredatorPreyHunter
         }
 
         Domain(const uint& maxSteps, const uint& width, const uint& height)
-                : maxSteps(maxSteps)
+                : maxSteps(maxSteps), displayEnabled(false)
         {
             //displayEnabled = true;
             ptrGridWorld = new GridWorld(width, height);

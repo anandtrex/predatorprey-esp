@@ -15,36 +15,27 @@ namespace EspPredPreyHunter
 {
     using std::vector;
 
-    /**
-     * This is the network combiner for the multi-agent ESP case. This is always used, irrespective
-     * of the combination mechanism of the sub-tasks
-     */
     class NetworkContainerSubtask: public NetworkContainer
     {
-        vector<NetworkContainer*> networkContainers;
-        vector<Network*> networks;
+    protected:
+        const vector<NetworkContainer*> networkContainers;
+        Network* combinerNetwork;
     public:
         NetworkContainerSubtask();
         NetworkContainerSubtask(const vector<NetworkContainer*> networkContainers);
-        ~NetworkContainerSubtask();
+        virtual ~NetworkContainerSubtask();
 
-        void setNetwork(const NetworkContainer& networkContainer, const bool& append);
-
+        void setNetwork(const NetworkContainer& networkContainer);
         void setFitness(const double& fitness);
-
         void incrementTests();
-
         void average();
-
         // For subpop
         void qsortNeurons();
-
         // For subpop
         void mutate();
-
         void recombineHallOfFame(NetworkContainer* hallOfFameNetwork);
-
         vector<Network*> getNetworks() const;
+        vector<NetworkContainer*> getNetworkContainers() const;
 
         /**
          * Returns the output from the given input and outputs
@@ -52,9 +43,8 @@ namespace EspPredPreyHunter
          * @param output
          * @return
          */
-        void activate(const vector<double>& input, vector<double>& output);
+        virtual void activate(const vector<double>& input, vector<double>& output);
     };
 }
-
 
 #endif /* NETWORKCONTAINERSUBTASK_H_ */

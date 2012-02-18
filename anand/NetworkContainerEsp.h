@@ -21,29 +21,22 @@ namespace EspPredPreyHunter
      */
     class NetworkContainerEsp: public NetworkContainer
     {
-        vector<Network*> networks;
         uint combine;     // Number of combiner networks
+        vector<Network*> networks;
     public:
         NetworkContainerEsp();
         NetworkContainerEsp(const vector<Network*> networks);
         ~NetworkContainerEsp();
 
-        void setNetwork(const NetworkContainer& networkContainer, const bool& append);
-
+        void setNetwork(const NetworkContainer& networkContainer);
         void setFitness(const double& fitness);
-
         void incrementTests();
-
         void average();
-
         // For subpop
         void qsortNeurons();
-
         // For subpop
         void mutate();
-
         void recombineHallOfFame(NetworkContainer* hallOfFameNetwork);
-
         vector<Network*> getNetworks() const;
 
         /**
@@ -55,5 +48,4 @@ namespace EspPredPreyHunter
         void activate(const vector<double>& input, vector<double>& output);
     };
 }
-
 #endif /* NETWORKCONTAINERESP_H_ */
