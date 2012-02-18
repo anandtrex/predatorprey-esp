@@ -20,14 +20,17 @@ namespace PredatorPreyHunter
     class Experiment
     {
     protected:
-        ofstream fout;
+        ofstream foutGenAverage;
+        ofstream foutGenMax;
         Experiment()
         {
-            fout.open("average_fitness.log");
+            foutGenAverage.open("average_fitness.log");
+            foutGenMax.open("max_fitness.log");
         }
         ~Experiment()
         {
-          fout.close();
+          foutGenAverage.close();
+          foutGenMax.close();
         }
         virtual void start() = 0;
     };

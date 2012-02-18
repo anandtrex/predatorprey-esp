@@ -120,12 +120,13 @@ namespace EspPredPreyHunter
         LOG(INFO) << "Number of trials per generation is " << numTrialsPerGen;
 
         double fitness;
-        double genMaxFitness = static_cast<double>(-1) * numeric_limits<double>::max();     // Minimum possible float value
-        double genAverageFitness = 0.0;
+        double genMaxFitness;
+        double genAverageFitness;
         double overallMaxFitness = static_cast<double>(-1) * numeric_limits<double>::max();     // Minimum possible float value
+
         for (uint generation = 0; generation < numGenerations; generation++) {
-            LOG(INFO) << "Generation max for generation " << generation << " is "
-                    << genMaxFitness;
+            genMaxFitness = static_cast<double>(-1) * numeric_limits<double>::max();     // Minimum possible float value
+            genAverageFitness = 0.0;
             esp->evalReset();
             for (uint trial = 0; trial < numTrialsPerGen; trial++) {
                 //networkContainer = esp->getNetwork();     // selects random neurons from subpopulation for each network
@@ -153,16 +154,13 @@ namespace EspPredPreyHunter
                     hallOfFame[fetchRandomDouble() * (hallOfFame.size() - 1)]);
             networkContainer->mutate();
 
-            if (genMaxFitness > overallMaxFitness) {
-                overallMaxFitness = genMaxFitness;
-                //overallBestNetwork = generationBestNetwork;
-            }
             LOG(INFO) << "Generation: " << generation;
-            LOG(INFO) << "Generation max fitness was: " << static_cast<double>(genMaxFitness);
+            LOG(INFO) << "Generation max fitness was: " << genMaxFitness;
             genAverageFitness /= numTrialsPerGen;
             LOG(INFO) << "Generation average fitness was: "
                     << static_cast<double>(genAverageFitness);
-            fout << generation << " " << genAverageFitness << "\n";
+            foutGenAverage << generation << " " << genAverageFitness << "\n";
+            foutGenMax << generation << " " << genMaxFitness << "\n";
         }
 
         return hallOfFame[hallOfFame.size() - 1];
