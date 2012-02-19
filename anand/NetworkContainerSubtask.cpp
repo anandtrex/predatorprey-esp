@@ -102,10 +102,6 @@ namespace EspPredPreyHunter
             for (int j = 0; j < k; j++) {
                 tempInput.push_back(input[k * i + j]);
             }
-            VLOG(5) << "Network container size is " << networkContainers.size();
-            VLOG(5) << "Network container network size is " << networkContainers[i]->getNetworks().size();
-            VLOG(5) << "Temp input size is " << tempInput.size();
-            VLOG(5) << "Temp output size is " << tempOutput.size();
             networkContainers[i]->activate(tempInput, tempOutput);
             tempSingleOutputs.insert(tempSingleOutputs.end(), tempOutput.begin(), tempOutput.end());
         }

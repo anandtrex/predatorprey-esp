@@ -9,7 +9,7 @@
 #include "GridWorld.h"
 #include "Domain.h"
 #include "NetworkContainerEsp.h"
-#include "NetworkContainerSubtask.h"
+#include "NetworkContainerSubtaskInverted.h"
 
 #include <limits>
 
@@ -74,7 +74,7 @@ namespace EspPredPreyHunter
 
         // TODO Configurable number of actions
         espDomainTotal = new Esp(static_cast<uint>(cfg.lookup("experiment:esp:num_hidden_neurons")),
-                popSize, 0, 1, 10, 1); // FIXME: Hardcoded values
+                popSize, 0, 1,  domainTotal->getNumOtherAgents() * 2 + 10, 1); // FIXME: Hardcoded values
         LOG(INFO) << "Initialized esp for the total domain with "
                 << static_cast<uint>(cfg.lookup("experiment:esp:num_hidden_neurons"))
                 << " as number of hidden neurons, " << "population size " << popSize
@@ -149,7 +149,7 @@ namespace EspPredPreyHunter
         networkContainers.push_back(networkContainerSt1);
         networkContainers.push_back(networkContainerSt2);
         LOG(INFO) << "Evolving for overall task";
-        NetworkContainer* networkContainerOt = new NetworkContainerSubtask(networkContainers);
+        NetworkContainer* networkContainerOt = new NetworkContainerSubtaskInverted(networkContainers);
         evolve(domainTotal, networkContainerOt, espDomainTotal, true);
         LOG(INFO) << "Overall task done";
     }

@@ -74,7 +74,7 @@ namespace EspPredPreyHunter
 
         // TODO Configurable number of actions
         espDomainTotal = new Esp(static_cast<uint>(cfg.lookup("experiment:esp:num_hidden_neurons")),
-                popSize, 0, 1, 10, 5); // FIXME: Hardcoded values
+                popSize, 0, 1, domainTotal->getNumOtherAgents() * 2 + 10, 5); // FIXME: Hardcoded values
         LOG(INFO) << "Initialized esp for the total domain with "
                 << static_cast<uint>(cfg.lookup("experiment:esp:num_hidden_neurons"))
                 << " as number of hidden neurons, " << "population size " << popSize

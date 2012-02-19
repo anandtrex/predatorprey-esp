@@ -45,6 +45,7 @@ namespace EspPredPreyHunter
             tempSingleOutputs.insert(tempSingleOutputs.end(), tempOutput.begin(), tempOutput.end());
         }
 
+        vector<double> realCombinerInput(input);
         // Finally there is always one network
         vector<double> tempOutput(1);
         combinerNetwork->activate(tempSingleOutputs, tempOutput);

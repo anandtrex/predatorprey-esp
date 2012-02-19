@@ -70,8 +70,11 @@ namespace PredatorPreyHunter
             pNew.x = pNew.x + 1;
         } else if (WEST == action) {
             pNew.x = pNew.x - 1;
-        }     // else do nothing
-              // check if map width and height have been exceeded
+        } else if (STAY == action) {
+            // Do nothing
+        } else {
+            LOG(ERROR) << "Unknown action";
+        }
         if (pNew.x < 0) {
             pNew.x = width - 1;
         }
