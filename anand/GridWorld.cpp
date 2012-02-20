@@ -73,7 +73,7 @@ namespace PredatorPreyHunter
         } else if (STAY == action) {
             // Do nothing
         } else {
-            LOG(ERROR) << "Unknown action";
+            LOG(ERROR) << "Unknown action " << action;
         }
         if (pNew.x < 0) {
             pNew.x = width - 1;
