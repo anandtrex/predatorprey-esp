@@ -92,7 +92,7 @@ namespace EspPredPreyHunter
         if(networkContainers.size() == 0)
             LOG(FATAL) << "Trying to activate empty container!";
 
-        vector<double> tempSingleOutputs;
+        vector<double> tempSingleOutputs(input);
         int k = input.size() / networkContainers.size();
         for (uint i = 0; i < networkContainers.size(); i++) {
             // FIXME Assuming that the number of outputs is 5

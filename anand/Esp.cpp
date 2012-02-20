@@ -30,58 +30,6 @@ namespace EspPredPreyHunter
     {
     }
 
-    /*
-    // TODO Should just take number of networks and number of combiner networks, instead of numOtherAgents
-    // with input size for each network, and output size
-    Esp::Esp(const uint& nHiddenNeurons, const uint& popSize, const uint& netTp,
-            const uint& numOtherAgents, const uint& numActions)
-            : numHiddenNeurons(nHiddenNeurons), popSize(popSize), netType(netTp), numOtherAgents(
-                    numOtherAgents), numActions(numActions)
-    {
-        if (numOtherAgents == 1) {
-            combine = 0;
-        }
-        generation = 0;
-        inputDimensions = 2;
-        numInputs = numOtherAgents * inputDimensions;     // NOTE: Assuming (x,y) gives position of agent.
-        // NOTE: (contd.) Should change it for other problems/ problems with more than 2 dimensions
-        numOutputs = numActions;
-        totalNumNetworks = numOtherAgents + combine;
-        neuronGeneSize = getNeuronGeneSize();
-        combinerNeuronGeneSize = getCombinerNeuronGeneSize();
-
-        LOG(INFO) << endl << "number of inputs is " << numInputs << endl
-                << "number of outputs is " << numOutputs << endl << " total number of networks is "
-                << totalNumNetworks << endl << " neuron gene size for a normal neuron is "
-                << neuronGeneSize << endl << " neuron gene size for a combiner neuron is "
-                << combinerNeuronGeneSize << endl;
-
-        networks = vector<Network*>();
-
-        // Initialize and create networks
-        for (uint i = 0; i < totalNumNetworks - combine; i++) {
-            networks.push_back(generateNetwork(netTp, neuronGeneSize));     // generate new network
-        }
-        for (uint i = totalNumNetworks - combine; i < totalNumNetworks; i++) {
-            networks.push_back(generateNetwork(netTp, combinerNeuronGeneSize));     // generate new network
-        }
-        LOG(INFO)
-                << "Initialized and created networks. (subpopulations initialized within the networks)";
-
-        // FIXME Do we need these?????
-        // Initialize and create overall_best_networks
-        for (uint i = 0; i < totalNumNetworks - combine; i++) {
-            overall_best_networks.push_back(generateNetwork(netTp, neuronGeneSize));     // generate new network
-        }
-        for (uint i = totalNumNetworks - combine; i < totalNumNetworks; i++) {
-            overall_best_networks.push_back(generateNetwork(netTp, combinerNeuronGeneSize));     // generate new network
-        }
-        LOG(INFO) << "Initialized and created overall_best_networks";
-
-        //networkContainer = new NetworkContainer();
-        //LOG(INFO) << "Created network container for esp";
-    } */
-
     Esp::Esp(const uint& nHiddenNeurons, const uint& popSize, const uint& netTp,
             const uint& numNetworks, const uint& numInputsPerNetwork, const uint& numOutputsPerNetwork)
             : numHiddenNeurons(nHiddenNeurons), popSize(popSize), netType(netTp), numNetworks(numNetworks)
@@ -91,10 +39,11 @@ namespace EspPredPreyHunter
         } else {
             combine = 1;
         }
+
         generation = 0;
         inputDimensions = numInputsPerNetwork;
         numInputs = numNetworks * inputDimensions;
-        this->numOutputs = numOutputsPerNetwork;
+        numOutputs = numOutputsPerNetwork;
 
         totalNumNetworks = numNetworks + combine;
         neuronGeneSize = getNeuronGeneSize();
@@ -118,16 +67,6 @@ namespace EspPredPreyHunter
         LOG(INFO)
                 << "Initialized and created networks. (subpopulations initialized within the networks)";
 
-        // FIXME Do we need these?????
-        // Initialize and create overall_best_networks
-        for (uint i = 0; i < totalNumNetworks - combine; i++) {
-            overall_best_networks.push_back(generateNetwork(netTp, neuronGeneSize));     // generate new network
-        }
-        for (uint i = totalNumNetworks - combine; i < totalNumNetworks; i++) {
-            overall_best_networks.push_back(generateNetwork(netTp, combinerNeuronGeneSize));     // generate new network
-        }
-        LOG(INFO) << "Initialized and created overall_best_networks";
-
         //networkContainer = new NetworkContainer();
         //LOG(INFO) << "Created network container for esp";
     }
@@ -135,10 +74,8 @@ namespace EspPredPreyHunter
     Esp::~Esp()
     {
         for (uint i = 0; i < totalNumNetworks; i++) {
-            delete overall_best_networks[i];
             delete networks[i];
         }
-        overall_best_networks.clear();
         networks.clear();
     }
 

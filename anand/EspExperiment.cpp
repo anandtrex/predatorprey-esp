@@ -125,7 +125,7 @@ namespace EspPredPreyHunter
         double overallMaxFitness = static_cast<double>(-1) * numeric_limits<double>::max();     // Minimum possible float value
 
         for (uint generation = 0; generation < numGenerations; generation++) {
-            genMaxFitness = static_cast<double>(-1) * numeric_limits<double>::max();     // Minimum possible float value
+            genMaxFitness = -numeric_limits<double>::max();     // Minimum possible float value
             genAverageFitness = 0.0;
             esp->evalReset();
             for (uint trial = 0; trial < numTrialsPerGen; trial++) {

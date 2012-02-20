@@ -10,7 +10,6 @@
 
 namespace EspPredPreyHunter
 {
-    // NOTE Does the calculation of the output of the network here
     void FeedForwardNetwork::activate(const vector<double> &input, vector<double> &output)
     {
         register uint i, j, neuron_input_connections, output_weight_index;
@@ -32,7 +31,7 @@ namespace EspPredPreyHunter
 
         output_weight_index = neuron_input_connections;
 
-        for (i = 0; i < output.size() - 1; ++i) {
+        for (i = 0; i < output.size(); ++i) {
             output[i] = 0.0;
             for (j = 0; j < numHiddenNeurons; ++j) {
                 output[i] += activation[j] * neurons[j]->weight[output_weight_index];

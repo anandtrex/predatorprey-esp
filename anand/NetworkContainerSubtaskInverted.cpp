@@ -9,7 +9,6 @@
 
 namespace EspPredPreyHunter
 {
-    // TODO Should getNetwork be different for this??
     NetworkContainerSubtaskInverted::NetworkContainerSubtaskInverted()
             : NetworkContainerSubtask()
     {
@@ -33,6 +32,7 @@ namespace EspPredPreyHunter
     {
         vector<double> tempSingleOutputs(input);
         int k = input.size() / networkContainers.size();
+        VLOG(5) << " k is " << k;
         for (uint i = 0; i < networkContainers.size(); i++) {
             // FIXME Assuming that the number of outputs is 5
             vector<double> tempOutput = vector<double>(5);
@@ -45,14 +45,17 @@ namespace EspPredPreyHunter
             tempSingleOutputs.insert(tempSingleOutputs.end(), tempOutput.begin(), tempOutput.end());
         }
 
-        vector<double> realCombinerInput(input);
         // Finally there is always one network
-        vector<double> tempOutput(1);
+        vector<double> tempOutput(2);
         combinerNetwork->activate(tempSingleOutputs, tempOutput);
 
-        if (tempOutput[0] < 0.5) {
+        if(output.size()!=5)
+            LOG(ERROR) << "Output size wasn't 5!";
+        if (tempOutput[0] > tempOutput[1]) {
+            VLOG(5) << "Output 0 is active";
             output.assign(tempSingleOutputs.begin(), tempSingleOutputs.begin() + 5);
         } else {
+            VLOG(5) << "Output 1 is active";
             output.assign(tempSingleOutputs.begin() + 5, tempSingleOutputs.end());
         }
     }

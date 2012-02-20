@@ -123,7 +123,6 @@ namespace EspPredPreyHunter
      */
     void SubPop::average()
     {
-        VLOG(5) << "Averaging neuron fitness in neuron";
         for (int i = 0; i < numNeurons; ++i) {
             if (pop[i]->tests)
                 pop[i]->fitness = pop[i]->fitness / pop[i]->tests;
@@ -138,7 +137,6 @@ namespace EspPredPreyHunter
      */
     void SubPop::qsortNeurons()
     {
-        VLOG(5) << "Sorting in subpop";
         if (MIN)
             sort(pop.begin(), pop.end(), minimize_fit());
         else
@@ -162,8 +160,6 @@ namespace EspPredPreyHunter
      */
     void SubPop::mutate()
     {
-        VLOG(5) << "Doing mutate in subpop";
-        // TODO Remember combiner network details
         for (int i = numBreed * 2; i < numNeurons; ++i)
             if (drand48() < MUT_RATE)
                 pop[i]->weight[fetchRandomLong() % geneSize] += rndCauchy(0.3);
@@ -243,13 +239,11 @@ namespace EspPredPreyHunter
 
     }
 
-    // QUE Why does it do it like this??
     /**
      * recombine neurons with members of their subpop using crossover.
      */
     void SubPop::recombineHallOfFame(Network* hallOfFameNetwork, const uint& neuronNumber)
     {
-        VLOG(5) << "Doing recombine hall of fame in subpop";
         int i = 0;
         for (; i < numBreed - 5; ++i) {
             crossover(pop[i]->weight, pop[findMate(i)]->weight,
