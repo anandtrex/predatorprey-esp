@@ -18,7 +18,6 @@
 
 // Assume combiner network used.
 // Assume number of hidden neurons is the same for all networks
-
 namespace EspPredPreyHunter
 {
     using std::vector;
@@ -65,28 +64,19 @@ namespace EspPredPreyHunter
         }
         LOG(INFO)
                 << "Initialized and created networks. (subpopulations initialized within the networks)";
-
-        //networkContainer = new NetworkContainer();
-        //LOG(INFO) << "Created network container for esp";
-    }
-
-    Esp::~Esp()
-    {
-        for (uint i = 0; i < totalNumNetworks; i++) {
-            delete networks[i];
-        }
-        networks.clear();
     }
 
     uint Esp::getNeuronGeneSize()
     {
         // Assume network type is FF
+        // TODO Shift this function inside Network!!
         return inputDimensions + numOutputs;
     }
 
     uint Esp::getCombinerNeuronGeneSize()
     {
         // Assume network type is FF
+        // TODO Shift this function inside Network!!
         return (numOutputs * numNetworks + numOutputs);
     }
 
@@ -122,7 +112,6 @@ namespace EspPredPreyHunter
             // Selects random neurons from subpopulation and returns it
             networks[i]->setNeurons();
         }
-        //networkContainer->setNetworks(networks, combine);
         return new NetworkContainerEsp(networks);
     }
 
@@ -134,10 +123,12 @@ namespace EspPredPreyHunter
     }
 
     // NOTE dirty class member functions here
-
-//----------------------------------------------------------------------
-// Make a decision about what to do when performace stagnates.
-// bestNetwork is basically the network during the last delta phase
+    /**
+     * Make a decision about what to do when performace stagnates.
+     * bestNetwork is basically the network during the last delta phase
+     * @param num_of_predators
+     * @param num_of_prey
+     */
     void Esp::handleStagnation(int num_of_predators, int num_of_prey)
     {
 
@@ -175,8 +166,10 @@ namespace EspPredPreyHunter
 
     }
 
-//----------------------------------------------------------------------
-// Start a new delta phase
+    /**
+     * Start a new delta phase
+     * @param pred
+     */
     void Esp::newDeltaPhase(int pred)
     {
         // LOG(INFO) << "DELTA started on predator " << pred << endl;
@@ -268,62 +261,6 @@ namespace EspPredPreyHunter
          fclose(fptr);
 
          LOG(INFO) << endl << "Saved to " << fname << endl << endl;*/
-    }
-
-    void Esp::findChampion()
-    {
-        LOG(ERROR) << "ESP::findChampion() is commented out" << endl;
-        /*
-         int j,l;
-         double fitness, best=-999999;
-         char subname[15];
-         FILE *fptr;
-         subPop *net;
-
-         strcpy(subname,"000best.bin");
-         for(l=0;l<1000;++l) {
-         j = l/100;
-         subname[0] = j + 48;
-         j = l%100;
-         subname[1] = j/10 + 48;
-         subname[2] = j%10 + 48;
-         if ((fptr = fopen(subname,"r")) != NULL) {
-         fclose(fptr);
-         net = load(subname);
-         fitness = 0;
-
-         // evaluate network
-         //ccfitness += state.apply(net);
-         if (fitness > best)
-         best = fitness;
-         fptr = fopen("report.txt","a");
-         fprintf(fptr,"%d ",l);
-
-         fclose(fptr);
-         }
-         }
-
-         fptr=fopen("analyze.out","a");
-         fprintf(fptr,"%f\n",1/best);
-         fclose(fptr);
-         printf("%f\n",1/best);
-         */
-
-    }
-
-    void Esp::endEvolution()
-    {
-        //save ("end.bin", num_of_predators, num_of_prey);
-        printStats();
-        //fout_champfitness.close();
-        LOG(INFO) << "Done with evolution";
-        //exit(0);
-    }
-
-    void Esp::printStats()
-    {
-        LOG(ERROR) << "ESP::printStats() is commented out" << endl;
-//  printf("\nTotal number of network evaluations : %d\n", generation*numTrials);
     }
 
 //----------------------------------------------------------------------
@@ -431,37 +368,5 @@ namespace EspPredPreyHunter
 //    }
 //  else
         return 0;
-    }
-
-//////////////////////////////////////////////////////////////////////
-//
-// Other functions
-//
-//////////////////////////////////////////////////////////////////////
-
-//----------------------------------------------------------------------
-// reseed random fns.
-    void reseed(int val)
-    {
-        unsigned short seed[3];
-
-        seed[0] = val;
-        seed[1] = val + 1;
-        seed[2] = val + 2;
-        seed48(seed);
-        srand48(val);
-    }
-
-//----------------------------------------------------------------------
-// is it a number?
-    int isnumber(char *str)
-    {
-        int i, res = 1;
-
-        for (i = 0; i < (int) strlen(str); ++i)
-            if (!isdigit(str[i]))
-                res = 0;
-
-        return res;
     }
 }

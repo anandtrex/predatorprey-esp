@@ -34,11 +34,6 @@ namespace EspPredPreyHunter
         uint inputDimensions;
 
         /**
-         * This is equal to the total number of EVOLVING agents for which networks have to be evolved using ESP (excluding combiner networks)
-         * For predator-prey-hunter, this is equal to (num_predators)
-         */
-        //const uint numAgents;
-        /**
          * This is equal to ( numNetworks * numInputs + COMBINE * numInputs )
          */
         uint totalNumNetworks;
@@ -56,53 +51,26 @@ namespace EspPredPreyHunter
          * i to n are the outputs (where n is the number of outputs for the given network, which is 5 in all cases)
          */
         uint neuronGeneSize;
+
         /**
          * This is the number of weights that the combiner neuron has.
          * 1 to i are the inputs (where i is the num of inputs for the given network, which is numOutputs * numOtherAgents in the case of a 2D grid-world)
          * i to n are the outputs (where n is the number of outputs for the given network, which is 5 in all cases)
          */
         uint combinerNeuronGeneSize;
-
         const uint popSize;
-
         const uint netType;
-
-        /**
-         * This is equal to the number of all the other agents in the task excluding this team of agents
-         * For predator-prey-hunter this is equal to
-         * ( num_predators * (num_teams_predators - 1) + num_prey * num_teams_prey + num_hunters * num_teams_hunters )
-         * for a team of predators
-         */
-        //const uint numOtherAgents;
-        //const uint numActions;
         uint numNetworks;
-
-        // These two store redundant information (based on numOtherAgents and numActions)
-        // This is for convenience, and clearer code
-        /**
-         * This is equal to numOtherAgents * 2 NOTE: TIMES 2
-         */
         uint numInputs;
 
         /**
          * This is equal to numActions
          */
         uint numOutputs;
-
         uint combine;
-
         vector<Network*> networks;
-
-        /**
-         * i-th element corresponds to the vector of Subpop for the i-th network, where in the vector of SubPop,
-         *  the j-th element corresponds to the j-th neuron in the corresponding network
-         */
-//        vector<vector<SubPop*> > hidden_neuron_populations; // num networks x num hidden neurons per network
         uint generation;
-
         uint numTrials;
-
-        NetworkContainer* networkContainer;
 
         /**
          * output a new network of the appropriate type.
@@ -115,16 +83,7 @@ namespace EspPredPreyHunter
         uint getNeuronGeneSize();
         uint getCombinerNeuronGeneSize();
 
-        /**
-         * evaluation stage.  Create numTrials networks, each containing
-         * ZETA neurons selected randomly from the population.  Each network
-         * is evaluated and each participating neuron receives the fitness
-         * evaluations of each network it parcipates in.
-         */
-        void performEval();
-
         // NOTE Below are existing private member functions
-        //Esp(const Esp &);     // just for safety
         Esp &operator=(const Esp &);
         void save(char* fname, int num_of_predators, int num_of_prey, int num_teams_predator,
                 int num_teams_prey);
@@ -137,7 +96,6 @@ namespace EspPredPreyHunter
         int removeSubPop(vector<Network*>& team, int pred, int num_of_predators, int num_of_prey);
         void addConnections();
         void removeConnections(int sp);
-        void printStats();
 
     public:
 
@@ -174,7 +132,13 @@ namespace EspPredPreyHunter
         /**
          * Destructor
          */
-        ~Esp();
+        ~Esp()
+        {
+            for (uint i = 0; i < totalNumNetworks; i++) {
+                delete networks[i];
+            }
+            networks.clear();
+        }
 
         /**
          * Gets the vector of networks to be used for evaluation after
@@ -201,11 +165,8 @@ namespace EspPredPreyHunter
          */
         void evalPop();
 
-        void findChampion();
         void loadSeedNet(char *);
         void addSubPop(int pred, int num_of_predators, int num_of_prey);
-        void endEvolution();
-        static vector<vector<vector<Network*> > > hall_of_fame_pred;     // EVOLVE_PREY vector of vector of best networks
     };
 }
 

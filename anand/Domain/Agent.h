@@ -36,7 +36,10 @@ namespace PredatorPreyHunter
             :ptrGridWorld(ptrGridWorld), agentId(agentId), position(p)
         {
         }
-        virtual ~Agent();
+        virtual ~Agent()
+        {
+        }
+
         virtual Position move(const std::vector<AgentInformation>& vAgentInformation) = 0;
         AgentInformation getAgentInformation();
         Position getPosition()

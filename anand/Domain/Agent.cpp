@@ -20,9 +20,4 @@ namespace PredatorPreyHunter
         agentInformation.position = position;
         return agentInformation;
     }
-
-    Agent::~Agent()
-    {
-
-    }
 }

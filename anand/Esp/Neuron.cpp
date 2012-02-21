@@ -21,13 +21,6 @@ namespace EspPredPreyHunter
     }
 
     /**
-     * Destructor
-     */
-    Neuron::~Neuron()
-    {
-    }
-
-    /**
      * perturb the weights of a neuron. Used to search in a neighborhood
      * around some neuron (best).
      * @param n

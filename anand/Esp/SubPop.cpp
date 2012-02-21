@@ -53,21 +53,6 @@ namespace EspPredPreyHunter
     }
 
     /**
-     * destructor
-     */
-    SubPop::~SubPop()
-    {
-        /*
-        // Delete pointer elements of vector pop one by one (freeing up memory only - not deleting pointers vector)
-        for (int i = 0; i < numNeurons; ++i)
-            delete pop[i];
-
-        //Clear after freeing up the memory in the previous step
-        pop.clear();
-        */
-    }
-
-    /**
      * create the neurons, initial their weights, and put them in the subpop.
      */
     void SubPop::create()
@@ -112,7 +97,7 @@ namespace EspPredPreyHunter
      * select a neuron at random
      * @return
      */
-    Neuron *SubPop::selectNeuron()
+    Neuron* SubPop::selectNeuron()
     {
         return pop[fetchRandomLong() % numNeurons];
     }

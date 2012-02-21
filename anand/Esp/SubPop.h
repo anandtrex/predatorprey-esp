@@ -30,7 +30,13 @@ namespace EspPredPreyHunter
         bool evolvable;
 
         SubPop(const int& size, const int& geneSize);
-        ~SubPop();
+        ~SubPop()
+        {
+            for(int i = 0; i < pop.size(); i++){
+                delete pop[i];
+            }
+            pop.clear();
+        }
         //  subPop(const subPop &s);
         //void addHiddenLayer(int size);
         void create();  // creates a random subpopulation of neurons

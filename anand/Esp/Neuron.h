@@ -32,7 +32,11 @@ namespace EspPredPreyHunter
 
         //constructor
         Neuron(const uint& geneSize);
-        ~Neuron();
+        ~Neuron()
+        {
+
+        }
+
         Neuron operator=(const Neuron &);
         void create();
         void perturb(const Neuron &n);

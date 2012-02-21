@@ -124,7 +124,6 @@ namespace EspPredPreyHunter
         double fitness;
         double genMaxFitness;
         double genAverageFitness;
-        double overallMaxFitness = static_cast<double>(-1) * numeric_limits<double>::max();     // Minimum possible float value
 
         for (uint generation = 0; generation < numGenerations; generation++) {
             genMaxFitness = -numeric_limits<double>::max();     // Minimum possible float value

@@ -30,15 +30,6 @@ namespace EspPredPreyHunter
         create();
     }
 
-    Network::~Network()
-    {
-        /*
-        for (int i = 0; i < numHiddenNeurons; ++i)
-            neurons[i] = NULL;
-            */
-        //pop.clear();
-    }
-
     //copy a network
     void Network::operator=(Network &n)
     {
