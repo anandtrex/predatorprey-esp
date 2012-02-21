@@ -57,7 +57,8 @@ namespace PredatorPreyHunter
                 << " with id " << 3 << endl;
     }
 
-    void DomainHunter::enableDisplay(const vector<double>& predatorColour, const vector<double>& hunterColour)
+    void DomainHunter::enableDisplay(const vector<double>& predatorColour,
+            const vector<double>& hunterColour)
     {
         this->displayEnabled = true;
         LOG(INFO) << "Display enabled";
@@ -79,17 +80,6 @@ namespace PredatorPreyHunter
         aiPredator = ptrPredator->getAgentInformation();
         aiHunter = ptrHunter->getAgentInformation();
 
-        VLOG(2) << "Predator at " << aiPredator.position.x << "," << aiPredator.position.y;
-        VLOG(2) << "Hunter at " << aiHunter.position.x << "," << aiHunter.position.y;
-
-
-        if ((aiHunter.position.x == aiPredator.position.x)
-                && (aiHunter.position.y == aiPredator.position.y)) {
-            LOG(INFO) << "Predator caught by Hunter";
-            predatorCaughtIds.push_back(aiPredator.agentId);
-            numPredCaught++;
-        }
-
         // build vector<AgentInformation>
         vector<AgentInformation> vAgentInformation;
         vAgentInformation.clear();
@@ -100,6 +90,16 @@ namespace PredatorPreyHunter
         ptrHunter->move(vAgentInformation);
         // move predator
         ptrPredator->move(vAgentInformation);
+
+        VLOG(2) << "Predator at " << aiPredator.position.x << "," << aiPredator.position.y;
+        VLOG(2) << "Hunter at " << aiHunter.position.x << "," << aiHunter.position.y;
+
+        if ((aiHunter.position.x == aiPredator.position.x)
+                && (aiHunter.position.y == aiPredator.position.y)) {
+            LOG(INFO) << "Predator caught by Hunter";
+            predatorCaughtIds.push_back(aiPredator.agentId);
+            numPredCaught++;
+        }
 
         // Show display
         if (displayEnabled) {

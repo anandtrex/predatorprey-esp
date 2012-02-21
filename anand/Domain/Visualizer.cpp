@@ -42,7 +42,7 @@ namespace PredPreyHunterVisualizer
         XSetWindowAttributes swa;
         Window win;
         GLXContext cx;
-
+        
         {
             GLint err = glGetError();
             if (err != GL_NO_ERROR)

@@ -84,16 +84,6 @@ namespace PredatorPreyHunter
         aiPredator = ptrPredator->getAgentInformation();
         aiPrey = ptrPrey->getAgentInformation();
 
-        VLOG(2) << "Predator at " << aiPredator.position.x << "," << aiPredator.position.y;
-        VLOG(2) << "Prey at " << aiPrey.position.x << "," << aiPrey.position.y;
-
-        if ((aiPrey.position.x == aiPredator.position.x)
-                && (aiPrey.position.y == aiPredator.position.y)) {
-            LOG(INFO) << "Prey caught by Predator";
-            preyCaughtIds.push_back(aiPrey.agentId);
-            numPreyCaught++;
-        }
-
         // build vector<AgentInformation>
         vector<AgentInformation> vAgentInformation;
         vAgentInformation.clear();
@@ -104,6 +94,16 @@ namespace PredatorPreyHunter
         ptrPrey->move(vAgentInformation);
         // move predator
         ptrPredator->move(vAgentInformation);
+
+        VLOG(2) << "Predator at " << aiPredator.position.x << "," << aiPredator.position.y;
+        VLOG(2) << "Prey at " << aiPrey.position.x << "," << aiPrey.position.y;
+
+        if ((aiPrey.position.x == aiPredator.position.x)
+                && (aiPrey.position.y == aiPredator.position.y)) {
+            LOG(INFO) << "Prey caught by Predator";
+            preyCaughtIds.push_back(aiPrey.agentId);
+            numPreyCaught++;
+        }
 
         // Show display
         if (displayEnabled) {

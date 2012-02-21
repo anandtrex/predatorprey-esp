@@ -95,6 +95,20 @@ namespace PredatorPreyHunter
         aiPrey = ptrPrey->getAgentInformation();
         aiHunter = ptrHunter->getAgentInformation();
 
+        // build vector<AgentInformation>
+        vector<AgentInformation> vAgentInformation;
+        vAgentInformation.clear();
+        vAgentInformation.push_back(aiPredator);
+        vAgentInformation.push_back(aiPrey);
+        vAgentInformation.push_back(aiHunter);
+
+        // move prey
+        ptrPrey->move(vAgentInformation);
+        // move hunter
+        ptrHunter->move(vAgentInformation);
+        // move predator
+        ptrPredator->move(vAgentInformation);
+         
         VLOG(2) << "Predator at " << aiPredator.position.x << "," << aiPredator.position.y;
         VLOG(2) << "Prey at " << aiPrey.position.x << "," << aiPrey.position.y;
         VLOG(2) << "Hunter at " << aiHunter.position.x << "," << aiHunter.position.y;
@@ -112,21 +126,7 @@ namespace PredatorPreyHunter
             predatorCaughtIds.push_back(aiPredator.agentId);
             numPredCaught++;
         }
-
-        // build vector<AgentInformation>
-        vector<AgentInformation> vAgentInformation;
-        vAgentInformation.clear();
-        vAgentInformation.push_back(aiPredator);
-        vAgentInformation.push_back(aiPrey);
-        vAgentInformation.push_back(aiHunter);
-
-        // move prey
-        ptrPrey->move(vAgentInformation);
-        // move hunter
-        ptrHunter->move(vAgentInformation);
-        // move predator
-        ptrPredator->move(vAgentInformation);
-
+        
         // Show display
         if (displayEnabled) {
             // FIXME Need to do this in a better way
@@ -137,6 +137,7 @@ namespace PredatorPreyHunter
             visualizer.show(vAgentInformationPrevious, vAgentInformation);
             vAgentInformationPrevious = vAgentInformation;
         }
+       
     }
 
     double DomainTotal::run()
@@ -210,12 +211,6 @@ namespace PredatorPreyHunter
         do {
             VLOG(1) << "step: " << noSteps << endl;
             (void) step();
-            positionPredator = ptrPredator->getPosition();
-            positionPrey = ptrPrey->getPosition();
-            positionHunter = ptrHunter->getPosition();
-            fout << positionPredator.x << " " << positionPredator.y << " ";
-            fout << positionPrey.x << " " << positionPrey.y << " ";
-            fout << positionHunter.x << " " << positionHunter.y << endl;
             if (numPreyCaught > 0 && numPreyCaught > prevNumPreyCaught) {
                 LOG(INFO) << "PREY CAUGHT!!!!" << endl;
                 VLOG(5)
@@ -238,6 +233,12 @@ namespace PredatorPreyHunter
                     return calculateFitness(noSteps);
                 }
             }
+            positionPredator = ptrPredator->getPosition();
+            positionPrey = ptrPrey->getPosition();
+            positionHunter = ptrHunter->getPosition();
+            fout << positionPredator.x << " " << positionPredator.y << " ";
+            fout << positionPrey.x << " " << positionPrey.y << " ";
+            fout << positionHunter.x << " " << positionHunter.y << endl;
         } while (noSteps++ < maxSteps);
         fout.close();
         LOG(INFO) << "[ENDS] Experiment::run()" << endl;

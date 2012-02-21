@@ -12,6 +12,7 @@
 #include "../Esp/NetworkContainerEsp.h"
 
 #include <limits>
+#include <algorithm>
 
 #include <libconfig.h++>
 
@@ -20,6 +21,7 @@ namespace EspPredPreyHunter
     using std::map;
     using std::pair;
     using std::numeric_limits;
+    using std::max;
     using PredatorPreyHunter::Domain;
     using PredatorPreyHunter::fetchRandomDouble;
 
@@ -161,8 +163,11 @@ namespace EspPredPreyHunter
             foutGenAverage << generation << " " << genAverageFitness << "\n";
             foutGenMax << generation << " " << genMaxFitness << "\n";
             // Run it once with the generation champion to get file output
-            domain->init(generationBestNetwork);
-            domain->run(concatStringDouble("champion_", generation)+".log");
+            const int tempDiff = (numGenerations - 20);
+            if(generation > max(tempDiff, 0)){
+                domain->init(generationBestNetwork);
+                domain->run(concatStringDouble("champion_", generation)+".log");
+            }
         }
 
         return hallOfFame[hallOfFame.size() - 1];
