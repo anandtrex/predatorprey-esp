@@ -12,7 +12,6 @@
 #include <vector>
 #include <math.h>
 
-#include "common.h"
 #include "Network.h"
 #include "SubPop.h"
 #include "NetworkContainer.h"
@@ -100,8 +99,6 @@ namespace EspPredPreyHunter
          */
 //        vector<vector<SubPop*> > hidden_neuron_populations; // num networks x num hidden neurons per network
         uint generation;
-
-        vector<Network*> overall_best_networks;
 
         uint numTrials;
 

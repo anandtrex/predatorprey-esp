@@ -14,7 +14,7 @@
 #include "Prey.h"
 #include "Hunter.h"
 #include "Visualizer.h"
-#include "NetworkContainer.h"
+#include "../Esp/NetworkContainer.h"
 
 #include <string>
 #include <vector>
@@ -55,6 +55,7 @@ namespace PredatorPreyHunter
         virtual void enableDisplay(const vector<double>& predatorColour, const vector<double>& preyColour,
                 const vector<double>& hunterColour);
         virtual double run(); // return fitness
+        virtual double run(std::string stepsFilePath);     // return fitness
         virtual double calculateFitness(const uint& stepCurrent );
     };
 }

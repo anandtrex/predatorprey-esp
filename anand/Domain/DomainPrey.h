@@ -13,7 +13,7 @@
 #include "Predator.h"
 #include "Prey.h"
 #include "Visualizer.h"
-#include "NetworkContainer.h"
+#include "../Esp/NetworkContainer.h"
 
 #include <string>
 #include <vector>
@@ -23,7 +23,6 @@ namespace PredatorPreyHunter
     using std::vector;
     using EspPredPreyHunter::NetworkContainer;
 
-    // TODO Split this up for each subtask
     class DomainPrey: public Domain
     {
         uint numPredators;
@@ -44,11 +43,16 @@ namespace PredatorPreyHunter
         DomainPrey();
         DomainPrey(const uint& maxSteps, const uint& width, const uint& height,
                 const uint& numPredators, const uint& numPrey, const double& preyMoveProb);
-        ~DomainPrey();
+        virtual ~DomainPrey();
         virtual void init(NetworkContainer* espNetwork);
         virtual void enableDisplay(const vector<double>& predatorColour,
                 const vector<double>& preyColour);
         virtual double run();     // return fitness
+        virtual double run(std::string stepsFilePath)
+        {
+            LOG(ERROR) << "Method not implemented";
+            return -1.0;
+        }
         virtual double calculateFitness(const uint& stepCurrent);
     };
 }

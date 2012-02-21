@@ -17,21 +17,28 @@ typedef unsigned int uint;
 #define PI 3.1415926535897931
 
 // wrapper for drand48() so that you can change this function later
-  // fetch random number between 0 and 1
-namespace PredatorPreyHunter {
-	double fetchRandomDouble();
-	long fetchRandomLong();
-}
-
-template< typename T, size_t N >
-std::vector<T> makeVector( const T (&data)[N] )
+// fetch random number between 0 and 1
+namespace PredatorPreyHunter
 {
-    return std::vector<T>(data, data+N);
+    double fetchRandomDouble();
+    long fetchRandomLong();
 }
 
-/**
- * generate a random number form a cauchy distribution centered on zero.
- */
-double rndCauchy(double wtrange);
+namespace EspPredPreyHunter
+{
+    using std::vector;
+    using std::string;
+    string vecToString(const vector<double>& vec);
+    template<typename T, size_t N>
+    vector<T> makeVector(const T(&data)[N])
+    {
+        return std::vector<T>(data, data + N);
+    }
+    /**
+     * generate a random number form a cauchy distribution centered on zero.
+     */
+    double rndCauchy(double wtrange);
+    string concatStringDouble(string s, double d);
+}
 
 #endif /* COMMON_H_ */

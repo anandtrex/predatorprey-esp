@@ -6,10 +6,10 @@
  */
 
 #include "EspExperiment.h"
-#include "GridWorld.h"
-#include "Domain.h"
-#include "NetworkContainer.h"
-#include "NetworkContainerEsp.h"
+#include "../Domain/GridWorld.h"
+#include "../Domain/Domain.h"
+#include "../Esp/NetworkContainer.h"
+#include "../Esp/NetworkContainerEsp.h"
 
 #include <limits>
 
@@ -129,7 +129,6 @@ namespace EspPredPreyHunter
             genAverageFitness = 0.0;
             esp->evalReset();
             for (uint trial = 0; trial < numTrialsPerGen; trial++) {
-                //networkContainer = esp->getNetwork();     // selects random neurons from subpopulation for each network
                 networkContainer->setNetwork(*(esp->getNetwork()));
                 networkContainer->incrementTests();
                 fitness = 0.0;
@@ -161,6 +160,9 @@ namespace EspPredPreyHunter
                     << static_cast<double>(genAverageFitness);
             foutGenAverage << generation << " " << genAverageFitness << "\n";
             foutGenMax << generation << " " << genMaxFitness << "\n";
+            // Run it once with the generation champion to get file output
+            domain->init(generationBestNetwork);
+            domain->run(concatStringDouble("champion_", generation)+".log");
         }
 
         return hallOfFame[hallOfFame.size() - 1];

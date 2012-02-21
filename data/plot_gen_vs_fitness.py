@@ -43,6 +43,7 @@ if __name__ == '__main__':
         plt.show()
         plt.close()
         
+	sys.exit(0)
         if "prop" in fileName:
                 sys.exit(0)
                 

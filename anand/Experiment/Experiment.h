@@ -8,9 +8,9 @@
 #ifndef EXPERIMENT_H_
 #define EXPERIMENT_H_
 
-#include "common.h"
-#include "Esp.h"
-#include "NetworkContainer.h"
+#include "../common.h"
+#include "../Esp/Esp.h"
+#include "../Esp/NetworkContainer.h"
 #include <fstream>
 
 namespace PredatorPreyHunter

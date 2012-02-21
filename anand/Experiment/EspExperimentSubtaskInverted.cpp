@@ -6,10 +6,10 @@
  */
 
 #include "EspExperimentSubtaskInverted.h"
-#include "GridWorld.h"
-#include "Domain.h"
-#include "NetworkContainerEsp.h"
-#include "NetworkContainerSubtaskInverted.h"
+#include "../Domain/GridWorld.h"
+#include "../Domain/Domain.h"
+#include "../Esp/NetworkContainerEsp.h"
+#include "../Esp/NetworkContainerSubtaskInverted.h"
 
 #include <limits>
 
@@ -48,7 +48,7 @@ namespace EspPredPreyHunter
         domainTotal = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey,
                 numHunters,
                 static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability")),
-                static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability")));
+                static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability")) - 0.1 );
         LOG(INFO) << "Initialized overall domain with " << numPredators << " predators,"
                 << numPrey << " prey and " << numHunters << " hunters.";
         LOG(INFO) << "Hunter move probability is "

@@ -8,7 +8,7 @@
 #ifndef DOMAIN_H_
 #define DOMAIN_H_
 
-#include "NetworkContainer.h"
+#include "../Esp/NetworkContainer.h"
 #include "Visualizer.h"
 
 namespace PredatorPreyHunter
@@ -62,7 +62,7 @@ namespace PredatorPreyHunter
 
         virtual void init(NetworkContainer* espNetwork) = 0;
         virtual double run() = 0;     // return fitness
-        //virtual double run(std::string stepsFilePath) = 0;     // return fitness
+        virtual double run(std::string stepsFilePath) = 0;     // return fitness
     };
 }
 

@@ -72,15 +72,5 @@ namespace EspPredPreyHunter
         }
         VLOG(5) << "Final output is " << vecToString(output);
     }
-
-    using std::ostringstream;
-    std::string vecToString(const vector<double>& vec)
-    {
-        ostringstream o;
-        for(int i = 0; i < vec.size(); i++){
-            o << vec[i] << " ";
-        }
-        return o.str();
-    }
 }
 

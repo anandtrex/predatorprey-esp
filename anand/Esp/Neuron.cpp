@@ -6,9 +6,6 @@
  */
 
 #include "Neuron.h"
-#include "common.h"
-
-// TODO Remember combiner network details
 
 namespace EspPredPreyHunter
 {

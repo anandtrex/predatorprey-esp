@@ -5,7 +5,6 @@
  *      Author: anands
  */
 #include "Neuron.h"
-#include "common.h"
 #include "Network.h"
 
 #include <stdio.h>

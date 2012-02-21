@@ -8,7 +8,7 @@
 #ifndef GRIDWORLD_H_
 #define GRIDWORLD_H_
 
-#include "common.h"
+#include "../common.h"
 
 struct Position
 {

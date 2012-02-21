@@ -7,10 +7,10 @@
 
 #include <iostream>
 
-#include "GridWorld.h"
-#include "EspExperiment.h"
-#include "EspExperimentSubtask.h"
-#include "EspExperimentSubtaskInverted.h"
+#include "Domain/GridWorld.h"
+#include "Experiment/EspExperiment.h"
+#include "Experiment/EspExperimentSubtask.h"
+#include "Experiment/EspExperimentSubtaskInverted.h"
 
 using namespace PredatorPreyHunter;
 using namespace EspPredPreyHunter;

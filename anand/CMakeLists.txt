@@ -14,9 +14,9 @@ if(DOXYGEN_FOUND)
  )
 endif(DOXYGEN_FOUND)
 
-set(CMAKE_CXX_COMPILER "g++")
+set(CMAKE_CXX_COMPILER "clang++")
 
-set(CMAKE_CXX_FLAGS "-g -O3 -Wall")
+set(CMAKE_CXX_FLAGS "-O3 -Wall")
 set(CORELIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${X11_LIBRARY} m)
 set(CMAKE_EXE_LINKER_FLAGS "-L${CMAKE_BINARY_DIR}/glog/lib -L${CMAKE_BINARY_DIR}/libconfig/lib")
 
@@ -44,30 +44,31 @@ include_directories(${CMAKE_BINARY_DIR}/glog/include)
 include_directories(${CMAKE_BINARY_DIR}/libconfig/include)
 
 #file(GLOB SRCS "*.cpp")
-set(SRCS Agent.cpp 
+set(SRCS
+main.cpp 
 common.cpp
-DomainTotal.cpp
-DomainPrey.cpp
-DomainHunter.cpp
-Esp.cpp
-EspExperiment.cpp
-EspExperimentSubtask.cpp
-EspExperimentSubtaskInverted.cpp
-FeedForwardNetwork.cpp
-GridWorld.cpp
-Hunter.cpp
-main.cpp
-NetworkContainerEsp.cpp
-NetworkContainerSubtask.cpp
-NetworkContainerSubtaskInverted.cpp
-Network.cpp
-Neuron.cpp
-PredatorEsp.cpp
-#PredatorNaive.cpp
-#PredatorRandom.cpp
-Prey.cpp
-SubPop.cpp
-Visualizer.cpp)
+Domain/Agent.cpp 
+Domain/DomainTotal.cpp
+Domain/DomainPrey.cpp
+Domain/DomainHunter.cpp
+Domain/PredatorEsp.cpp
+Domain/Prey.cpp
+Domain/GridWorld.cpp
+Domain/Hunter.cpp
+Domain/Visualizer.cpp
+#Domain/PredatorNaive.cpp
+#Domain/PredatorRandom.cpp
+Esp/Esp.cpp
+Esp/FeedForwardNetwork.cpp
+Esp/NetworkContainerEsp.cpp
+Esp/NetworkContainerSubtask.cpp
+Esp/NetworkContainerSubtaskInverted.cpp
+Esp/Network.cpp
+Esp/Neuron.cpp
+Esp/SubPop.cpp
+Experiment/EspExperiment.cpp
+Experiment/EspExperimentSubtask.cpp
+Experiment/EspExperimentSubtaskInverted.cpp)
 
 add_executable(esp-predprey ${SRCS})
 #target_link_libraries(esp-predprey ${CORELIBS} ${CMAKE_BINARY_DIR}/glog/lib/glog.so ${CMAKE_BINARY_DIR}/libconfig/lib/libconfig++.so)

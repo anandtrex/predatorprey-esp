@@ -12,7 +12,7 @@
 
 #include "DomainTotal.h"
 #include "PredatorEsp.h"
-#include "NetworkContainer.h"
+#include "../Esp/NetworkContainer.h"
 
 namespace PredatorPreyHunter
 {
@@ -20,17 +20,19 @@ namespace PredatorPreyHunter
     using std::vector;
     using std::map;
     using std::pair;
+    using std::ofstream;
+    using std::string;
     using PredPreyHunterVisualizer::Visualizer;
 
-    DomainTotal::DomainTotal()
-            : Domain()
+    DomainTotal::DomainTotal() :
+            Domain()
     {
     }
 
     DomainTotal::DomainTotal(const uint& maxSteps, const uint& width, const uint& height,
             const uint& numPredators, const uint& numPrey, const uint& numHunters,
-            const double& preyMoveProb, const double& hunterMoveProb)
-            : Domain(maxSteps, width, height), numPredators(numPredators), numPrey(numPrey), numHunters(
+            const double& preyMoveProb, const double& hunterMoveProb) :
+            Domain(maxSteps, width, height), numPredators(numPredators), numPrey(numPrey), numHunters(
                     numHunters), preyMoveProb(preyMoveProb), hunterMoveProb(hunterMoveProb)
     {
         numOtherAgents = numPrey + numHunters;
@@ -147,6 +149,10 @@ namespace PredatorPreyHunter
         predatorCaughtIds = vector<uint>();
         preyCaughtIds = vector<uint>();
 
+        if (displayEnabled) {
+            visualizer.createWindow();
+        }
+
         do {
             VLOG(1) << "step: " << noSteps << endl;
             (void) step();
@@ -180,6 +186,64 @@ namespace PredatorPreyHunter
         return calculateFitness(noSteps);
     }
 
+    double DomainTotal::run(string stepsFilePath)
+    {
+        uint noSteps = 0;
+        uint prevNumPreyCaught = 0;
+        uint prevNumPredCaught = 0;
+        numPredCaught = 0;
+        numPreyCaught = 0;
+        predatorCaughtIds = vector<uint>();
+        preyCaughtIds = vector<uint>();
+
+        if (displayEnabled) {
+            visualizer.createWindow();
+        }
+
+        // order is pred.x pred.y prey.x prey.y hunter.x hunter.y
+        ofstream fout(stepsFilePath.c_str());
+        if (!fout.is_open()) {
+            LOG(FATAL) << "Could not open file " << stepsFilePath << " for writing!" << endl;
+        }
+        double fitness = 0.0;
+        Position positionPredator, positionPrey, positionHunter;
+        do {
+            VLOG(1) << "step: " << noSteps << endl;
+            (void) step();
+            positionPredator = ptrPredator->getPosition();
+            positionPrey = ptrPrey->getPosition();
+            positionHunter = ptrHunter->getPosition();
+            fout << positionPredator.x << " " << positionPredator.y << " ";
+            fout << positionPrey.x << " " << positionPrey.y << " ";
+            fout << positionHunter.x << " " << positionHunter.y << endl;
+            if (numPreyCaught > 0 && numPreyCaught > prevNumPreyCaught) {
+                LOG(INFO) << "PREY CAUGHT!!!!" << endl;
+                VLOG(5)
+                        << "Number of prey caught is " << numPreyCaught
+                                << " and the total number of prey is " << numPrey;
+                prevNumPreyCaught = numPreyCaught;
+                if (numPreyCaught == numPrey) {
+                    LOG(INFO) << "All prey caught in " << noSteps << " steps!";
+                    fout.close();
+                    return calculateFitness(noSteps);
+                }
+            } else if (numPredCaught > 0 && numPredCaught > prevNumPredCaught) {
+                LOG(INFO) << "PREDATOR CAUGHT!!!!" << endl;
+                prevNumPredCaught = numPredCaught;
+                VLOG(5)
+                        << "Number of prey caught is " << numPredCaught
+                                << " and the total number of prey is " << numPredators;
+                if (numPredCaught == numPredators) {
+                    LOG(INFO) << "All predators caught in " << noSteps << " steps!";
+                    return calculateFitness(noSteps);
+                }
+            }
+        } while (noSteps++ < maxSteps);
+        fout.close();
+        LOG(INFO) << "[ENDS] Experiment::run()" << endl;
+        return fitness;
+    }
+
     double DomainTotal::calculateFitness(const uint& stepCurrent)
     {
         double fitness = 0.0;
@@ -202,59 +266,8 @@ namespace PredatorPreyHunter
             // reward for being close to prey and far away from hunter
             distancePrey = ptrGridWorld->getWidth() + ptrGridWorld->getHeight() - distancePrey;
             // take into account the size of the grid for rewarding later
-            fitness = static_cast<double>(distancePrey) + distanceHunter;     // if by any chance it reaches here although it won't
+            fitness = static_cast<double>(distancePrey) + distanceHunter; // if by any chance it reaches here although it won't
             return fitness;
         }
     }
-
-/*
- double Experiment::run(string pathFile)
- {
- LOG(INFO) << "[BEGINS] Experiment::run()" << endl;
- // order is pred.x pred.y prey.x prey.y hunter.x hunter.y
- ofstream fout(pathFile.c_str());
- if (!fout.is_open()) {
- LOG(ERROR) << "Could not open file " << pathFile << " for writing!" << endl;
- throw 1; // throw something meaningful later
- }
- double fitness = 0.0;
- int noSteps = 0;
- Caught caught; // for catching caught signal
- Position positionPredator, positionPrey, positionHunter;
- while (noSteps < maxSteps) {
- LOG(INFO) << "step: " << noSteps << endl;
- caught = step();
- positionPredator = ptrPredator->getPosition();
- positionPrey = ptrPrey->getPosition();
- positionHunter = ptrHunter->getPosition();
- fout << positionPredator.x << " " << positionPredator.y << " ";
- fout << positionPrey.x << " " << positionPrey.y << " ";
- fout << positionHunter.x << " " << positionHunter.y << endl;
- switch (caught) {
- case PREY_CAUGHT:
- // if prey is caught
- // update fitness of predator
- LOG(INFO) << "PREY CAUGHT!!!!" << endl;
- fout.close(); // use smart pointer later
- return fitness;
- // break;
- case PREDATOR_CAUGHT:
- // if predator is caught
- // update fitness of predator
- LOG(INFO) << "PREDATOR CAUGHT!!!!" << endl;
- fout.close(); // use smart pointer later
- return fitness;
- // break;
- case NONE_CAUGHT:
- break;
- default:
- LOG(ERROR) << "Experiment::run() I should not have reached here" << endl;
- throw 1; // throw something meaningful later
- };
- noSteps++; // NOTE: Very Important. Do not delete.
- }
- fout.close();
- LOG(INFO) << "[ENDS] Experiment::run()" << endl;
- return fitness;
- }*/
 }

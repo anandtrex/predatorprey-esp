@@ -6,7 +6,6 @@
  */
 
 #include "Esp.h"
-#include "common.h"
 #include "Network.h"
 #include "FeedForwardNetwork.h"
 #include "SubPop.h"

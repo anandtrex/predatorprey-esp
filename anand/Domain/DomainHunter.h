@@ -13,7 +13,7 @@
 #include "Predator.h"
 #include "Hunter.h"
 #include "Visualizer.h"
-#include "NetworkContainer.h"
+#include "../Esp/NetworkContainer.h"
 
 #include <string>
 #include <vector>
@@ -48,6 +48,11 @@ namespace PredatorPreyHunter
         void enableDisplay(const vector<double>& predatorColour,
                 const vector<double>& hunterColour);
         double run();     // return fitness
+        virtual double run(std::string stepsFilePath)
+        {
+            LOG(ERROR) << "Method not implemented";
+            return -1.0;
+        }
         double calculateFitness(const uint& stepCurrent);
     };
 }

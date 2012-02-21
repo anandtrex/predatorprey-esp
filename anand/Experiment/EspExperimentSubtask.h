@@ -9,10 +9,10 @@
 #define ESPEXPERIMENTSUBTASK_H_
 
 #include "EspExperiment.h"
-#include "Esp.h"
-#include "DomainTotal.h"
-#include "DomainPrey.h"
-#include "DomainHunter.h"
+#include "../Esp/Esp.h"
+#include "../Domain/DomainTotal.h"
+#include "../Domain/DomainPrey.h"
+#include "../Domain/DomainHunter.h"
 
 namespace EspPredPreyHunter
 {

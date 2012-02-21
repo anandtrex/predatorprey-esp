@@ -9,8 +9,8 @@
 #define PREDATORESP_H_
 
 #include "Predator.h"
-#include "Esp.h"
-#include "NetworkContainer.h"
+#include "../Esp/Esp.h"
+#include "../Esp/NetworkContainer.h"
 
 namespace PredatorPreyHunter
 {

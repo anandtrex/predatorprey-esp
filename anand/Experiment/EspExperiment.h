@@ -9,8 +9,8 @@
 #define ESPEXPERIMENT_H_
 
 #include "Experiment.h"
-#include "Esp.h"
-#include "DomainTotal.h"
+#include "../Esp/Esp.h"
+#include "../Domain/DomainTotal.h"
 
 namespace EspPredPreyHunter
 {

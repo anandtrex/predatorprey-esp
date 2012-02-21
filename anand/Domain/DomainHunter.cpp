@@ -1,8 +1,8 @@
 /*
- * Domain.cpp
+ * DomainHunter.cpp
  *
- *  Created on: Jan 27, 2012
- *      Author: anands
+ *  Created on: Feb 16, 2012
+ *      Author: anand
  */
 
 #include <iostream>
@@ -10,9 +10,8 @@
 
 #include <libconfig.h++>
 
-#include "Domain.h"
+#include "DomainHunter.h"
 #include "PredatorEsp.h"
-#include "NetworkContainer.h"
 
 namespace PredatorPreyHunter
 {
@@ -22,23 +21,20 @@ namespace PredatorPreyHunter
     using std::pair;
     using PredPreyHunterVisualizer::Visualizer;
 
-    Domain::Domain()
+    DomainHunter::DomainHunter()
+            : Domain()
     {
-        displayEnabled = false;
     }
 
-    Domain::Domain(const uint& maxSteps, const uint& width, const uint& height,
-            const uint& numPredators, const uint& numPrey, const uint& numHunters,
-            const double& preyMoveProb, const double& hunterMoveProb) :
-            maxSteps(maxSteps), numPredators(numPredators), numPrey(numPrey), numHunters(
-                    numHunters), preyMoveProb(preyMoveProb), hunterMoveProb(hunterMoveProb)
+    DomainHunter::DomainHunter(const uint& maxSteps, const uint& width, const uint& height,
+            const uint& numPredators, const uint& numHunters, const double& hunterMoveProb)
+            : Domain(maxSteps, width, height), numPredators(numPredators), numHunters(numHunters), hunterMoveProb(
+                    hunterMoveProb)
     {
-        this->ptrGridWorld = new GridWorld(width, height);
-        LOG(INFO) << "[CREATED] GridWorld of size " << width << ", " << height << endl;
-        displayEnabled = false;
+        numOtherAgents = numHunters;
     }
 
-    Domain::~Domain()
+    DomainHunter::~DomainHunter()
     {
         /*
          delete ptrPredator;
@@ -48,18 +44,11 @@ namespace PredatorPreyHunter
          */
     }
 
-    void Domain::init(NetworkContainer* espNetwork)
+    void DomainHunter::init(NetworkContainer* espNetwork)
     {
         Position randomPosition = ptrGridWorld->getRandomPosition();
-        this->ptrPredator = dynamic_cast<Predator*>(new PredatorEsp(ptrGridWorld, 1, randomPosition,
+        ptrPredator = dynamic_cast<Predator*>(new PredatorEsp(ptrGridWorld, 1, randomPosition,
                 espNetwork));
-
-        // initialize prey
-        randomPosition = ptrGridWorld->getRandomPosition();
-        this->ptrPrey = new Prey(ptrGridWorld, 2, randomPosition, preyMoveProb);
-        LOG(INFO) << "Prey move probability is " << preyMoveProb;
-        LOG(INFO) << "[CREATED] Prey at " << randomPosition.x << ", " << randomPosition.y
-                << " with id " << 2 << endl;
 
         randomPosition = ptrGridWorld->getRandomPosition();
         this->ptrHunter = new Hunter(ptrGridWorld, 3, randomPosition, hunterMoveProb);
@@ -68,8 +57,7 @@ namespace PredatorPreyHunter
                 << " with id " << 3 << endl;
     }
 
-    void Domain::enableDisplay(const vector<double>& predatorColour,
-            const vector<double>& preyColour, const vector<double>& hunterColour)
+    void DomainHunter::enableDisplay(const vector<double>& predatorColour, const vector<double>& hunterColour)
     {
         this->displayEnabled = true;
         LOG(INFO) << "Display enabled";
@@ -79,37 +67,21 @@ namespace PredatorPreyHunter
         p = pair<int, vector<double> >(1, predatorColour);
         idColorMapping.insert(p);
 
-        p = pair<int, vector<double> >(2, preyColour);
-        idColorMapping.insert(p);
-
         p = pair<int, vector<double> >(3, hunterColour);
         idColorMapping.insert(p);
 
         visualizer = Visualizer(idColorMapping, ptrGridWorld->width, ptrGridWorld->height);
     }
 
-    void Domain::disableDisplay()
+    void DomainHunter::step()
     {
-        this->displayEnabled = false;
-    }
-
-    void Domain::step()
-    {
-        AgentInformation aiPredator, aiPrey, aiHunter;
+        AgentInformation aiPredator, aiHunter;
         aiPredator = ptrPredator->getAgentInformation();
-        aiPrey = ptrPrey->getAgentInformation();
         aiHunter = ptrHunter->getAgentInformation();
 
         VLOG(2) << "Predator at " << aiPredator.position.x << "," << aiPredator.position.y;
-        VLOG(2) << "Prey at " << aiPrey.position.x << "," << aiPrey.position.y;
         VLOG(2) << "Hunter at " << aiHunter.position.x << "," << aiHunter.position.y;
 
-        if ((aiPrey.position.x == aiPredator.position.x)
-                && (aiPrey.position.y == aiPredator.position.y)) {
-            LOG(INFO) << "Prey caught by Predator";
-            preyCaughtIds.push_back(aiPrey.agentId);
-            numPreyCaught++;
-        }
 
         if ((aiHunter.position.x == aiPredator.position.x)
                 && (aiHunter.position.y == aiPredator.position.y)) {
@@ -122,11 +94,8 @@ namespace PredatorPreyHunter
         vector<AgentInformation> vAgentInformation;
         vAgentInformation.clear();
         vAgentInformation.push_back(aiPredator);
-        vAgentInformation.push_back(aiPrey);
         vAgentInformation.push_back(aiHunter);
 
-        // move prey
-        ptrPrey->move(vAgentInformation);
         // move hunter
         ptrHunter->move(vAgentInformation);
         // move predator
@@ -144,35 +113,22 @@ namespace PredatorPreyHunter
         }
     }
 
-    double Domain::run()
+    double DomainHunter::run()
     {
         uint noSteps = 0;
-        uint prevNumPreyCaught = 0;
         uint prevNumPredCaught = 0;
         numPredCaught = 0;
-        numPreyCaught = 0;
         predatorCaughtIds = vector<uint>();
-        preyCaughtIds = vector<uint>();
 
         do {
             VLOG(1) << "step: " << noSteps << endl;
             (void) step();
-            if (numPreyCaught > 0 && numPreyCaught > prevNumPreyCaught) {
-                LOG(INFO) << "PREY CAUGHT!!!!" << endl;
-                VLOG(5)
-                        << "Number of prey caught is " << numPreyCaught
-                                << " and the total number of prey is " << numPrey;
-                prevNumPreyCaught = numPreyCaught;
-                if (numPreyCaught == numPrey) {
-                    LOG(INFO) << "All prey caught in " << noSteps << " steps!";
-                    return calculateFitness(noSteps);
-                }
-            } else if (numPredCaught > 0 && numPredCaught > prevNumPredCaught) {
+            if (numPredCaught > 0 && numPredCaught > prevNumPredCaught) {
                 LOG(INFO) << "PREDATOR CAUGHT!!!!" << endl;
                 prevNumPredCaught = numPredCaught;
                 VLOG(5)
-                        << "Number of prey caught is " << numPredCaught
-                                << " and the total number of prey is " << numPredators;
+                        << "Number of predators caught is " << numPredCaught
+                                << " and the total number of predators is " << numPredators;
                 if (numPredCaught == numPredators) {
                     LOG(INFO) << "All predators caught in " << noSteps << " steps!";
                     return calculateFitness(noSteps);
@@ -184,37 +140,29 @@ namespace PredatorPreyHunter
             LOG(INFO) << maxSteps << " passed without prey/predator being caught";
         }
 
-        return  calculateFitness(noSteps);
+        return calculateFitness(noSteps);
     }
 
-    double Domain::calculateFitness(const uint& stepCurrent ) {
+    double DomainHunter::calculateFitness(const uint& stepCurrent)
+    {
         double fitness = 0.0;
-        if ( numPreyCaught != 0 ) { // Yay
-          fitness = static_cast<double>(10) * ( maxSteps - stepCurrent ) * numPreyCaught;
-          return fitness;
+        if (numPredCaught > 0) {     // :-(
+            VLOG(2) << "maxSteps - stepCurrent: " << maxSteps - stepCurrent << endl;
+            fitness = static_cast<double>(-1) * 10 * (maxSteps - stepCurrent) * numPredCaught;
+            LOG(INFO) << "Fitness: " << fitness << endl;
+            return fitness;
+        } else {
+            // calculate distance from hunter and prey
+            Position positionPredator = ptrPredator->getPosition();
+            Position positionHunter = ptrHunter->getPosition();
+            uint distanceHunter;
+            distanceHunter = ptrGridWorld->distance(positionHunter, positionPredator);
+            // reward for being close to prey and far away from hunter
+            // take into account the size of the grid for rewarding later
+            fitness = static_cast<double>(distanceHunter);     // if by any chance it reaches here although it won't
+            return fitness;
         }
-        else if ( numPredCaught != 0 ) { // :-(
-          VLOG(2) << "maxSteps - stepCurrent: " << maxSteps - stepCurrent << endl;
-          fitness = static_cast<double>(-1) * 10 * ( maxSteps - stepCurrent ) * numPredCaught;
-          LOG(INFO) << "Fitness: " << fitness << endl;
-          return fitness;
-        }
-        else {
-          // calculate distance from hunter and prey
-          Position positionPredator = ptrPredator->getPosition();
-          Position positionPrey = ptrPrey->getPosition();
-          Position positionHunter = ptrHunter->getPosition();
-          uint distancePrey, distanceHunter;
-          distancePrey = ptrGridWorld->distance( positionPrey, positionPredator );
-          distanceHunter = ptrGridWorld->distance( positionHunter, positionPredator );
-          // reward for being close to prey and far away from hunter
-          distancePrey = ptrGridWorld->getWidth() + ptrGridWorld->getHeight() - distancePrey;
-          // take into account the size of the grid for rewarding later
-          fitness = static_cast<double>(distancePrey) + distanceHunter; // if by any chance it reaches here although it won't
-          return fitness;
-        }
-      }
-
+    }
 
 /*
  double Experiment::run(string pathFile)
@@ -267,3 +215,4 @@ namespace PredatorPreyHunter
  return fitness;
  }*/
 }
+

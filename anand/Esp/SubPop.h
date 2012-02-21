@@ -8,8 +8,6 @@
 #ifndef SUBPOP_H_
 #define SUBPOP_H_
 
-#include "common.h"
-
 #include "Neuron.h"
 #include "Network.h"
 
@@ -37,7 +35,7 @@ namespace EspPredPreyHunter
         //void addHiddenLayer(int size);
         void create();  // creates a random subpopulation of neurons
         void evalReset();
-        Neuron *selectNeuron();
+        Neuron* selectNeuron();
         void average();
         void qsortNeurons();
         void recombine();
@@ -53,7 +51,6 @@ namespace EspPredPreyHunter
         void print();
         void printWeight(FILE *file);
         void printDelta(FILE *file);
-        // FIXME Pass an array of neurons instead of a constructor
         void recombineHallOfFame(Network* hallOfFameNetwork, const uint& neuronNumber);
     private:
         int numBreed;  //number of neurons to be mated in subpop

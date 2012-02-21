@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "common.h"
 #include "SubPop.h"
 
 
@@ -170,7 +169,6 @@ namespace EspPredPreyHunter
      */
     void SubPop::burstMutate()
     {
-        // TODO Remember combiner network details
         for (int i = 0; i < numNeurons; ++i)
             if (drand48() < MUT_RATE)
                 pop[i]->weight[fetchRandomLong() % geneSize] += rndCauchy(0.3);
@@ -204,7 +202,6 @@ namespace EspPredPreyHunter
     {
         int cross1;
         //find crossover point
-        // TODO Remember combiner network details
         cross1 = fetchRandomLong() % geneSize;
         child1 = parent2;
         child2 = parent1;

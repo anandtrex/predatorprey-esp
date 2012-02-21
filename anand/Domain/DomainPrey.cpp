@@ -1,5 +1,5 @@
 /*
- * DomainHunter.cpp
+ * DomainPrey.cpp
  *
  *  Created on: Feb 16, 2012
  *      Author: anand
@@ -10,9 +10,9 @@
 
 #include <libconfig.h++>
 
-#include "DomainHunter.h"
+#include "DomainPrey.h"
 #include "PredatorEsp.h"
-#include "NetworkContainer.h"
+#include "../Esp/NetworkContainer.h"
 
 namespace PredatorPreyHunter
 {
@@ -22,20 +22,20 @@ namespace PredatorPreyHunter
     using std::pair;
     using PredPreyHunterVisualizer::Visualizer;
 
-    DomainHunter::DomainHunter()
+    DomainPrey::DomainPrey()
             : Domain()
     {
     }
 
-    DomainHunter::DomainHunter(const uint& maxSteps, const uint& width, const uint& height,
-            const uint& numPredators, const uint& numHunters, const double& hunterMoveProb)
-            : Domain(maxSteps, width, height), numPredators(numPredators), numHunters(numHunters), hunterMoveProb(
-                    hunterMoveProb)
+    DomainPrey::DomainPrey(const uint& maxSteps, const uint& width, const uint& height,
+            const uint& numPredators, const uint& numPrey, const double& preyMoveProb)
+            : Domain(maxSteps, width, height), numPredators(numPredators), numPrey(numPrey), preyMoveProb(
+                    preyMoveProb)
     {
-        numOtherAgents = numHunters;
+        numOtherAgents = numPrey;
     }
 
-    DomainHunter::~DomainHunter()
+    DomainPrey::~DomainPrey()
     {
         /*
          delete ptrPredator;
@@ -45,20 +45,24 @@ namespace PredatorPreyHunter
          */
     }
 
-    void DomainHunter::init(NetworkContainer* espNetwork)
+    void DomainPrey::init(NetworkContainer* espNetwork)
     {
         Position randomPosition = ptrGridWorld->getRandomPosition();
         ptrPredator = dynamic_cast<Predator*>(new PredatorEsp(ptrGridWorld, 1, randomPosition,
                 espNetwork));
 
+        // initialize prey
         randomPosition = ptrGridWorld->getRandomPosition();
-        this->ptrHunter = new Hunter(ptrGridWorld, 3, randomPosition, hunterMoveProb);
-        LOG(INFO) << "Hunter move probability is " << hunterMoveProb;
-        LOG(INFO) << "[CREATED] Hunter at " << randomPosition.x << ", " << randomPosition.y
-                << " with id " << 3 << endl;
+        this->ptrPrey = new Prey(ptrGridWorld, 2, randomPosition, preyMoveProb);
+        LOG(INFO) << "Prey move probability is " << preyMoveProb;
+        LOG(INFO) << "[CREATED] Prey at " << randomPosition.x << ", " << randomPosition.y
+                << " with id " << 2 << endl;
+
+        randomPosition = ptrGridWorld->getRandomPosition();
     }
 
-    void DomainHunter::enableDisplay(const vector<double>& predatorColour, const vector<double>& hunterColour)
+    void DomainPrey::enableDisplay(const vector<double>& predatorColour,
+            const vector<double>& preyColour)
     {
         this->displayEnabled = true;
         LOG(INFO) << "Display enabled";
@@ -68,37 +72,36 @@ namespace PredatorPreyHunter
         p = pair<int, vector<double> >(1, predatorColour);
         idColorMapping.insert(p);
 
-        p = pair<int, vector<double> >(3, hunterColour);
+        p = pair<int, vector<double> >(2, preyColour);
         idColorMapping.insert(p);
 
         visualizer = Visualizer(idColorMapping, ptrGridWorld->width, ptrGridWorld->height);
     }
 
-    void DomainHunter::step()
+    void DomainPrey::step()
     {
-        AgentInformation aiPredator, aiHunter;
+        AgentInformation aiPredator, aiPrey;
         aiPredator = ptrPredator->getAgentInformation();
-        aiHunter = ptrHunter->getAgentInformation();
+        aiPrey = ptrPrey->getAgentInformation();
 
         VLOG(2) << "Predator at " << aiPredator.position.x << "," << aiPredator.position.y;
-        VLOG(2) << "Hunter at " << aiHunter.position.x << "," << aiHunter.position.y;
+        VLOG(2) << "Prey at " << aiPrey.position.x << "," << aiPrey.position.y;
 
-
-        if ((aiHunter.position.x == aiPredator.position.x)
-                && (aiHunter.position.y == aiPredator.position.y)) {
-            LOG(INFO) << "Predator caught by Hunter";
-            predatorCaughtIds.push_back(aiPredator.agentId);
-            numPredCaught++;
+        if ((aiPrey.position.x == aiPredator.position.x)
+                && (aiPrey.position.y == aiPredator.position.y)) {
+            LOG(INFO) << "Prey caught by Predator";
+            preyCaughtIds.push_back(aiPrey.agentId);
+            numPreyCaught++;
         }
 
         // build vector<AgentInformation>
         vector<AgentInformation> vAgentInformation;
         vAgentInformation.clear();
         vAgentInformation.push_back(aiPredator);
-        vAgentInformation.push_back(aiHunter);
+        vAgentInformation.push_back(aiPrey);
 
-        // move hunter
-        ptrHunter->move(vAgentInformation);
+        // move prey
+        ptrPrey->move(vAgentInformation);
         // move predator
         ptrPredator->move(vAgentInformation);
 
@@ -114,24 +117,24 @@ namespace PredatorPreyHunter
         }
     }
 
-    double DomainHunter::run()
+    double DomainPrey::run()
     {
         uint noSteps = 0;
-        uint prevNumPredCaught = 0;
-        numPredCaught = 0;
-        predatorCaughtIds = vector<uint>();
+        uint prevNumPreyCaught = 0;
+        numPreyCaught = 0;
+        preyCaughtIds = vector<uint>();
 
         do {
             VLOG(1) << "step: " << noSteps << endl;
             (void) step();
-            if (numPredCaught > 0 && numPredCaught > prevNumPredCaught) {
-                LOG(INFO) << "PREDATOR CAUGHT!!!!" << endl;
-                prevNumPredCaught = numPredCaught;
-                VLOG(5)
-                        << "Number of predators caught is " << numPredCaught
-                                << " and the total number of predators is " << numPredators;
-                if (numPredCaught == numPredators) {
-                    LOG(INFO) << "All predators caught in " << noSteps << " steps!";
+            if (numPreyCaught > 0 && numPreyCaught > prevNumPreyCaught) {
+                LOG(INFO) << "PREY CAUGHT!!!!" << endl;
+                LOG(INFO)
+                        << "Number of prey caught is " << numPreyCaught
+                                << " and the total number of prey is " << numPrey;
+                prevNumPreyCaught = numPreyCaught;
+                if (numPreyCaught == numPrey) {
+                    LOG(INFO) << "All prey caught in " << noSteps << " steps!";
                     return calculateFitness(noSteps);
                 }
             }
@@ -144,23 +147,22 @@ namespace PredatorPreyHunter
         return calculateFitness(noSteps);
     }
 
-    double DomainHunter::calculateFitness(const uint& stepCurrent)
+    double DomainPrey::calculateFitness(const uint& stepCurrent)
     {
         double fitness = 0.0;
-        if (numPredCaught > 0) {     // :-(
-            VLOG(2) << "maxSteps - stepCurrent: " << maxSteps - stepCurrent << endl;
-            fitness = static_cast<double>(-1) * 10 * (maxSteps - stepCurrent) * numPredCaught;
-            LOG(INFO) << "Fitness: " << fitness << endl;
+        if (numPreyCaught > 0) {     // Yay
+            fitness = static_cast<double>(10) * (maxSteps - stepCurrent) * numPreyCaught;
             return fitness;
         } else {
             // calculate distance from hunter and prey
             Position positionPredator = ptrPredator->getPosition();
-            Position positionHunter = ptrHunter->getPosition();
-            uint distanceHunter;
-            distanceHunter = ptrGridWorld->distance(positionHunter, positionPredator);
+            Position positionPrey = ptrPrey->getPosition();
+            uint distancePrey;
+            distancePrey = ptrGridWorld->distance(positionPrey, positionPredator);
             // reward for being close to prey and far away from hunter
+            distancePrey = ptrGridWorld->getWidth() + ptrGridWorld->getHeight() - distancePrey;
             // take into account the size of the grid for rewarding later
-            fitness = static_cast<double>(distanceHunter);     // if by any chance it reaches here although it won't
+            fitness = static_cast<double>(distancePrey);     // if by any chance it reaches here although it won't
             return fitness;
         }
     }
