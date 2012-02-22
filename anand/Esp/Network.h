@@ -55,12 +55,12 @@ namespace EspPredPreyHunter
 
         virtual ~Network()
         {
-            for(int i = 0; i < neurons.size(); i++){
+            for(uint i = 0; i < neurons.size(); i++){
                 delete neurons[i];
             }
             neurons.clear();
 
-            for(int i = 0; i < networkSubPop.size(); i++){
+            for(uint i = 0; i < networkSubPop.size(); i++){
                 delete networkSubPop[i];
             }
             networkSubPop.clear();
@@ -88,6 +88,7 @@ namespace EspPredPreyHunter
         void incrementTests();
         virtual void activate(const vector<double> &input, vector<double> &output) = 0;
         virtual void save(char *filename) = 0;
+        string toString();
     };
 }
 

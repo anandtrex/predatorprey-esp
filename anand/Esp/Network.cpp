@@ -8,6 +8,7 @@
 #include "Network.h"
 
 #include <stdio.h>
+#include <sstream>
 
 namespace EspPredPreyHunter
 {
@@ -188,5 +189,19 @@ namespace EspPredPreyHunter
         for (int i = 0; i < networkSubPop.size(); i++) {
             networkSubPop[i]->recombineHallOfFame(network, i);
         }
+    }
+
+    using std::ostringstream;
+
+    string Network::toString()
+    {
+        ostringstream sout;
+        for(int i = 0; i < neurons.size(); i++){
+            for(int j = 0; j < neurons[i]->weight.size();j++){
+                sout << neurons[i]->weight[j] << " ";
+            }
+            sout << endl;
+        }
+        return sout.str();
     }
 }

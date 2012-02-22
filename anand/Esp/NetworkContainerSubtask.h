@@ -44,6 +44,11 @@ namespace EspPredPreyHunter
          * @return
          */
         virtual void activate(const vector<double>& input, vector<double>& output);
+
+        virtual string toString()
+        {
+
+        }
     };
 }
 

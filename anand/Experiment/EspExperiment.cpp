@@ -101,6 +101,14 @@ namespace EspPredPreyHunter
         //domain.disableDisplay();
     }
 
+    void EspExperiment::saveNetworkToFile(const string& fileName, NetworkContainer* networkContainer)
+    {
+        ofstream fout;
+        fout.open(fileName.c_str());
+        fout << networkContainer->toString();
+        fout.close();
+    }
+
     /**
      * This pretty much runs the entire ESP experiment
      */
@@ -166,6 +174,7 @@ namespace EspPredPreyHunter
             if(generation > max(tempDiff, 0)){
                 domain->init(generationBestNetwork);
                 domain->run(concatStringDouble("champion_", generation)+".log");
+                saveNetworkToFile(concatStringDouble("champion_", generation)+".net", generationBestNetwork);
             }
         }
 

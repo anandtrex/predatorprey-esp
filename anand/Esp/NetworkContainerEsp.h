@@ -46,6 +46,8 @@ namespace EspPredPreyHunter
          * @return
          */
         void activate(const vector<double>& input, vector<double>& output);
+
+        string toString();
     };
 }
 #endif /* NETWORKCONTAINERESP_H_ */

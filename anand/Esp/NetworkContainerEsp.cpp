@@ -4,6 +4,8 @@
  *  Created on: Feb 13, 2012
  *      Author: anand
  */
+#include <sstream>
+#include <time.h>
 
 #include "NetworkContainerEsp.h"
 
@@ -112,6 +114,35 @@ namespace EspPredPreyHunter
             // It comes into else only if there is a single network overall
             output.assign(tempSingleOutputs.begin(), tempSingleOutputs.end());
         }
+    }
+
+    using std::ostringstream;
+    using std::endl;
+
+    string NetworkContainerEsp::toString()
+    {
+        ostringstream sout;
+        time_t rawtime;
+        time(&rawtime);
+
+        sout << "Network Container description" << endl;
+        sout << "Timestamp: " << ctime(&rawtime) << endl << endl;
+
+        for(uint i = 0; i < networks.size() - 1; i++){
+            sout << "N" << i << ":" << endl;
+            sout << "I:2" << "<-";
+            sout << networks[i]->toString();
+            sout << "O:5" << "<-C" << networks.size() - 1;
+            sout << endl;
+        }
+
+        sout << "I:14" << "<-N";
+        sout << "C" << networks.size() - 1 << ":" << endl;
+        sout << networks[networks.size() - 1]->toString();
+        sout << "O:5" << "->" << networks.size() - 1;
+        sout << endl;
+
+        return sout.str();
     }
 }
 

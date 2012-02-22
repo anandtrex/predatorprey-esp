@@ -47,6 +47,8 @@ namespace EspPredPreyHunter
          * @return
          */
         virtual void activate(const vector<double>& input, vector<double>& output) = 0;
+
+        virtual string toString() = 0;
     };
 }
 #endif /* NETWORKESPCOMBINER_H_ */

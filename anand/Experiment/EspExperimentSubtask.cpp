@@ -48,7 +48,7 @@ namespace EspPredPreyHunter
         domainTotal = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey,
                 numHunters,
                 static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability")),
-                static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability")) - 0.1);
+                static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability")));
         LOG(INFO) << "Initialized overall domain with " << numPredators << " predators,"
                 << numPrey << " prey and " << numHunters << " hunters.";
         LOG(INFO) << "Hunter move probability is "

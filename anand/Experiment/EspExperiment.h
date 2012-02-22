@@ -36,6 +36,7 @@ namespace EspPredPreyHunter
         {
         }
         virtual void start();
+        void saveNetworkToFile(const string& fileName, NetworkContainer* networkContainer);
         NetworkContainer* evolve(Domain* domain, NetworkContainer* networkContainer, Esp* esp, bool append);
     };
 }
