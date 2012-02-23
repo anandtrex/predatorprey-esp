@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
 
 public class VisualizePredatorPreyHunterDomain {
 	 public static void main(String[] args) throws IOException {
-		  if ( args.length < 1 ) {
+		  if ( args.length < 3 ) {
 			  System.out.println( "Expecting path of file containing agent positions" );
 		  }
 		  String pathFileAgentPositions = args[0];
@@ -19,9 +19,12 @@ public class VisualizePredatorPreyHunterDomain {
 		  ArrayList<AgentPositions> alAgentPositions = extractAgentPositions.extract();
 		  System.out.println( "Showing agent positions" );
 		  int counter = 1;
+      // Assumes it's a square grid!
+      int gridSize = Integer.parseInt(args[1]);
+      int delay = Integer.parseInt(args[2]);
 		  for (AgentPositions agentPositions : alAgentPositions) {
-			System.out.println( counter + " " + agentPositions );
-			counter++;
+        System.out.println( counter + " " + agentPositions );
+        counter++;
 		  }
           FrameVisualizeAgents frameVisualizeAgents = new FrameVisualizeAgents( "Visualize Agents" );
           frameVisualizeAgents.setSize( 200, 200 );
@@ -32,13 +35,13 @@ public class VisualizePredatorPreyHunterDomain {
           agentCanvas.setPreferredSize( new Dimension( 100, 100 ) );
           frameVisualizeAgents.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
           frameVisualizeAgents.setVisible( true );
-          GridWorld gridWorld = new GridWorld( 10, 10 );
+          GridWorld gridWorld = new GridWorld( gridSize, gridSize );
           try {
         	  counter = 1;
 	          for ( AgentPositions agentPositions : alAgentPositions ) {
 	        	  System.out.println( "STEP " + counter );
 	        	  agentCanvas.drawNext( gridWorld, agentPositions );
-	        	  Thread.sleep( 300 );
+	        	  Thread.sleep( delay );
 	        	  counter++;
 	          }
           } catch ( InterruptedException ie ) {
