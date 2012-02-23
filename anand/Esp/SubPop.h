@@ -32,7 +32,7 @@ namespace EspPredPreyHunter
         SubPop(const int& size, const int& geneSize);
         ~SubPop()
         {
-            for(int i = 0; i < pop.size(); i++){
+            for(uint i = 0; i < pop.size(); i++){
                 delete pop[i];
             }
             pop.clear();

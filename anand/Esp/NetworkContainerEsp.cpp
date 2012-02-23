@@ -126,20 +126,20 @@ namespace EspPredPreyHunter
         time(&rawtime);
 
         sout << "Network Container description" << endl;
-        sout << "Timestamp: " << ctime(&rawtime) << endl << endl;
+        sout << "Timestamp: " << ctime(&rawtime) << endl;
 
         for(uint i = 0; i < networks.size() - 1; i++){
             sout << "N" << i << ":" << endl;
-            sout << "I:2" << "<-";
+            sout << "I:2" << "<-" << endl;
             sout << networks[i]->toString();
-            sout << "O:5" << "<-C" << networks.size() - 1;
+            sout << "O:5" << "->C" << networks.size() - 1 << endl;
             sout << endl;
         }
 
-        sout << "I:14" << "<-N";
         sout << "C" << networks.size() - 1 << ":" << endl;
+        sout << "I:10" << "<-N" << endl;
         sout << networks[networks.size() - 1]->toString();
-        sout << "O:5" << "->" << networks.size() - 1;
+        sout << "O:5" << "->" << endl;
         sout << endl;
 
         return sout.str();
