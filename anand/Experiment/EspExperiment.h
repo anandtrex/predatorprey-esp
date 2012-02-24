@@ -9,7 +9,6 @@
 #define ESPEXPERIMENT_H_
 
 #include "Experiment.h"
-#include "../Esp/Esp.h"
 #include "../Domain/DomainTotal.h"
 
 namespace EspPredPreyHunter
@@ -20,23 +19,24 @@ namespace EspPredPreyHunter
 
     class EspExperiment: public Experiment
     {
-        DomainTotal* domain;
-        Esp* esp;
-
     protected:
+        DomainTotal* domainTotal;
+        NetworkContainer* networkContainerTotal;
         uint numGenerations;
-        uint popSize;
+        uint numEvalTrials;
+        uint numTrialsPerGen;
     public:
         EspExperiment(const char* configFilePath);
         EspExperiment()
-            :Experiment()
+                : Experiment()
         {
         }
         virtual ~EspExperiment()
         {
         }
         virtual void start();
-        NetworkContainer* evolve(Domain* domain, NetworkContainer* networkContainer, Esp* esp, bool append);
+        void saveNetworkToFile(const string& fileName, NetworkContainer* networkContainer);
+        NetworkContainer* evolve(Domain* domain, NetworkContainer* networkContainer);
     };
 }
 

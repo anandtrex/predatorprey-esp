@@ -58,7 +58,7 @@ Domain/Hunter.cpp
 Domain/Visualizer.cpp
 #Domain/PredatorNaive.cpp
 #Domain/PredatorRandom.cpp
-Esp/Esp.cpp
+#Esp/Esp.cpp
 Esp/FeedForwardNetwork.cpp
 Esp/NetworkContainerEsp.cpp
 Esp/NetworkContainerSubtask.cpp
@@ -68,7 +68,8 @@ Esp/Neuron.cpp
 Esp/SubPop.cpp
 Experiment/EspExperiment.cpp
 Experiment/EspExperimentSubtask.cpp
-Experiment/EspExperimentSubtaskInverted.cpp)
+Experiment/EspExperimentSubtaskInverted.cpp
+)
 
 add_executable(esp-predprey ${SRCS})
 #target_link_libraries(esp-predprey ${CORELIBS} ${CMAKE_BINARY_DIR}/glog/lib/glog.so ${CMAKE_BINARY_DIR}/libconfig/lib/libconfig++.so)

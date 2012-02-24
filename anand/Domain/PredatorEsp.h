@@ -9,7 +9,6 @@
 #define PREDATORESP_H_
 
 #include "Predator.h"
-#include "../Esp/Esp.h"
 #include "../Esp/NetworkContainer.h"
 
 namespace PredatorPreyHunter

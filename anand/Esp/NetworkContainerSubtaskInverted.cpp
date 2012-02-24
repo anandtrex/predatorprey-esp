@@ -16,11 +16,12 @@ namespace EspPredPreyHunter
 
     }
 
-    NetworkContainerSubtaskInverted::NetworkContainerSubtaskInverted(
-            const vector<NetworkContainer*> networkContainers)
-            : NetworkContainerSubtask(networkContainers)
+    NetworkContainerSubtaskInverted::NetworkContainerSubtaskInverted(const uint& nHiddenNeurons,
+            const uint& popSize, const uint& netTp, const uint& numNetworks,
+            const uint& numInputsPerNetwork, const uint& numOutputsPerNetwork)
+            : NetworkContainerSubtask(nHiddenNeurons, popSize, netTp, numNetworks,
+                    numInputsPerNetwork, numOutputsPerNetwork)
     {
-        // NOTE: The networks to be evolved are set through setNetwork
     }
 
     NetworkContainerSubtaskInverted::~NetworkContainerSubtaskInverted()
@@ -35,7 +36,7 @@ namespace EspPredPreyHunter
         VLOG(5) << "Input is " << vecToString(input);
         vector<double> tempSingleOutputs(input);
         int k = input.size() / networkContainers.size();
-        VLOG(5) << " k is " << k;
+        VLOG(4) << " k is " << k;
         for (uint i = 0; i < networkContainers.size(); i++) {
             // FIXME Assuming that the number of outputs is 5
             vector<double> tempOutput = vector<double>(5);
@@ -54,18 +55,18 @@ namespace EspPredPreyHunter
         vector<double> tempOutput(2);
         combinerNetwork->activate(tempSingleOutputs, tempOutput);
 
-        if(output.size()!=5)
+        if (output.size() != 5)
             LOG(ERROR) << "Output size wasn't 5!";
 
         if (tempOutput[0] > tempOutput[1]) {
             VLOG(5) << "Output 0 is active being " << tempOutput[0];
-            for(int i = 0; i < 5; i++){
+            for (int i = 0; i < 5; i++) {
                 output[i] = tempSingleOutputs[input.size() + i];
             }
             //output.assign(tempSingleOutputs.begin(), tempSingleOutputs.begin() + 5);
         } else {
             VLOG(5) << "Output 1 is active being " << tempOutput[1];
-            for(int i = 0; i < 5; i++){
+            for (int i = 0; i < 5; i++) {
                 output[i] = tempSingleOutputs[input.size() + i + 5];
             }
             //output.assign(tempSingleOutputs.begin() + 5, tempSingleOutputs.end());

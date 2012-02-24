@@ -24,11 +24,6 @@ namespace EspPredPreyHunter
     class SubPop;
     class Network     //: public subPop
     {
-        enum
-        {
-            MIN = 0
-        };     // = 0; 0 means higher fitness better, 1 otherwise
-
         uint subPopSize;
         bool evolvable;
 
@@ -49,20 +44,23 @@ namespace EspPredPreyHunter
         uint numHiddenNeurons;
 
     public:
+        uint numInputs;
+        uint numOutputs;
+
         vector<Neuron*> neurons;
 
-        Network(const uint& numHiddenNeurons, const uint& geneSize, const uint& subPopSize);
+        Network(const uint& numHiddenNeurons, const uint& subPopSize, const uint& numInputs, const uint& numOutputs);
 
         virtual ~Network()
         {
-            for(int i = 0; i < neurons.size(); i++){
+            for(uint i = 0; i < neurons.size(); i++){
                 delete neurons[i];
             }
             neurons.clear();
-
-            for(int i = 0; i < networkSubPop.size(); i++){
+            /*
+            for(uint i = 0; i < networkSubPop.size(); i++){
                 delete networkSubPop[i];
-            }
+            }*/
             networkSubPop.clear();
         }
 
@@ -88,6 +86,7 @@ namespace EspPredPreyHunter
         void incrementTests();
         virtual void activate(const vector<double> &input, vector<double> &output) = 0;
         virtual void save(char *filename) = 0;
+        string toString();
     };
 }
 

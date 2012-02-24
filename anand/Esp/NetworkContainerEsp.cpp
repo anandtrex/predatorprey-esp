@@ -4,23 +4,53 @@
  *  Created on: Feb 13, 2012
  *      Author: anand
  */
+#include <sstream>
+#include <time.h>
 
 #include "NetworkContainerEsp.h"
+#include "FeedForwardNetwork.h"
 
 namespace EspPredPreyHunter
 {
     NetworkContainerEsp::NetworkContainerEsp()
-            : networks(0)
+            : NetworkContainer(0, 0, 0), networks(0)
     {
+
     }
 
     NetworkContainerEsp::NetworkContainerEsp(const vector<Network*> networks)
-            : networks(networks)
+            : NetworkContainer(networks[0]->numInputs, networks[0]->numOutputs, networks.size()), networks(networks)
     {
-        if (networks.size() == 1)
-            combine = 0;
-        else
-            combine = 1;
+        combine = (networks.size() == 1) ? 0 : 1;
+    }
+
+    NetworkContainerEsp::NetworkContainerEsp(const uint& nHiddenNeurons, const uint& popSize,
+            const uint& netTp, const uint& numNetworks, const uint& numInputsPerNetwork,
+            const uint& numOutputsPerNetwork)
+            : NetworkContainer(numInputsPerNetwork, numOutputsPerNetwork,
+                    numNetworks + (numNetworks == 1? 0 : 1))
+    {
+        combine = (numNetworks == 1) ? 0 : 1;
+
+        LOG(INFO) << "Combine is " << combine;
+        LOG(INFO) << "Number of networks (including combiner) is " << this->numNetworks;
+
+        const uint combinerNetworkNumInputs = numNetworks * numOutputsPerNetwork;
+        LOG(INFO) << "Number of combiner network inputs is " << combinerNetworkNumInputs;
+
+        // Initialize and create networks
+        for (uint i = 0; i < this->numNetworks - combine; i++) {
+            networks.push_back(
+                    new FeedForwardNetwork(nHiddenNeurons, popSize, numInputsPerNetwork,
+                            numOutputsPerNetwork));
+        }
+        for (uint i = this->numNetworks - combine; i < this->numNetworks; i++) {
+            networks.push_back(
+                    new FeedForwardNetwork(nHiddenNeurons, popSize, combinerNetworkNumInputs,
+                            numOutputsPerNetwork));
+        }
+        LOG(INFO)
+                << "Initialized and created networks. (subpopulations initialized within the networks)";
     }
 
     NetworkContainerEsp::~NetworkContainerEsp()
@@ -28,6 +58,7 @@ namespace EspPredPreyHunter
 
     }
 
+    /*
     void NetworkContainerEsp::setNetwork(const NetworkContainer& networkContainer)
     {
         networks = networkContainer.getNetworks();
@@ -35,7 +66,7 @@ namespace EspPredPreyHunter
             combine = 0;
         else
             combine = 1;
-    }
+    }*/
 
     void NetworkContainerEsp::setFitness(const double& fitness)
     {
@@ -85,6 +116,22 @@ namespace EspPredPreyHunter
         }
     }
 
+    void NetworkContainerEsp::evalReset()
+    {
+        for (uint i = 0; i < numNetworks; i++) {
+            networks[i]->evalReset();
+        }
+    }
+
+    void NetworkContainerEsp::initializeNetworks()
+    {
+        VLOG(4) << "Initializing networks";
+        for (uint i = 0; i < numNetworks; i++) {
+            // Selects random neurons from subpopulation and returns it
+            networks[i]->setNeurons();
+        }
+    }
+
     vector<Network*> NetworkContainerEsp::getNetworks() const
     {
         return networks;
@@ -99,8 +146,8 @@ namespace EspPredPreyHunter
         for (uint i = 0; i < networks.size() - combine; i++) {     // sans combiner
             // FIXME Assuming that the number of outputs is 5
             vector<double> tempOutput = vector<double>(5);
-            // FIXME assuming number of inputs is 2
-            const double tempInput[] = { input[2 * i], input[2 * i + 1] };
+            // FIXME assuming number of inputs is 3 -- x, y, and type of agent
+            const double tempInput[] = { input[3 * i], input[3 * i + 1] };
             networks[i]->activate(makeVector(tempInput), tempOutput);
             tempSingleOutputs.insert(tempSingleOutputs.end(), tempOutput.begin(), tempOutput.end());
         }
@@ -112,6 +159,35 @@ namespace EspPredPreyHunter
             // It comes into else only if there is a single network overall
             output.assign(tempSingleOutputs.begin(), tempSingleOutputs.end());
         }
+    }
+
+    using std::ostringstream;
+    using std::endl;
+
+    string NetworkContainerEsp::toString()
+    {
+        ostringstream sout;
+        time_t rawtime;
+        time(&rawtime);
+
+        sout << "Network Container description" << endl;
+        sout << "Timestamp: " << ctime(&rawtime) << endl;
+
+        for (uint i = 0; i < networks.size() - 1; i++) {
+            sout << "N" << i << ":" << endl;
+            sout << "I:2" << "<-" << endl;
+            sout << networks[i]->toString();
+            sout << "O:5" << "->C" << networks.size() - 1 << endl;
+            sout << endl;
+        }
+
+        sout << "C" << networks.size() - 1 << ":" << endl;
+        sout << "I:10" << "<-N" << endl;
+        sout << networks[networks.size() - 1]->toString();
+        sout << "O:5" << "->" << endl;
+        sout << endl;
+
+        return sout.str();
     }
 }
 

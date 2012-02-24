@@ -6,24 +6,32 @@
  */
 
 #include "NetworkContainerSubtask.h"
+#include "FeedForwardNetwork.h"
 
 namespace EspPredPreyHunter
 {
     NetworkContainerSubtask::NetworkContainerSubtask()
-        :networkContainers(0)
+            : NetworkContainer(0, 0, 0), networkContainers(0)
     {
     }
 
-    NetworkContainerSubtask::NetworkContainerSubtask(
-            const vector<NetworkContainer*> networkContainers)
-            : networkContainers(networkContainers)
+    NetworkContainerSubtask::NetworkContainerSubtask(const uint& nHiddenNeurons,
+            const uint& popSize, const uint& netTp, const uint& numNetworks,
+            const uint& numInputsPerNetwork, const uint& numOutputsPerNetwork)
+            : NetworkContainer(numInputsPerNetwork,
+                    numOutputsPerNetwork, numNetworks + (numNetworks == 1 ? 0 : 1))
     {
-        VLOG(5) << "Initialized networkContainers with " << this->networkContainers.size() << "containers";
-        // NOTE: The networks to be evolved are set through setNetwork
+        combinerNetwork = new FeedForwardNetwork(nHiddenNeurons, popSize, numInputsPerNetwork,
+                numOutputsPerNetwork);
     }
 
     NetworkContainerSubtask::~NetworkContainerSubtask()
     {
+    }
+
+    void NetworkContainerSubtask::initializeNetworks()
+    {
+        combinerNetwork->setNeurons();
     }
 
     void NetworkContainerSubtask::setFitness(const double& fitness)
@@ -55,6 +63,11 @@ namespace EspPredPreyHunter
         combinerNetwork->mutate();
     }
 
+    void NetworkContainerSubtask::evalReset()
+    {
+        combinerNetwork->evalReset();
+    }
+
     void NetworkContainerSubtask::recombineHallOfFame(NetworkContainer* hallOfFameNetwork)
     {
         VLOG(5) << "Doing recombine hall of fame";
@@ -77,6 +90,7 @@ namespace EspPredPreyHunter
         return networkContainers;
     }
 
+    /*
     void NetworkContainerSubtask::setNetwork(const NetworkContainer& networkContainer)
     {
         // NOTE: This will be just one network!
@@ -85,19 +99,23 @@ namespace EspPredPreyHunter
             LOG(FATAL) << "There can't be more than one hall of fame network!";
         }
         combinerNetwork = networks[0];
+    }*/
+
+    void NetworkContainerSubtask::setNetworkContainers(const vector<NetworkContainer*>& networkContainers)
+    {
+        this->networkContainers = networkContainers;
     }
 
     void NetworkContainerSubtask::activate(const vector<double>& input, vector<double>& output)
     {
-        if(networkContainers.size() == 0)
+        if (networkContainers.size() == 0)
             LOG(FATAL) << "Trying to activate empty container!";
 
         vector<double> tempSingleOutputs(input);
         int k = input.size() / networkContainers.size();
+        VLOG(4) << "k is " << k;
         for (uint i = 0; i < networkContainers.size(); i++) {
-            // FIXME Assuming that the number of outputs is 5
             vector<double> tempOutput = vector<double>(5);
-            // FIXME assuming number of inputs is 2
             vector<double> tempInput = vector<double>();
             for (int j = 0; j < k; j++) {
                 tempInput.push_back(input[k * i + j]);

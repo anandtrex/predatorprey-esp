@@ -8,24 +8,20 @@
 #include "Network.h"
 
 #include <stdio.h>
+#include <sstream>
 
 namespace EspPredPreyHunter
 {
     using std::vector;
     using std::endl;
 
-    Network::Network(const uint& numHiddenNeurons, const uint& geneSize, const uint& subPopSize) :
-            subPopSize(subPopSize), networkSubPop(numHiddenNeurons), geneSize(geneSize), numHiddenNeurons(numHiddenNeurons)
+    Network::Network(const uint& numHiddenNeurons, const uint& subPopSize, const uint& numInputs,
+            const uint& numOutputs)
+            : numHiddenNeurons(numHiddenNeurons), subPopSize(subPopSize), networkSubPop(
+                    numHiddenNeurons), numInputs(numInputs), numOutputs(numOutputs), geneSize(
+                    numInputs + numOutputs), activation(numHiddenNeurons), neurons(numHiddenNeurons)
     {
-        VLOG(4) << "Creating generic network";
-        activation = vector<double>(numHiddenNeurons);
-        neurons = vector<Neuron*>(numHiddenNeurons);
-
-        if (MIN)
-            fitness = 10000000;
-        else
-            fitness = 0.0;
-
+        fitness = 0.0;
         evolvable = true;
         create();
     }
@@ -43,6 +39,7 @@ namespace EspPredPreyHunter
     // Places neuron n into this network
     void Network::setNeuron(Neuron *n, int position)
     {
+        VLOG(4) << "In setNeuron";
         neurons[position] = n;
     }
 
@@ -137,9 +134,11 @@ namespace EspPredPreyHunter
 
     void Network::setNeurons()
     {
+        VLOG(4) << "Setting neurons";
         for (int i = 0; i < numHiddenNeurons; i++) {
             setNeuron(networkSubPop[i]->selectNeuron(), i);
         }
+        VLOG(4) << "Done setting neurons";
     }
 
     void Network::setFitness(const double& fitness)
@@ -188,5 +187,19 @@ namespace EspPredPreyHunter
         for (int i = 0; i < networkSubPop.size(); i++) {
             networkSubPop[i]->recombineHallOfFame(network, i);
         }
+    }
+
+    using std::ostringstream;
+
+    string Network::toString()
+    {
+        ostringstream sout;
+        for (int i = 0; i < neurons.size(); i++) {
+            for (int j = 0; j < neurons[i]->weight.size(); j++) {
+                sout << neurons[i]->weight[j] << " ";
+            }
+            sout << endl;
+        }
+        return sout.str();
     }
 }

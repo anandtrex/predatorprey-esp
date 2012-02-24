@@ -53,6 +53,8 @@ namespace PredatorPreyHunter
         Position randomPosition = ptrGridWorld->getRandomPosition();
         ptrPredator = dynamic_cast<Predator*>(new PredatorEsp(ptrGridWorld, 1, randomPosition,
                 espNetwork));
+        LOG(INFO) << "[CREATED] Predator at " << randomPosition.x << ", " << randomPosition.y
+                        << " with id " << 1 << endl;
 
         // initialize prey
         randomPosition = ptrGridWorld->getRandomPosition();

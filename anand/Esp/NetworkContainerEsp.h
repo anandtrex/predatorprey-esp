@@ -26,9 +26,13 @@ namespace EspPredPreyHunter
     public:
         NetworkContainerEsp();
         NetworkContainerEsp(const vector<Network*> networks);
+        NetworkContainerEsp(const uint& nHiddenNeurons, const uint& popSize, const uint& netTp,
+                const uint& numNetworks, const uint& numInputsPerNetwork,
+                const uint& numOutputsPerNetwork);
         ~NetworkContainerEsp();
 
-        void setNetwork(const NetworkContainer& networkContainer);
+        void initializeNetworks();
+        //void setNetwork(const NetworkContainer& networkContainer);
         void setFitness(const double& fitness);
         void incrementTests();
         void average();
@@ -36,6 +40,7 @@ namespace EspPredPreyHunter
         void qsortNeurons();
         // For subpop
         void mutate();
+        void evalReset();
         void recombineHallOfFame(NetworkContainer* hallOfFameNetwork);
         vector<Network*> getNetworks() const;
 
@@ -46,6 +51,8 @@ namespace EspPredPreyHunter
          * @return
          */
         void activate(const vector<double>& input, vector<double>& output);
+
+        string toString();
     };
 }
 #endif /* NETWORKCONTAINERESP_H_ */

@@ -9,7 +9,6 @@
 #define ESPEXPERIMENTSUBTASK_H_
 
 #include "EspExperiment.h"
-#include "../Esp/Esp.h"
 #include "../Domain/DomainTotal.h"
 #include "../Domain/DomainPrey.h"
 #include "../Domain/DomainHunter.h"
@@ -23,11 +22,9 @@ namespace EspPredPreyHunter
 
     class EspExperimentSubtask: EspExperiment
     {
-        Esp* espDomainTotal;
-        Esp* espDomainPrey;
-        Esp* espDomainHunter;
+        NetworkContainer* networkContainerPrey;
+        NetworkContainer* networkContainerHunter;
 
-        DomainTotal* domainTotal;
         DomainPrey* domainPrey;
         DomainHunter* domainHunter;
 

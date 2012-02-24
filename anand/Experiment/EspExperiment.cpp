@@ -13,6 +13,7 @@
 
 #include <limits>
 #include <algorithm>
+#include <fstream>
 
 #include <libconfig.h++>
 
@@ -22,6 +23,7 @@ namespace EspPredPreyHunter
     using std::pair;
     using std::numeric_limits;
     using std::max;
+    using std::ofstream;
     using PredatorPreyHunter::Domain;
     using PredatorPreyHunter::fetchRandomDouble;
 
@@ -46,7 +48,7 @@ namespace EspPredPreyHunter
         uint numPredators = static_cast<uint>(cfg.lookup("agents:predator:number"));
         uint numPrey = static_cast<uint>(cfg.lookup("agents:prey:number"));
 
-        domain = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey, numHunters,
+        domainTotal = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey, numHunters,
                 static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability")),
                 static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability")));
         LOG(INFO) << "Initialized domain with " << numPredators << " predators," << numPrey
@@ -56,18 +58,41 @@ namespace EspPredPreyHunter
                 << " and prey move probability is "
                 << static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability"));
 
-        popSize = cfg.lookup("experiment:esp:population_size");
+        const uint popSize = static_cast<uint>(cfg.lookup("experiment:esp:population_size"));
+        const uint numHiddenNeurons = static_cast<uint>(cfg.lookup(
+                "experiment:esp:num_hidden_neurons"));
+        const uint netType = static_cast<uint>(cfg.lookup("experiment:esp:net_type"));
         // TODO Configurable number of actions
-        esp = new Esp(static_cast<uint>(cfg.lookup("experiment:esp:num_hidden_neurons")), popSize,
-                0, numHunters + numPrey, 2, 5);
-        LOG(INFO) << "Initialized esp with "
-                << static_cast<uint>(cfg.lookup("experiment:esp:num_hidden_neurons"))
-                << " as number of hidden neurons, " << "population size " << popSize
-                << ", number of other agents as " << numHunters + numPrey << "and "
-                << "number of actions as " << 5;
+
+        const int numInputsPerNetwork = 3;
+        const int numOutputsPerNetwork = 5;
+
+        LOG(INFO) << "Initialising network container with " << numHiddenNeurons
+                       << " as number of hidden neurons, " << "population size " << popSize
+                       << ", number of networks as " << numHunters + numPrey
+                       << " number of inputs per network as " << numInputsPerNetwork
+                       << " and number of outputs as " << numOutputsPerNetwork;
+
+        /*
+         esp = new Esp(static_cast<uint>(cfg.lookup("experiment:esp:num_hidden_neurons")), popSize,
+         0, numHunters + numPrey, numInputsPerNetwork, numOutputsPerNetwork);
+         LOG(INFO) << "Initialized esp with "
+         << static_cast<uint>(cfg.lookup("experiment:esp:num_hidden_neurons"))
+         << " as number of hidden neurons, " << "population size " << popSize
+         << ", number of other agents as " << numHunters + numPrey << "and "
+         << "number of actions as " << numOutputsPerNetwork;*/
+        networkContainerTotal = new NetworkContainerEsp(numHiddenNeurons, popSize, netType,
+                numHunters + numPrey, numInputsPerNetwork, numOutputsPerNetwork);
 
         numGenerations = cfg.lookup("experiment:esp:num_generations");
         LOG(INFO) << "Number of generations is " << numGenerations;
+
+        numEvalTrials = 5;
+        LOG(INFO) << "Number of trials for evaluation is " << numEvalTrials;
+
+        // NOTE
+        numTrialsPerGen = popSize * 10;
+        LOG(INFO) << "Number of trials per generation is " << numTrialsPerGen;
 
         // Display related stuff
         bool displayEnabled = cfg.lookup("experiment:display");
@@ -96,9 +121,17 @@ namespace EspPredPreyHunter
             color.push_back(static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:color:b")));
             colors.push_back(color);
 
-            domain->enableDisplay(colors[0], colors[1], colors[2]);
+            domainTotal->enableDisplay(colors[0], colors[1], colors[2]);
         }
-        //domain.disableDisplay();
+    }
+
+    void EspExperiment::saveNetworkToFile(const string& fileName,
+            NetworkContainer* networkContainer)
+    {
+        ofstream fout;
+        fout.open(fileName.c_str());
+        fout << networkContainer->toString();
+        fout.close();
     }
 
     /**
@@ -106,35 +139,35 @@ namespace EspPredPreyHunter
      */
     void EspExperiment::start()
     {
-        evolve(domain, new NetworkContainerEsp(), esp, false);
+        // TODO Change this
+        LOG(INFO) << "Starting evolve";
+        evolve(domainTotal, networkContainerTotal);
     }
 
-    NetworkContainer* EspExperiment::evolve(Domain* domain, NetworkContainer* networkContainer, Esp* esp, bool append)
+    NetworkContainer* EspExperiment::evolve(Domain* domain, NetworkContainer* networkContainer)
     {
         vector<NetworkContainer*> hallOfFame = vector<NetworkContainer*>();
         NetworkContainer* generationBestNetwork;
 
-        uint numEvalTrials = 5;
-        LOG(INFO) << "Number of trials for evaluation is " << numEvalTrials;
-
-        // NOTE
-        uint numTrialsPerGen = popSize * 10;
-        LOG(INFO) << "Number of trials per generation is " << numTrialsPerGen;
-
         double fitness;
         double genMaxFitness;
         double genAverageFitness;
+        VLOG(4) << "Initializing networks";
+        networkContainer->initializeNetworks();
+        VLOG(4) << "Done initializing networks";
 
         for (uint generation = 0; generation < numGenerations; generation++) {
             genMaxFitness = -numeric_limits<double>::max();     // Minimum possible float value
             genAverageFitness = 0.0;
-            esp->evalReset();
+            networkContainer->evalReset();
             for (uint trial = 0; trial < numTrialsPerGen; trial++) {
-                networkContainer->setNetwork(*(esp->getNetwork()));
+                VLOG(4) << "Initializing networks";
+                networkContainer->initializeNetworks();
+                VLOG(4) << "Done initializing networks";
                 networkContainer->incrementTests();
                 fitness = 0.0;
-                domain->init(networkContainer);
                 for (uint evalTrial = 0; evalTrial < numEvalTrials; evalTrial++) {
+                    domain->init(networkContainer);
                     fitness += domain->run();
                 }
                 fitness /= numEvalTrials;
@@ -163,9 +196,11 @@ namespace EspPredPreyHunter
             foutGenMax << generation << " " << genMaxFitness << "\n";
             // Run it once with the generation champion to get file output
             const int tempDiff = (numGenerations - 20);
-            if(generation > max(tempDiff, 0)){
+            if (generation > max(tempDiff, 0)) {
                 domain->init(generationBestNetwork);
-                domain->run(concatStringDouble("champion_", generation)+".log");
+                domain->run(concatStringDouble("champion_", generation) + ".log");
+                saveNetworkToFile(concatStringDouble("champion_", generation) + ".net",
+                        generationBestNetwork);
             }
         }
 

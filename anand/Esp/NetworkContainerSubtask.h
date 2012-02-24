@@ -18,14 +18,18 @@ namespace EspPredPreyHunter
     class NetworkContainerSubtask: public NetworkContainer
     {
     protected:
-        const vector<NetworkContainer*> networkContainers;
+        vector<NetworkContainer*> networkContainers;
         Network* combinerNetwork;
     public:
         NetworkContainerSubtask();
-        NetworkContainerSubtask(const vector<NetworkContainer*> networkContainers);
+        NetworkContainerSubtask(const uint& nHiddenNeurons, const uint& popSize,
+                    const uint& netTp, const uint& numNetworks, const uint& numInputsPerNetwork,
+                    const uint& numOutputsPerNetwork);
         virtual ~NetworkContainerSubtask();
 
-        void setNetwork(const NetworkContainer& networkContainer);
+        void initializeNetworks();
+        //void setNetwork(const NetworkContainer& networkContainer);
+        void setNetworkContainers(const vector<NetworkContainer*>& networkContainers);
         void setFitness(const double& fitness);
         void incrementTests();
         void average();
@@ -33,6 +37,7 @@ namespace EspPredPreyHunter
         void qsortNeurons();
         // For subpop
         void mutate();
+        void evalReset();
         void recombineHallOfFame(NetworkContainer* hallOfFameNetwork);
         vector<Network*> getNetworks() const;
         vector<NetworkContainer*> getNetworkContainers() const;
@@ -44,6 +49,11 @@ namespace EspPredPreyHunter
          * @return
          */
         virtual void activate(const vector<double>& input, vector<double>& output);
+
+        virtual string toString()
+        {
+            return "None";
+        }
     };
 }
 

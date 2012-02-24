@@ -23,7 +23,9 @@ namespace EspPredPreyHunter
     {
     public:
         NetworkContainerSubtaskInverted();
-        NetworkContainerSubtaskInverted(const vector<NetworkContainer*> networkContainers);
+        NetworkContainerSubtaskInverted(const uint& nHiddenNeurons, const uint& popSize,
+                           const uint& netTp, const uint& numNetworks, const uint& numInputsPerNetwork,
+                           const uint& numOutputsPerNetwork);
         ~NetworkContainerSubtaskInverted();
         /**
          * Returns the output from the given input and outputs
