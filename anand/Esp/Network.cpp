@@ -19,7 +19,7 @@ namespace EspPredPreyHunter
             const uint& numOutputs)
             : numHiddenNeurons(numHiddenNeurons), subPopSize(subPopSize), networkSubPop(
                     numHiddenNeurons), numInputs(numInputs), numOutputs(numOutputs), geneSize(
-                    numInputs + numOutputs), activation(numHiddenNeurons), neurons(numHiddenNeurons)
+                    numInputs + numOutputs + 1 /* Bias */), activation(numHiddenNeurons), neurons(numHiddenNeurons)
     {
         fitness = 0.0;
         evolvable = true;
@@ -32,18 +32,21 @@ namespace EspPredPreyHunter
         fitness = n.fitness;
         for (int i = 0; i < numHiddenNeurons; ++i)
             *neurons[i] = *n.neurons[i];
-
-        //  return this;
     }
 
-    // Places neuron n into this network
+    /**
+     * Places neuron n into this network
+     */
     void Network::setNeuron(Neuron *n, int position)
     {
         VLOG(4) << "In setNeuron";
         neurons[position] = n;
     }
 
-    // assigns this to n
+    /**
+     * assigns this to n
+     * @param n
+     */
     void Network::setNetwork(Network *n)
     {
         fitness = n->fitness;
@@ -51,7 +54,9 @@ namespace EspPredPreyHunter
             neurons[i] = n->neurons[i];
     }
 
-    // add network fitness to its neurons
+    /**
+     * add network fitness to its neurons
+     */
     void Network::addFitness()
     {
         for (int i = 0; i < numHiddenNeurons; ++i)
@@ -64,7 +69,9 @@ namespace EspPredPreyHunter
             activation[i] = 0.0;
     }
 
-    // increment net's neurons' tests field
+    /**
+     * increment net's neurons' tests field
+     */
     void Network::incrementTests()
     {
         for (int i = 0; i < numHiddenNeurons; ++i)

@@ -12,15 +12,20 @@ namespace EspPredPreyHunter
 {
     void FeedForwardNetwork::activate(const vector<double> &input, vector<double> &output)
     {
+        VLOG(4) << "Activating feed forward network";
         register uint i, j, neuron_input_connections, output_weight_index;
-        neuron_input_connections = input.size() - 1;
-        //neuron_input_connections = 2;  //Number of inputs to each sensory neural network
+
+        vector<double> biasedInput(input);
+        biasedInput.push_back(1.0); // Bias
+
+        neuron_input_connections = biasedInput.size() - 1;
+
         // evaluate hidden/output layer
         for (i = 0; i < numHiddenNeurons; ++i) {  //for each hidden unit
             //if(!pop[i]->lesioned){
             activation[i] = 0.0;
-            for (j = 0; j < input.size() - 1; ++j) {
-                activation[i] += neurons[i]->weight[j] * input[j];
+            for (j = 0; j < biasedInput.size() - 1; ++j) {
+                activation[i] += neurons[i]->weight[j] * biasedInput[j];
             }
             //inner_product(pop[i]->weight.begin(),
             //    pop[i]->weight.end(),
@@ -28,6 +33,8 @@ namespace EspPredPreyHunter
             activation[i] = sigmoid(activation[i]);
             //}
         }
+
+        VLOG(4) << "Inputs evaluated";
 
         output_weight_index = neuron_input_connections;
 
@@ -38,6 +45,7 @@ namespace EspPredPreyHunter
             }
             output_weight_index++;
         }
+        VLOG(4) << "Done activating feed forward network";
     }
 
     void FeedForwardNetwork::save(char *filename)
