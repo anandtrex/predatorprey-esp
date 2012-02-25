@@ -44,6 +44,8 @@ namespace EspPredPreyHunter
         uint numPredators = static_cast<uint>(cfg.lookup("agents:predator:number"));
         uint numPrey = static_cast<uint>(cfg.lookup("agents:prey:number"));
 
+        const uint numNonPredAgents = numPrey + numHunters;
+
         // TODO Restructure this to use a single domain variable
         domainTotal = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey,
                 numHunters,
@@ -82,10 +84,12 @@ namespace EspPredPreyHunter
         LOG(INFO) << "Initialising total network container with " << numHiddenNeurons
                 << " as number of hidden neurons, " << "population size " << popSize
                 << ", number of networks as " << 1 << " number of inputs per network as "
-                << numOutputsPerNetwork * 2 + numInputsPerNetwork << " and number of outputs as "
-                << 1;
+                << numOutputsPerNetwork * numNonPredAgents + numInputsPerNetwork * numNonPredAgents
+                << " and number of outputs as " << 2;
         networkContainerTotal = new NetworkContainerSubtaskInverted(numHiddenNeurons, popSize,
-                netType, 1, numOutputsPerNetwork * 2 + numInputsPerNetwork, 1);
+                netType, 1,
+                numOutputsPerNetwork * numNonPredAgents + numInputsPerNetwork * numNonPredAgents,
+                2);
         LOG(INFO) << "Initialising network container with " << numHiddenNeurons
                 << " as number of hidden neurons, " << "population size " << popSize
                 << ", number of networks as " << numPrey << " number of inputs per network as "
