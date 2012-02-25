@@ -16,10 +16,11 @@ namespace EspPredPreyHunter
     using std::endl;
 
     Network::Network(const uint& numHiddenNeurons, const uint& subPopSize, const uint& numInputs,
-            const uint& numOutputs)
+            const uint& numOutputs, bool bias)
             : numHiddenNeurons(numHiddenNeurons), subPopSize(subPopSize), networkSubPop(
                     numHiddenNeurons), numInputs(numInputs), numOutputs(numOutputs), geneSize(
-                    numInputs + numOutputs + 1 /* Bias */), activation(numHiddenNeurons), neurons(numHiddenNeurons)
+                    numInputs + numOutputs + (bias ? 1 : 0) /* Bias */), activation(
+                    numHiddenNeurons), neurons(numHiddenNeurons), bias(bias)
     {
         fitness = 0.0;
         evolvable = true;

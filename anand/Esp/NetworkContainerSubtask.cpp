@@ -21,8 +21,9 @@ namespace EspPredPreyHunter
             : NetworkContainer(numInputsPerNetwork,
                     numOutputsPerNetwork, numNetworks + (numNetworks == 1 ? 0 : 1))
     {
+        LOG(INFO) << "Creating combiner network with num inputs " << numInputsPerNetwork << " and num outputs " << numOutputsPerNetwork;
         combinerNetwork = new FeedForwardNetwork(nHiddenNeurons, popSize, numInputsPerNetwork,
-                numOutputsPerNetwork);
+                numOutputsPerNetwork, true);
     }
 
     NetworkContainerSubtask::~NetworkContainerSubtask()

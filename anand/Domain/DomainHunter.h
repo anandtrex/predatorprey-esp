@@ -50,7 +50,7 @@ namespace PredatorPreyHunter
         double run();     // return fitness
         virtual double run(std::string stepsFilePath)
         {
-            LOG(ERROR) << "Method not implemented";
+            LOG(ERROR) << "Run with steps output not implemented";
             return -1.0;
         }
         double calculateFitness(const uint& stepCurrent);

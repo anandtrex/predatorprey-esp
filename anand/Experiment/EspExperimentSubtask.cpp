@@ -148,10 +148,13 @@ namespace EspPredPreyHunter
      */
     void EspExperimentSubtask::start()
     {
+        NetworkContainer* networkContainerSt1;
+
         LOG(INFO) << "Evolving for subtask 1";
-        NetworkContainer* networkContainerSt1 = evolve(domainPrey, networkContainerPrey);
+        networkContainerSt1 = evolve(domainPrey, networkContainerPrey);
         LOG(INFO) << "Subtask 1 done";
         VLOG(5) << "Num networks in st1 is " << networkContainerSt1->getNetworks().size();
+
         LOG(INFO) << "Evolving for subtask 2";
         NetworkContainer* networkContainerSt2 = evolve(domainHunter, networkContainerHunter);
         LOG(INFO) << "Subtask 2 done";

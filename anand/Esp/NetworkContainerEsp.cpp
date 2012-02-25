@@ -42,12 +42,12 @@ namespace EspPredPreyHunter
         for (uint i = 0; i < this->numNetworks - combine; i++) {
             networks.push_back(
                     new FeedForwardNetwork(nHiddenNeurons, popSize, numInputsPerNetwork,
-                            numOutputsPerNetwork));
+                            numOutputsPerNetwork, true));
         }
         for (uint i = this->numNetworks - combine; i < this->numNetworks; i++) {
             networks.push_back(
                     new FeedForwardNetwork(nHiddenNeurons, popSize, combinerNetworkNumInputs,
-                            numOutputsPerNetwork));
+                            numOutputsPerNetwork, true));
         }
         LOG(INFO)
                 << "Initialized and created networks. (subpopulations initialized within the networks)";
@@ -147,7 +147,7 @@ namespace EspPredPreyHunter
             // FIXME Assuming that the number of outputs is 5
             vector<double> tempOutput = vector<double>(5);
             // FIXME assuming number of inputs is 3 -- x, y, and type of agent
-            const double tempInput[] = { input[3 * i], input[3 * i + 1] };
+            const double tempInput[] = { input[3 * i], input[3 * i + 1], input[3 * i + 2] };
             networks[i]->activate(makeVector(tempInput), tempOutput);
             tempSingleOutputs.insert(tempSingleOutputs.end(), tempOutput.begin(), tempOutput.end());
         }

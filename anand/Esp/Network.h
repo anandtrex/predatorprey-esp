@@ -42,6 +42,7 @@ namespace EspPredPreyHunter
         vector<double> activation;
         uint geneSize;
         uint numHiddenNeurons;
+        bool bias;
 
     public:
         uint numInputs;
@@ -49,18 +50,19 @@ namespace EspPredPreyHunter
 
         vector<Neuron*> neurons;
 
-        Network(const uint& numHiddenNeurons, const uint& subPopSize, const uint& numInputs, const uint& numOutputs);
+        Network(const uint& numHiddenNeurons, const uint& subPopSize, const uint& numInputs,
+                const uint& numOutputs, bool bias);
 
         virtual ~Network()
         {
-            for(uint i = 0; i < neurons.size(); i++){
+            for (uint i = 0; i < neurons.size(); i++) {
                 delete neurons[i];
             }
             neurons.clear();
             /*
-            for(uint i = 0; i < networkSubPop.size(); i++){
-                delete networkSubPop[i];
-            }*/
+             for(uint i = 0; i < networkSubPop.size(); i++){
+             delete networkSubPop[i];
+             }*/
             networkSubPop.clear();
         }
 

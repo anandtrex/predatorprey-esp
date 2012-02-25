@@ -16,26 +16,33 @@ namespace EspPredPreyHunter
         register uint i, j, neuron_input_connections, output_weight_index;
 
         vector<double> biasedInput(input);
-        biasedInput.push_back(1.0); // Bias
 
-        neuron_input_connections = biasedInput.size() - 1;
+        if(bias)
+            biasedInput.push_back(1.0); // Bias
+
+        VLOG(5) << "Input is " << vecToString(biasedInput);
 
         // evaluate hidden/output layer
         for (i = 0; i < numHiddenNeurons; ++i) {  //for each hidden unit
             //if(!pop[i]->lesioned){
             activation[i] = 0.0;
-            for (j = 0; j < biasedInput.size() - 1; ++j) {
+            for (j = 0; j < biasedInput.size(); ++j) {
                 activation[i] += neurons[i]->weight[j] * biasedInput[j];
             }
             //inner_product(pop[i]->weight.begin(),
             //    pop[i]->weight.end(),
             //    input.begin(), 0.0);
+            VLOG(5) << "Activation is " << vecToString(activation);
+            //LOG(INFO) << "Weights are " << vecToString(neurons[i]->weight);
             activation[i] = sigmoid(activation[i]);
             //}
         }
 
+
+
         VLOG(4) << "Inputs evaluated";
 
+        neuron_input_connections = biasedInput.size();
         output_weight_index = neuron_input_connections;
 
         for (i = 0; i < output.size(); ++i) {
@@ -45,6 +52,9 @@ namespace EspPredPreyHunter
             }
             output_weight_index++;
         }
+
+        VLOG(5) << "Output is " << vecToString(output);
+
         VLOG(4) << "Done activating feed forward network";
     }
 

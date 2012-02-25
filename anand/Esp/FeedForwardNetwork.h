@@ -15,18 +15,18 @@ namespace EspPredPreyHunter
     using std::vector;
 
     class FeedForwardNetwork: public Network
+    {
+    public:
+        FeedForwardNetwork(const uint& numHiddenNeurons, const uint& subPopSize,
+                const uint& numInputs, const uint& numOutputs, bool bias)
+                : Network(numHiddenNeurons, subPopSize, numInputs, numOutputs, bias)
         {
-        public:
-            FeedForwardNetwork(const uint& numHiddenNeurons, const uint& subPopSize, const uint& numInputs, const uint& numOutputs)
-                    : Network(numHiddenNeurons, subPopSize, numInputs, numOutputs)
-            {
-            }
-            void activate(const vector<double> &input, vector<double> &output);
-            void addNeuron();
-            void removeNeuron(int sp);
-            void save(char *filename);
-        };
+        }
+        void activate(const vector<double> &input, vector<double> &output);
+        void addNeuron();
+        void removeNeuron(int sp);
+        void save(char *filename);
+    };
 }
-
 
 #endif /* FEEDFORWARDNETWORK_H_ */

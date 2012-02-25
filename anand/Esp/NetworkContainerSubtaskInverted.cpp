@@ -34,7 +34,12 @@ namespace EspPredPreyHunter
     {
         vector<double> tempSingleOutputs(input);
         int k = input.size() / networkContainers.size();
-        VLOG(4) << " k is " << k;
+
+        VLOG(5) << " k is " << k;
+        VLOG(5) << "Input size is " << input.size();
+        VLOG(5) << "Output size is " << output.size();
+        VLOG(5) << "Input is " << vecToString(input);
+
         for (uint i = 0; i < networkContainers.size(); i++) {
             // FIXME Assuming that the number of outputs is 5
             vector<double> tempOutput = vector<double>(5);
@@ -46,9 +51,14 @@ namespace EspPredPreyHunter
             tempSingleOutputs.insert(tempSingleOutputs.end(), tempOutput.begin(), tempOutput.end());
         }
 
+        VLOG(5) << "tempSingleOutputs size is " << tempSingleOutputs.size();
+        VLOG(5) << "tempSingleOutputs is " << vecToString(tempSingleOutputs);
+
         // Finally there is always one network
         vector<double> tempOutput(2);
         combinerNetwork->activate(tempSingleOutputs, tempOutput);
+
+        VLOG(5) << "tempOutput is " << vecToString(tempOutput);
 
         if (output.size() != 5)
             LOG(ERROR) << "Output size wasn't 5!";
@@ -62,6 +72,8 @@ namespace EspPredPreyHunter
                 output[i] = tempSingleOutputs[input.size() + i + 5];
             }
         }
+
+        VLOG(5) << "Output is " << vecToString(output);
     }
 }
 
