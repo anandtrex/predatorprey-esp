@@ -32,7 +32,7 @@ namespace EspPredPreyHunter
     void NetworkContainerSubtaskInverted::activate(const vector<double>& input,
             vector<double>& output)
     {
-        vector<double> tempSingleOutputs(input);
+        vector<double> tempSingleOutputs = vector<double>();
         int k = input.size() / networkContainers.size();
 
         VLOG(5) << " k is " << k;
@@ -56,7 +56,7 @@ namespace EspPredPreyHunter
 
         // Finally there is always one network
         vector<double> tempOutput(2);
-        combinerNetwork->activate(tempSingleOutputs, tempOutput);
+        combinerNetwork->activate(input, tempOutput);
 
         VLOG(5) << "tempOutput is " << vecToString(tempOutput);
 
@@ -65,11 +65,11 @@ namespace EspPredPreyHunter
 
         if (tempOutput[0] > tempOutput[1]) {
             for (int i = 0; i < 5; i++) {
-                output[i] = tempSingleOutputs[input.size() + i];
+                output[i] = tempSingleOutputs[i];
             }
         } else {
             for (int i = 0; i < 5; i++) {
-                output[i] = tempSingleOutputs[input.size() + i + 5];
+                output[i] = tempSingleOutputs[i + 5];
             }
         }
 

@@ -87,9 +87,7 @@ namespace EspPredPreyHunter
                 << numOutputsPerNetwork * numNonPredAgents + numInputsPerNetwork * numNonPredAgents
                 << " and number of outputs as " << 2;
         networkContainerTotal = new NetworkContainerSubtaskInverted(numHiddenNeurons, popSize,
-                netType, 1,
-                numOutputsPerNetwork * numNonPredAgents + numInputsPerNetwork * numNonPredAgents,
-                2);
+                netType, 1, numInputsPerNetwork * numNonPredAgents, 2);
         LOG(INFO) << "Initialising network container with " << numHiddenNeurons
                 << " as number of hidden neurons, " << "population size " << popSize
                 << ", number of networks as " << numPrey << " number of inputs per network as "
