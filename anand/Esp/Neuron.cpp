@@ -15,7 +15,7 @@ namespace EspPredPreyHunter
     Neuron::Neuron(const uint& geneSize)
         :geneSize(geneSize)
     {
-        for (int i = 0; i < geneSize; ++i)
+        for (uint i = 0; i < geneSize; ++i)
             weight.push_back(0.0);     //fill weight vector with zeros
         tests = 0;
     }
@@ -29,7 +29,7 @@ namespace EspPredPreyHunter
      */
     void Neuron::perturb(const Neuron &n, double(*randFn)(double), double coeff)
     {
-        for (int i = 0; i < geneSize; ++i) {
+        for (uint i = 0; i < geneSize; ++i) {
             weight[i] = n.weight[i] + (randFn)(coeff);
         }
     }
@@ -46,7 +46,7 @@ namespace EspPredPreyHunter
     Neuron* Neuron::perturb()
     {
         Neuron *n = new Neuron(geneSize);
-        for (int i = 0; i < geneSize; ++i) {
+        for (uint i = 0; i < geneSize; ++i) {
             n->weight[i] = weight[i] + rndCauchy(0.3);
         }
         return n;
@@ -68,7 +68,7 @@ namespace EspPredPreyHunter
      */
     void Neuron::create()
     {
-        int i;
+        uint i;
         for (i = 0; i < geneSize; ++i) {
             weight[i] = (drand48() * 12.0) - 6.0;
         }

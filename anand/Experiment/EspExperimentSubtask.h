@@ -10,23 +10,25 @@
 
 #include "EspExperiment.h"
 #include "../Domain/DomainTotal.h"
-#include "../Domain/DomainPrey.h"
-#include "../Domain/DomainHunter.h"
+#include "../Domain/DomainOne.h"
+#include "../Domain/Prey.h"
+#include "../Domain/Hunter.h"
 
 namespace EspPredPreyHunter
 {
     using PredatorPreyHunter::Experiment;
     using PredatorPreyHunter::DomainTotal;
-    using PredatorPreyHunter::DomainPrey;
-    using PredatorPreyHunter::DomainHunter;
+    using PredatorPreyHunter::DomainOne;
+    using PredatorPreyHunter::Prey;
+    using PredatorPreyHunter::Hunter;
 
     class EspExperimentSubtask: EspExperiment
     {
         NetworkContainer* networkContainerPrey;
         NetworkContainer* networkContainerHunter;
 
-        DomainPrey* domainPrey;
-        DomainHunter* domainHunter;
+        DomainOne<Prey>* domainPrey;
+        DomainOne<Hunter>* domainHunter;
 
     public:
         EspExperimentSubtask(const char* configFilePath);
@@ -36,6 +38,5 @@ namespace EspPredPreyHunter
         void start();
     };
 }
-
 
 #endif /* ESPEXPERIMENTSUBTASK_H_ */

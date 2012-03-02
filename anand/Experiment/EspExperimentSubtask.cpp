@@ -7,7 +7,7 @@
 
 #include "EspExperimentSubtask.h"
 #include "../Domain/GridWorld.h"
-#include "../Domain/Domain.h"
+//#include "../Domain/DomainOne.cpp"
 #include "../Esp/NetworkContainerEsp.h"
 #include "../Esp/NetworkContainerSubtask.h"
 
@@ -20,7 +20,6 @@ namespace EspPredPreyHunter
     using std::map;
     using std::pair;
     using std::numeric_limits;
-    using PredatorPreyHunter::Domain;
     using PredatorPreyHunter::fetchRandomDouble;
 
     EspExperimentSubtask::EspExperimentSubtask(const char* configFilePath)
@@ -58,13 +57,13 @@ namespace EspPredPreyHunter
                 << " and prey move probability is "
                 << static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability"));
 
-        domainPrey = new DomainPrey(maxSteps, gridWidth, gridHeight, numPredators, numPrey,
+        domainPrey = new DomainOne<Prey>(maxSteps, gridWidth, gridHeight, numPredators, numPrey,
                 static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability")));
         LOG(INFO) << "Initialized prey domain with " << numPredators << " predators," << numPrey
                 << " prey.";
         LOG(INFO) << " Prey move probability is "
                 << static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability"));
-        domainHunter = new DomainHunter(maxSteps, gridWidth, gridHeight, numPredators, numHunters,
+        domainHunter = new DomainOne<Hunter>(maxSteps, gridWidth, gridHeight, numPredators, numHunters,
                 static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability")));
 
         LOG(INFO) << "Initialized hunter domain with " << numPredators << " predators,"

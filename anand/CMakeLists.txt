@@ -48,9 +48,10 @@ set(SRCS
 main.cpp 
 common.cpp
 Domain/Agent.cpp 
+Domain/DomainOne.cpp
 Domain/DomainTotal.cpp
-Domain/DomainPrey.cpp
-Domain/DomainHunter.cpp
+#Domain/DomainPrey.cpp
+#Domain/DomainHunter.cpp
 Domain/PredatorEsp.cpp
 Domain/Prey.cpp
 Domain/GridWorld.cpp
@@ -58,7 +59,6 @@ Domain/Hunter.cpp
 Domain/Visualizer.cpp
 #Domain/PredatorNaive.cpp
 #Domain/PredatorRandom.cpp
-#Esp/Esp.cpp
 Esp/FeedForwardNetwork.cpp
 Esp/NetworkContainerEsp.cpp
 Esp/NetworkContainerSubtask.cpp

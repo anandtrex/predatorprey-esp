@@ -31,7 +31,7 @@ namespace EspPredPreyHunter
     void Network::operator=(Network &n)
     {
         fitness = n.fitness;
-        for (int i = 0; i < numHiddenNeurons; ++i)
+        for (uint i = 0; i < numHiddenNeurons; ++i)
             *neurons[i] = *n.neurons[i];
     }
 
@@ -51,7 +51,7 @@ namespace EspPredPreyHunter
     void Network::setNetwork(Network *n)
     {
         fitness = n->fitness;
-        for (int i = 0; i < numHiddenNeurons; ++i)
+        for (uint i = 0; i < numHiddenNeurons; ++i)
             neurons[i] = n->neurons[i];
     }
 
@@ -60,13 +60,13 @@ namespace EspPredPreyHunter
      */
     void Network::addFitness()
     {
-        for (int i = 0; i < numHiddenNeurons; ++i)
+        for (uint i = 0; i < numHiddenNeurons; ++i)
             neurons[i]->fitness += fitness;
     }
 
     void Network::resetActivation()
     {
-        for (int i = 0; i < numHiddenNeurons; ++i)
+        for (uint i = 0; i < numHiddenNeurons; ++i)
             activation[i] = 0.0;
     }
 
@@ -75,7 +75,7 @@ namespace EspPredPreyHunter
      */
     void Network::incrementTests()
     {
-        for (int i = 0; i < numHiddenNeurons; ++i)
+        for (uint i = 0; i < numHiddenNeurons; ++i)
             ++neurons[i]->tests;
     }
 
@@ -108,7 +108,7 @@ namespace EspPredPreyHunter
 
         LOG(INFO) << "Unlesioned: " << tempFitness[0] << endl;
 
-        for (int i = 0; i < numHiddenNeurons; ++i) {
+        for (uint i = 0; i < numHiddenNeurons; ++i) {
             neurons[i]->lesioned = true;
 
             lesionFitness = 0;
@@ -134,7 +134,7 @@ namespace EspPredPreyHunter
     void Network::create()
     {
         VLOG(4) << "Running create in generic network";
-        for (int i = 0; i < numHiddenNeurons; i++) {
+        for (uint i = 0; i < numHiddenNeurons; i++) {
             networkSubPop[i] = new SubPop(subPopSize, geneSize);
             networkSubPop[i]->create();
         }
@@ -143,7 +143,7 @@ namespace EspPredPreyHunter
     void Network::setNeurons()
     {
         VLOG(4) << "Setting neurons";
-        for (int i = 0; i < numHiddenNeurons; i++) {
+        for (uint i = 0; i < numHiddenNeurons; i++) {
             setNeuron(networkSubPop[i]->selectNeuron(), i);
         }
         VLOG(4) << "Done setting neurons";
@@ -152,14 +152,14 @@ namespace EspPredPreyHunter
     void Network::setFitness(const double& fitness)
     {
         VLOG(5) << "Setting fitness for each hidden neuron";
-        for (int i = 0; i < numHiddenNeurons; i++) {
+        for (uint i = 0; i < numHiddenNeurons; i++) {
             neurons[i]->fitness += fitness;
         }
     }
 
     void Network::evalReset()
     {
-        for (int i = 0; i < numHiddenNeurons; i++) {
+        for (uint i = 0; i < numHiddenNeurons; i++) {
             networkSubPop[i]->evalReset();
         }
     }
@@ -168,7 +168,7 @@ namespace EspPredPreyHunter
     {
         VLOG(5) << "Averaging neuron fitness";
         // TODO Check if this has to be done for all the subpop neurons
-        for (int i = 0; i < networkSubPop.size(); i++) {
+        for (uint i = 0; i < networkSubPop.size(); i++) {
             networkSubPop[i]->average();
         }
     }
@@ -176,7 +176,7 @@ namespace EspPredPreyHunter
     void Network::qsortNeurons()
     {
         VLOG(5) << "Sorting neurons";
-        for (int i = 0; i < networkSubPop.size(); i++) {
+        for (uint i = 0; i < networkSubPop.size(); i++) {
             networkSubPop[i]->qsortNeurons();
         }
     }
@@ -184,7 +184,7 @@ namespace EspPredPreyHunter
     void Network::mutate()
     {
         VLOG(5) << "Doing mutate in network";
-        for (int i = 0; i < networkSubPop.size(); i++) {
+        for (uint i = 0; i < networkSubPop.size(); i++) {
             networkSubPop[i]->mutate();
         }
     }
@@ -192,7 +192,7 @@ namespace EspPredPreyHunter
     void Network::recombineHallOfFame(Network* network)
     {
         VLOG(5) << "Doing recombine hall of fame in network";
-        for (int i = 0; i < networkSubPop.size(); i++) {
+        for (uint i = 0; i < networkSubPop.size(); i++) {
             networkSubPop[i]->recombineHallOfFame(network, i);
         }
     }
@@ -202,8 +202,8 @@ namespace EspPredPreyHunter
     string Network::toString()
     {
         ostringstream sout;
-        for (int i = 0; i < neurons.size(); i++) {
-            for (int j = 0; j < neurons[i]->weight.size(); j++) {
+        for (uint i = 0; i < neurons.size(); i++) {
+            for (uint j = 0; j < neurons[i]->weight.size(); j++) {
                 sout << neurons[i]->weight[j] << " ";
             }
             sout << endl;

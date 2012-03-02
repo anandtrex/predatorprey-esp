@@ -9,24 +9,26 @@
 #define ESPEXPERIMENTSUBTASKINVERTED_H_
 
 #include "EspExperiment.h"
+#include "../Domain/Prey.h"
+#include "../Domain/Hunter.h"
+#include "../Domain/DomainOne.h"
 #include "../Domain/DomainTotal.h"
-#include "../Domain/DomainPrey.h"
-#include "../Domain/DomainHunter.h"
 
 namespace EspPredPreyHunter
 {
     using PredatorPreyHunter::Experiment;
     using PredatorPreyHunter::DomainTotal;
-    using PredatorPreyHunter::DomainPrey;
-    using PredatorPreyHunter::DomainHunter;
+    using PredatorPreyHunter::DomainOne;
+    using PredatorPreyHunter::Prey;
+    using PredatorPreyHunter::Hunter;
 
     class EspExperimentSubtaskInverted: EspExperiment
     {
         NetworkContainer* networkContainerPrey;
         NetworkContainer* networkContainerHunter;
 
-        DomainPrey* domainPrey;
-        DomainHunter* domainHunter;
+        DomainOne<Prey>* domainPrey;
+        DomainOne<Hunter>* domainHunter;
 
     public:
         EspExperimentSubtaskInverted(const char* configFilePath);

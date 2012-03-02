@@ -1,17 +1,19 @@
 /*
- * DomainPrey.h
+ * DomainOne.h
  *
- *  Created on: Feb 16, 2012
+ *  Created on: Mar 1, 2012
  *      Author: anand
  */
 
-#ifndef DOMAINPREY_H_
-#define DOMAINPREY_H_
+#ifndef DOMAINONE_H_
+#define DOMAINONE_H_
 
 #include "GridWorld.h"
 #include "Domain.h"
+#include "Agent.h"
 #include "Predator.h"
 #include "Prey.h"
+#include "Hunter.h"
 #include "Visualizer.h"
 #include "../Esp/NetworkContainer.h"
 
@@ -23,27 +25,28 @@ namespace PredatorPreyHunter
     using std::vector;
     using EspPredPreyHunter::NetworkContainer;
 
-    class DomainPrey: public Domain
+    template<class T>
+    class DomainOne: public Domain
     {
         uint numPredators;
-        uint numPrey;
+        uint numAgents;
 
-        uint numPreyCaught;
+        uint numAgentsCaught;
 
-        vector<uint> preyCaughtIds;
+        vector<uint> agentCaughtIds;
 
-        double preyMoveProb;
+        double agentMoveProb;
 
     protected:
         Predator* ptrPredator;
-        Prey* ptrPrey;
+        Agent* ptrOtherAgent;
         void step();
 
     public:
-        DomainPrey();
-        DomainPrey(const uint& maxSteps, const uint& width, const uint& height,
-                const uint& numPredators, const uint& numPrey, const double& preyMoveProb);
-        virtual ~DomainPrey();
+        DomainOne();
+        DomainOne(const uint& maxSteps, const uint& width, const uint& height,
+                const uint& numPredators, const uint& numAgents, const double& agentMoveProb);
+        virtual ~DomainOne();
         virtual void init(NetworkContainer* espNetwork);
         virtual void enableDisplay(const vector<double>& predatorColour,
                 const vector<double>& preyColour);
@@ -57,4 +60,4 @@ namespace PredatorPreyHunter
     };
 }
 
-#endif /* DOMAINPREY_H_ */
+#endif /* DOMAINONE_H_ */

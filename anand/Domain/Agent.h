@@ -12,7 +12,7 @@
 
 enum TypeAgent
 {
-    PREY = 0, PREDATOR = 1, HUNTER = 2
+    PREY = 0, PREDATOR = 1, HUNTER = 2, HUNTER_WEAK = 3
 };
 
 struct AgentInformation

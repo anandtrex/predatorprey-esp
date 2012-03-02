@@ -26,7 +26,7 @@ namespace EspPredPreyHunter
     public:
         std::vector<Neuron*> pop;
 
-        int numNeurons;
+        uint numNeurons;
         bool evolvable;
 
         SubPop(const int& size, const int& geneSize);
