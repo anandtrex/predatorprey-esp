@@ -58,7 +58,7 @@ namespace EspPredPreyHunter
     void SubPop::create()
     {
         if (evolvable)
-            for (int i = 0; i < numNeurons; ++i) {
+            for (uint i = 0; i < numNeurons; ++i) {
                 pop[i] = new Neuron(geneSize);
                 pop[i]->create();
             }
@@ -70,7 +70,7 @@ namespace EspPredPreyHunter
      */
     void SubPop::deltify(Neuron *bestNeuron)
     {
-        for (int i = 0; i < numNeurons; ++i) {
+        for (uint i = 0; i < numNeurons; ++i) {
             pop[i]->perturb(*bestNeuron);     // make each neuron a perturbation of the
                                               // neuron in the best network that
                                               // corresponds to that subpop
@@ -87,7 +87,7 @@ namespace EspPredPreyHunter
      */
     void SubPop::evalReset()
     {
-        for (int i = 0; i < numNeurons; ++i) {
+        for (uint i = 0; i < numNeurons; ++i) {
             pop[i]->fitness = 0;
             pop[i]->tests = 0;
         }
@@ -107,7 +107,7 @@ namespace EspPredPreyHunter
      */
     void SubPop::average()
     {
-        for (int i = 0; i < numNeurons; ++i) {
+        for (uint i = 0; i < numNeurons; ++i) {
             if (pop[i]->tests)
                 pop[i]->fitness = pop[i]->fitness / pop[i]->tests;
             else
@@ -144,7 +144,7 @@ namespace EspPredPreyHunter
      */
     void SubPop::mutate()
     {
-        for (int i = numBreed * 2; i < numNeurons; ++i)
+        for (uint i = numBreed * 2; i < numNeurons; ++i)
             if (drand48() < MUT_RATE)
                 pop[i]->weight[fetchRandomLong() % geneSize] += rndCauchy(0.3);
     }
@@ -154,7 +154,7 @@ namespace EspPredPreyHunter
      */
     void SubPop::burstMutate()
     {
-        for (int i = 0; i < numNeurons; ++i)
+        for (uint i = 0; i < numNeurons; ++i)
             if (drand48() < MUT_RATE)
                 pop[i]->weight[fetchRandomLong() % geneSize] += rndCauchy(0.3);
     }
@@ -201,7 +201,7 @@ namespace EspPredPreyHunter
     void SubPop::addConnection(int locus)
     {
         // if(locus < GENE_SIZE_PRED_NW)
-        for (int i = 0; i < numNeurons; ++i)
+        for (uint i = 0; i < numNeurons; ++i)
             pop[i]->weight.insert(pop[i]->weight.begin() + locus,
             //(drand48() * 12.0) - 6.0 );
                     1.0);//rndCauchy(0.3) );
@@ -212,7 +212,7 @@ namespace EspPredPreyHunter
      * opposite of addConnection.
      * @param locus
      */
-    void SubPop::removeConnection(int locus)
+    void SubPop::removeConnection(uint locus)
     {
         if (locus < geneSize)
             for (uint i = 0; i < numNeurons; ++i) {

@@ -9,7 +9,6 @@
 #define ESPEXPERIMENTSUBTASK_H_
 
 #include "EspExperiment.h"
-#include "../Domain/DomainTotal.h"
 #include "../Domain/DomainOne.h"
 #include "../Domain/Prey.h"
 #include "../Domain/Hunter.h"
@@ -22,6 +21,7 @@ namespace EspPredPreyHunter
     using PredatorPreyHunter::Prey;
     using PredatorPreyHunter::Hunter;
 
+    template <class T>
     class EspExperimentSubtask: EspExperiment
     {
         NetworkContainer* networkContainerPrey;
@@ -36,6 +36,8 @@ namespace EspPredPreyHunter
         {
         }
         void start();
+        NetworkContainer* generateNetworkContainer(const uint& numHiddenNeurons, const uint& netType,
+                const uint& numOutputsPerNetwork, const uint& numNonPredAgents, const uint& numInputsPerNetwork, const uint& popSize);
     };
 }
 

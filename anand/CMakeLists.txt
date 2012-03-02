@@ -14,7 +14,7 @@ if(DOXYGEN_FOUND)
  )
 endif(DOXYGEN_FOUND)
 
-set(CMAKE_CXX_COMPILER "clang++")
+set(CMAKE_CXX_COMPILER "clang")
 
 set(CMAKE_CXX_FLAGS "-O3 -Wall")
 set(CORELIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${X11_LIBRARY} m)
@@ -50,15 +50,11 @@ common.cpp
 Domain/Agent.cpp 
 Domain/DomainOne.cpp
 Domain/DomainTotal.cpp
-#Domain/DomainPrey.cpp
-#Domain/DomainHunter.cpp
 Domain/PredatorEsp.cpp
 Domain/Prey.cpp
 Domain/GridWorld.cpp
 Domain/Hunter.cpp
 Domain/Visualizer.cpp
-#Domain/PredatorNaive.cpp
-#Domain/PredatorRandom.cpp
 Esp/FeedForwardNetwork.cpp
 Esp/NetworkContainerEsp.cpp
 Esp/NetworkContainerSubtask.cpp
@@ -68,7 +64,6 @@ Esp/Neuron.cpp
 Esp/SubPop.cpp
 Experiment/EspExperiment.cpp
 Experiment/EspExperimentSubtask.cpp
-Experiment/EspExperimentSubtaskInverted.cpp
 )
 
 add_executable(esp-predprey ${SRCS})

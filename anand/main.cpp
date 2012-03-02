@@ -10,7 +10,8 @@
 #include "Domain/GridWorld.h"
 #include "Experiment/EspExperiment.h"
 #include "Experiment/EspExperimentSubtask.h"
-#include "Experiment/EspExperimentSubtaskInverted.h"
+#include "Esp/NetworkContainerSubtask.h"
+#include "Esp/NetworkContainerSubtaskInverted.h"
 
 using namespace PredatorPreyHunter;
 using namespace EspPredPreyHunter;
@@ -63,10 +64,10 @@ int main(int argc, char **argv)
         EspExperiment experiment(configFilePath);
         experiment.start();
     } else if (subTaskEx) {
-        EspExperimentSubtask experiment(configFilePath);
+        EspExperimentSubtask<NetworkContainerSubtask> experiment(configFilePath);
         experiment.start();
     } else if (subInvTaskEx) {
-        EspExperimentSubtaskInverted experiment(configFilePath);
+        EspExperimentSubtask<NetworkContainerSubtaskInverted> experiment(configFilePath);
         experiment.start();
     }
     return 0;

@@ -50,7 +50,7 @@ namespace EspPredPreyHunter
         void deltify(Neuron *bestNeuron);
         void save(char *fname);
         void addConnection(int locus);
-        void removeConnection(int locus);
+        void removeConnection(uint locus);
         void saveBin(char *fname);
         void saveText(char *fname);
         int load(char *filename);

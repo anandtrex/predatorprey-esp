@@ -6,10 +6,9 @@
  */
 
 #include "EspExperimentSubtask.h"
-#include "../Domain/GridWorld.h"
-//#include "../Domain/DomainOne.cpp"
 #include "../Esp/NetworkContainerEsp.h"
 #include "../Esp/NetworkContainerSubtask.h"
+#include "../Esp/NetworkContainerSubtaskInverted.h"
 
 #include <limits>
 
@@ -22,8 +21,9 @@ namespace EspPredPreyHunter
     using std::numeric_limits;
     using PredatorPreyHunter::fetchRandomDouble;
 
-    EspExperimentSubtask::EspExperimentSubtask(const char* configFilePath)
-            : EspExperiment()
+    template<class T>
+    EspExperimentSubtask<T>::EspExperimentSubtask(const char* configFilePath) :
+            EspExperiment()
     {
         libconfig::Config cfg;
 
@@ -46,10 +46,16 @@ namespace EspPredPreyHunter
         const uint numNonPredAgents = numPrey + numHunters;
 
         // TODO Restructure this to use a single domain variable
-        domainTotal = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey,
+        domainTotal = new DomainTotal(
+                maxSteps,
+                gridWidth,
+                gridHeight,
+                numPredators,
+                numPrey,
                 numHunters,
-                static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability")),
-                static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability")));
+                static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability")) - 0.1,
+                static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability"))
+                        - 0.1);
         LOG(INFO) << "Initialized overall domain with " << numPredators << " predators,"
                 << numPrey << " prey and " << numHunters << " hunters.";
         LOG(INFO) << "Hunter move probability is "
@@ -63,7 +69,8 @@ namespace EspPredPreyHunter
                 << " prey.";
         LOG(INFO) << " Prey move probability is "
                 << static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability"));
-        domainHunter = new DomainOne<Hunter>(maxSteps, gridWidth, gridHeight, numPredators, numHunters,
+        domainHunter = new DomainOne<Hunter>(maxSteps, gridWidth, gridHeight, numPredators,
+                numHunters,
                 static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability")));
 
         LOG(INFO) << "Initialized hunter domain with " << numPredators << " predators,"
@@ -83,10 +90,10 @@ namespace EspPredPreyHunter
         LOG(INFO) << "Initialising total network container with " << numHiddenNeurons
                 << " as number of hidden neurons, " << "population size " << popSize
                 << ", number of networks as " << 1 << " number of inputs per network as "
-                << numOutputsPerNetwork * numNonPredAgents + numInputsPerNetwork * numNonPredAgents << " and number of outputs as "
-                << numOutputsPerNetwork;
-        networkContainerTotal = new NetworkContainerSubtask(numHiddenNeurons, popSize, netType, 1,
-                numOutputsPerNetwork * numNonPredAgents + numInputsPerNetwork * numNonPredAgents, numOutputsPerNetwork);
+                << numOutputsPerNetwork * numNonPredAgents + numInputsPerNetwork * numNonPredAgents
+                << " and number of outputs as " << numOutputsPerNetwork;
+        networkContainerTotal = generateNetworkContainer(numHiddenNeurons, netType,
+                numOutputsPerNetwork, numNonPredAgents, numInputsPerNetwork, popSize);
         LOG(INFO) << "Initialising prey network container with " << numHiddenNeurons
                 << " as number of hidden neurons, " << "population size " << popSize
                 << ", number of networks as " << numPrey << " number of inputs per network as "
@@ -147,28 +154,49 @@ namespace EspPredPreyHunter
     /**
      * This pretty much runs the entire ESP experiment
      */
-    void EspExperimentSubtask::start()
+    template<class T>
+    void EspExperimentSubtask<T>::start()
     {
-        NetworkContainer* networkContainerSt1;
-
         LOG(INFO) << "Evolving for subtask 1";
-        networkContainerSt1 = evolve(domainPrey, networkContainerPrey);
+        NetworkContainer* networkContainerChase = evolve(domainPrey, networkContainerPrey);
         LOG(INFO) << "Subtask 1 done";
-        VLOG(5) << "Num networks in st1 is " << networkContainerSt1->getNetworks().size();
+        VLOG(5) << "Num networks in st1 is " << networkContainerChase->getNetworks().size();
 
         LOG(INFO) << "Evolving for subtask 2";
-        NetworkContainer* networkContainerSt2 = evolve(domainHunter, networkContainerHunter);
+        NetworkContainer* networkContainerEvade = evolve(domainHunter, networkContainerHunter);
         LOG(INFO) << "Subtask 2 done";
-        VLOG(5) << "Num networks in st2 is " << networkContainerSt2->getNetworks().size();
+        VLOG(5) << "Num networks in st2 is " << networkContainerEvade->getNetworks().size();
         vector<NetworkContainer*> networkContainers = vector<NetworkContainer*>();
-        networkContainers.push_back(networkContainerSt1);
-        networkContainers.push_back(networkContainerSt2);
+        networkContainers.push_back(networkContainerChase);
+        networkContainers.push_back(networkContainerEvade);
         LOG(INFO) << "Evolving for overall task";
         VLOG(5) << "NetworkContainers size is " << networkContainers.size();
-        (dynamic_cast<NetworkContainerSubtask*>(networkContainerTotal))->setNetworkContainers(
+        (dynamic_cast<T*>(networkContainerTotal))->setNetworkContainers(
                 networkContainers);
         evolve(domainTotal, networkContainerTotal);
         LOG(INFO) << "Overall task done";
     }
+
+    template<>
+    NetworkContainer* EspExperimentSubtask<NetworkContainerSubtask>::generateNetworkContainer(
+            const uint& numHiddenNeurons, const uint& netType, const uint& numOutputsPerNetwork,
+            const uint& numNonPredAgents, const uint& numInputsPerNetwork, const uint& popSize)
+    {
+        return new NetworkContainerSubtask(numHiddenNeurons, popSize, netType, 1,
+                numOutputsPerNetwork * numNonPredAgents + numInputsPerNetwork * numNonPredAgents,
+                numOutputsPerNetwork);
+    }
+
+    template<>
+    NetworkContainer* EspExperimentSubtask<NetworkContainerSubtaskInverted>::generateNetworkContainer(
+            const uint& numHiddenNeurons, const uint& netType, const uint& numOutputsPerNetwork,
+            const uint& numNonPredAgents, const uint& numInputsPerNetwork, const uint& popSize)
+    {
+        return new NetworkContainerSubtaskInverted(numHiddenNeurons, popSize, netType, 1,
+                numInputsPerNetwork * numNonPredAgents, 2);
+    }
+
+    template class EspExperimentSubtask<NetworkContainerSubtask>;
+    template class EspExperimentSubtask<NetworkContainerSubtaskInverted>;
 }
 

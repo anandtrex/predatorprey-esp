@@ -6,7 +6,6 @@
  */
 
 #include "EspExperiment.h"
-#include "../Domain/GridWorld.h"
 #include "../Domain/Domain.h"
 #include "../Esp/NetworkContainer.h"
 #include "../Esp/NetworkContainerEsp.h"
