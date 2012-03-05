@@ -58,6 +58,7 @@ namespace PredatorPreyHunter
 
         virtual ~Domain()
         {
+            delete ptrGridWorld;
         }
 
         virtual void init(NetworkContainer* espNetwork) = 0;

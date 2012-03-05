@@ -36,16 +36,23 @@ namespace PredatorPreyHunter
                     numHunters), preyMoveProb(preyMoveProb), hunterMoveProb(hunterMoveProb)
     {
         numOtherAgents = numPrey + numHunters;
+        hunterRoleReversalProbability = 0.0;
+    }
+
+    DomainTotal::DomainTotal(const uint& maxSteps, const uint& width, const uint& height,
+            const uint& numPredators, const uint& numPrey, const uint& numHunters,
+            const double& preyMoveProb, const double& hunterMoveProb, const double& hunterRoleReversalProbability) :
+            Domain(maxSteps, width, height), numPredators(numPredators), numPrey(numPrey), numHunters(
+                    numHunters), preyMoveProb(preyMoveProb), hunterMoveProb(hunterMoveProb), hunterRoleReversalProbability(hunterRoleReversalProbability)
+    {
+        numOtherAgents = numPrey + numHunters;
     }
 
     DomainTotal::~DomainTotal()
     {
-        /*
-         delete ptrPredator;
-         delete ptrPrey;
-         delete ptrHunter;
-         delete ptrGridWorld;
-         */
+        delete ptrPredator;
+        delete ptrPrey;
+        delete ptrHunter;
     }
 
     void DomainTotal::init(NetworkContainer* espNetwork)
@@ -54,17 +61,17 @@ namespace PredatorPreyHunter
         ptrPredator = dynamic_cast<Predator*>(new PredatorEsp(ptrGridWorld, 1, randomPosition,
                 espNetwork));
         LOG(INFO) << "[CREATED] Predator at " << randomPosition.x << ", " << randomPosition.y
-                        << " with id " << 1 << endl;
+                << " with id " << 1 << endl;
 
         // initialize prey
         randomPosition = ptrGridWorld->getRandomPosition();
-        this->ptrPrey = new Prey(ptrGridWorld, 2, randomPosition, preyMoveProb);
+        ptrPrey = new Prey(ptrGridWorld, 2, randomPosition, preyMoveProb);
         LOG(INFO) << "Prey move probability is " << preyMoveProb;
         LOG(INFO) << "[CREATED] Prey at " << randomPosition.x << ", " << randomPosition.y
                 << " with id " << 2 << endl;
 
         randomPosition = ptrGridWorld->getRandomPosition();
-        this->ptrHunter = new Hunter(ptrGridWorld, 3, randomPosition, hunterMoveProb);
+        ptrHunter = new Hunter(ptrGridWorld, 3, randomPosition, hunterMoveProb, hunterRoleReversalProbability);
         LOG(INFO) << "Hunter move probability is " << hunterMoveProb;
         LOG(INFO) << "[CREATED] Hunter at " << randomPosition.x << ", " << randomPosition.y
                 << " with id " << 3 << endl;
@@ -110,7 +117,7 @@ namespace PredatorPreyHunter
         ptrHunter->move(vAgentInformation);
         // move predator
         ptrPredator->move(vAgentInformation);
-         
+
         VLOG(2) << "Predator at " << aiPredator.position.x << "," << aiPredator.position.y;
         VLOG(2) << "Prey at " << aiPrey.position.x << "," << aiPrey.position.y;
         VLOG(2) << "Hunter at " << aiHunter.position.x << "," << aiHunter.position.y;
@@ -128,7 +135,7 @@ namespace PredatorPreyHunter
             predatorCaughtIds.push_back(aiPredator.agentId);
             numPredCaught++;
         }
-        
+
         // Show display
         if (displayEnabled) {
             // FIXME Need to do this in a better way
@@ -139,7 +146,7 @@ namespace PredatorPreyHunter
             visualizer.show(vAgentInformationPrevious, vAgentInformation);
             vAgentInformationPrevious = vAgentInformation;
         }
-       
+
     }
 
     double DomainTotal::run()

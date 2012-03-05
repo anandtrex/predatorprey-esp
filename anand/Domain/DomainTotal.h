@@ -39,6 +39,8 @@ namespace PredatorPreyHunter
         double preyMoveProb;
         double hunterMoveProb;
 
+        double hunterRoleReversalProbability;
+
     protected:
         Predator* ptrPredator;
         Hunter* ptrHunter;
@@ -50,6 +52,9 @@ namespace PredatorPreyHunter
         DomainTotal(const uint& maxSteps, const uint& width, const uint& height,
                 const uint& numPredators, const uint& numPrey, const uint& numHunters,
                 const double& preyMoveProb, const double& hunterMoveProb);
+        DomainTotal(const uint& maxSteps, const uint& width, const uint& height,
+                        const uint& numPredators, const uint& numPrey, const uint& numHunters,
+                        const double& preyMoveProb, const double& hunterMoveProb, const double& hunterRoleReversalProbability);
         ~DomainTotal();
         virtual void init(NetworkContainer* espNetwork);
         virtual void enableDisplay(const vector<double>& predatorColour, const vector<double>& preyColour,

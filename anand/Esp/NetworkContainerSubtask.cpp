@@ -113,6 +113,7 @@ namespace EspPredPreyHunter
             LOG(FATAL) << "Trying to activate empty container!";
 
         vector<double> tempSingleOutputs(input);
+
         int k = input.size() / networkContainers.size();
         VLOG(4) << "k is " << k;
         for (uint i = 0; i < networkContainers.size(); i++) {

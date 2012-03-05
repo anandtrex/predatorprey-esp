@@ -30,12 +30,12 @@ namespace EspPredPreyHunter
         LOG(INFO) << "Reading from config file " << configFilePath;
         cfg.readFile(configFilePath);
 
-        uint maxSteps = cfg.lookup("experiment:max_steps");
+        const uint maxSteps = cfg.lookup("experiment:max_steps");
         LOG(INFO) << "Max steps in experiment is "
                 << static_cast<uint>(cfg.lookup("experiment:max_steps"));
 
-        uint gridWidth = cfg.lookup("experiment:grid:width");
-        uint gridHeight = cfg.lookup("experiment:grid:height");
+        const uint gridWidth = cfg.lookup("experiment:grid:width");
+        const uint gridHeight = cfg.lookup("experiment:grid:height");
         LOG(INFO) << "Grid size is " << static_cast<uint>(gridWidth) << "x"
                 << static_cast<uint>(gridHeight);
 
@@ -45,38 +45,43 @@ namespace EspPredPreyHunter
 
         const uint numNonPredAgents = numPrey + numHunters;
 
-        // TODO Restructure this to use a single domain variable
-        domainTotal = new DomainTotal(
-                maxSteps,
-                gridWidth,
-                gridHeight,
-                numPredators,
-                numPrey,
-                numHunters,
-                static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability")) - 0.1,
-                static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability"))
-                        - 0.1);
-        LOG(INFO) << "Initialized overall domain with " << numPredators << " predators,"
+        const double preyMoveProb = static_cast<double>(cfg.lookup(
+                "agents:prey:preys:[0]:move_probability"));
+
+        domainPrey = new DomainOne<Prey>(maxSteps, gridWidth, gridHeight, numPredators, numPrey,
+                preyMoveProb);
+        LOG(INFO) << "Initialized prey domain with " << numPredators << " predators," << numPrey
+                << " prey.";
+        LOG(INFO) << " Prey move probability is " << preyMoveProb;
+
+        const uint hunterType = static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:type"));
+        const double hunterMoveProb = static_cast<double>(cfg.lookup(
+                "agents:hunter:hunters:[0]:move_probability"));
+
+        domainHunter = new DomainOne<Hunter>(maxSteps, gridWidth, gridHeight, numPredators,
+                numHunters, hunterMoveProb);
+        LOG(INFO) << "Initialized hunter domain with " << numPredators << " predators,"
+                << numHunters << " hunters.";
+        LOG(INFO) << "Hunter move probability is "
+                << static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability"));
+
+        // Changing hunter type only in overall domain
+        LOG(INFO) << "Initializing overall domain with " << numPredators << " predators,"
                 << numPrey << " prey and " << numHunters << " hunters.";
         LOG(INFO) << "Hunter move probability is "
                 << static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability"))
                 << " and prey move probability is "
                 << static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability"));
-
-        domainPrey = new DomainOne<Prey>(maxSteps, gridWidth, gridHeight, numPredators, numPrey,
-                static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability")));
-        LOG(INFO) << "Initialized prey domain with " << numPredators << " predators," << numPrey
-                << " prey.";
-        LOG(INFO) << " Prey move probability is "
-                << static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability"));
-        domainHunter = new DomainOne<Hunter>(maxSteps, gridWidth, gridHeight, numPredators,
-                numHunters,
-                static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability")));
-
-        LOG(INFO) << "Initialized hunter domain with " << numPredators << " predators,"
-                << numHunters << " hunters.";
-        LOG(INFO) << "Hunter move probability is "
-                << static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability"));
+        if (hunterType == 0) {
+            domainTotal = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey,
+                    numHunters, preyMoveProb - 0.1, hunterMoveProb - 0.1);
+        } else if (hunterType == 1) {
+            const double hunterRoleReversalProb = static_cast<double>(cfg.lookup(
+                    "agents:hunter:hunters:[0]:role_reversal_probability"));
+            domainTotal = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey,
+                    numHunters, preyMoveProb - 0.1, hunterMoveProb - 0.1, hunterRoleReversalProb);
+            LOG(INFO) << "Hunter has MPD. Role reversal probability is " << hunterRoleReversalProb;
+        }
 
         const uint popSize = static_cast<uint>(cfg.lookup("experiment:esp:population_size"));
         const uint numHiddenNeurons = static_cast<uint>(cfg.lookup(
@@ -84,7 +89,7 @@ namespace EspPredPreyHunter
         const uint netType = static_cast<uint>(cfg.lookup("experiment:esp:net_type"));
         // TODO Configurable number of actions
 
-        const int numInputsPerNetwork = 3;
+        const int numInputsPerNetwork = 2;
         const int numOutputsPerNetwork = 5;
 
         LOG(INFO) << "Initialising total network container with " << numHiddenNeurons
@@ -169,10 +174,10 @@ namespace EspPredPreyHunter
         vector<NetworkContainer*> networkContainers = vector<NetworkContainer*>();
         networkContainers.push_back(networkContainerChase);
         networkContainers.push_back(networkContainerEvade);
+        networkContainers.push_back(networkContainerChase);
         LOG(INFO) << "Evolving for overall task";
         VLOG(5) << "NetworkContainers size is " << networkContainers.size();
-        (dynamic_cast<T*>(networkContainerTotal))->setNetworkContainers(
-                networkContainers);
+        (dynamic_cast<T*>(networkContainerTotal))->setNetworkContainers(networkContainers);
         evolve(domainTotal, networkContainerTotal);
         LOG(INFO) << "Overall task done";
     }
@@ -182,8 +187,9 @@ namespace EspPredPreyHunter
             const uint& numHiddenNeurons, const uint& netType, const uint& numOutputsPerNetwork,
             const uint& numNonPredAgents, const uint& numInputsPerNetwork, const uint& popSize)
     {
+        // NOTE +1 is for newer network with 3 agents
         return new NetworkContainerSubtask(numHiddenNeurons, popSize, netType, 1,
-                numOutputsPerNetwork * numNonPredAgents + numInputsPerNetwork * numNonPredAgents,
+                numOutputsPerNetwork * numNonPredAgents + (numInputsPerNetwork + 1)* numNonPredAgents,
                 numOutputsPerNetwork);
     }
 
@@ -192,11 +198,12 @@ namespace EspPredPreyHunter
             const uint& numHiddenNeurons, const uint& netType, const uint& numOutputsPerNetwork,
             const uint& numNonPredAgents, const uint& numInputsPerNetwork, const uint& popSize)
     {
+        // NOTE +1 is for newer network with 3 agents
         return new NetworkContainerSubtaskInverted(numHiddenNeurons, popSize, netType, 1,
-                numInputsPerNetwork * numNonPredAgents, 2);
+                (numInputsPerNetwork + 1) * numNonPredAgents, 2);
     }
 
-    template class EspExperimentSubtask<NetworkContainerSubtask>;
-    template class EspExperimentSubtask<NetworkContainerSubtaskInverted>;
+    template class EspExperimentSubtask<NetworkContainerSubtask> ;
+    template class EspExperimentSubtask<NetworkContainerSubtaskInverted> ;
 }
 
