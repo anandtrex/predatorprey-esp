@@ -54,7 +54,7 @@ namespace EspPredPreyHunter
                 << " prey.";
         LOG(INFO) << " Prey move probability is " << preyMoveProb;
 
-        const uint hunterType = static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:type"));
+        const uint hunterType = static_cast<uint>(cfg.lookup("agents:hunter:hunters:[0]:type"));
         const double hunterMoveProb = static_cast<double>(cfg.lookup(
                 "agents:hunter:hunters:[0]:move_probability"));
 
@@ -80,7 +80,8 @@ namespace EspPredPreyHunter
                     "agents:hunter:hunters:[0]:role_reversal_probability"));
             domainTotal = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey,
                     numHunters, preyMoveProb - 0.1, hunterMoveProb - 0.1, hunterRoleReversalProb);
-            LOG(INFO) << "Hunter has MPD. Role reversal probability is " << hunterRoleReversalProb;
+            LOG(INFO) << "Hunter has MPD. Role reversal probability is "
+                    << hunterRoleReversalProb;
         }
 
         const uint popSize = static_cast<uint>(cfg.lookup("experiment:esp:population_size"));
@@ -92,11 +93,6 @@ namespace EspPredPreyHunter
         const int numInputsPerNetwork = 2;
         const int numOutputsPerNetwork = 5;
 
-        LOG(INFO) << "Initialising total network container with " << numHiddenNeurons
-                << " as number of hidden neurons, " << "population size " << popSize
-                << ", number of networks as " << 1 << " number of inputs per network as "
-                << numOutputsPerNetwork * numNonPredAgents + numInputsPerNetwork * numNonPredAgents
-                << " and number of outputs as " << numOutputsPerNetwork;
         networkContainerTotal = generateNetworkContainer(numHiddenNeurons, netType,
                 numOutputsPerNetwork, numNonPredAgents, numInputsPerNetwork, popSize);
         LOG(INFO) << "Initialising prey network container with " << numHiddenNeurons
@@ -172,9 +168,12 @@ namespace EspPredPreyHunter
         LOG(INFO) << "Subtask 2 done";
         VLOG(5) << "Num networks in st2 is " << networkContainerEvade->getNetworks().size();
         vector<NetworkContainer*> networkContainers = vector<NetworkContainer*>();
+        // NOTE This order is important! First the prey network, then the hunter network. This is
+        // because this is the order in which the inputs are given by the predator, and used
+        // while activating
         networkContainers.push_back(networkContainerChase);
         networkContainers.push_back(networkContainerEvade);
-        networkContainers.push_back(networkContainerChase);
+        //networkContainers.push_back(networkContainerChase);
         LOG(INFO) << "Evolving for overall task";
         VLOG(5) << "NetworkContainers size is " << networkContainers.size();
         (dynamic_cast<T*>(networkContainerTotal))->setNetworkContainers(networkContainers);
@@ -187,9 +186,13 @@ namespace EspPredPreyHunter
             const uint& numHiddenNeurons, const uint& netType, const uint& numOutputsPerNetwork,
             const uint& numNonPredAgents, const uint& numInputsPerNetwork, const uint& popSize)
     {
-        // NOTE +1 is for newer network with 3 agents
-        return new NetworkContainerSubtask(numHiddenNeurons, popSize, netType, 1,
-                numOutputsPerNetwork * numNonPredAgents + (numInputsPerNetwork + 1)* numNonPredAgents,
+        const int numInputs = numOutputsPerNetwork * numNonPredAgents
+                + (numInputsPerNetwork + 1)/* extra agent type input*/* (numNonPredAgents);
+        LOG(INFO) << "Initialising total network container with " << numHiddenNeurons
+                << " as number of hidden neurons, " << "population size " << popSize
+                << ", number of networks as " << 1 << " number of inputs per network as "
+                << numInputs << " and number of outputs as " << numOutputsPerNetwork;
+        return new NetworkContainerSubtask(numHiddenNeurons, popSize, netType, 1, numInputs,
                 numOutputsPerNetwork);
     }
 
@@ -198,9 +201,13 @@ namespace EspPredPreyHunter
             const uint& numHiddenNeurons, const uint& netType, const uint& numOutputsPerNetwork,
             const uint& numNonPredAgents, const uint& numInputsPerNetwork, const uint& popSize)
     {
-        // NOTE +1 is for newer network with 3 agents
-        return new NetworkContainerSubtaskInverted(numHiddenNeurons, popSize, netType, 1,
-                (numInputsPerNetwork + 1) * numNonPredAgents, 2);
+        const int numInputs = (numInputsPerNetwork + 1) * (numNonPredAgents);
+        LOG(INFO) << "Initialising total network container with " << numHiddenNeurons
+                << " as number of hidden neurons, " << "population size " << popSize
+                << ", number of networks as " << 1 << " number of inputs per network as "
+                << numInputs << " and number of outputs as " << 2;
+        return new NetworkContainerSubtaskInverted(numHiddenNeurons, popSize, netType, 1, numInputs,
+                2);
     }
 
     template class EspExperimentSubtask<NetworkContainerSubtask> ;

@@ -34,6 +34,7 @@ namespace PredatorPreyHunter
             if (itAgent->agentType == PREY) {
                 tempInput.push_back(ptrGridWorld->distanceX(this->position, itAgent->position));
                 tempInput.push_back(ptrGridWorld->distanceY(this->position, itAgent->position));
+                // NOTE Type should always be AFTER position
                 tempInput.push_back(PREY);
             }
         }
@@ -43,7 +44,14 @@ namespace PredatorPreyHunter
             if (itAgent->agentType == HUNTER) {
                 tempInput.push_back(ptrGridWorld->distanceX(this->position, itAgent->position));
                 tempInput.push_back(ptrGridWorld->distanceY(this->position, itAgent->position));
+                // NOTE Type should always be AFTER position
                 tempInput.push_back(HUNTER);
+            }
+            else if (itAgent->agentType == HUNTER_WEAK) {
+                tempInput.push_back(ptrGridWorld->distanceX(this->position, itAgent->position));
+                tempInput.push_back(ptrGridWorld->distanceY(this->position, itAgent->position));
+                // NOTE Type should always be AFTER position
+                tempInput.push_back(HUNTER_WEAK);
             }
         }
         VLOG(5) << "Done hunter";

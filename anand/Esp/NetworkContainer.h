@@ -65,6 +65,32 @@ namespace EspPredPreyHunter
         virtual void activate(const vector<double>& input, vector<double>& output) = 0;
 
         virtual string toString() = 0;
+        const uint getInputsPerNetwork() const
+        {
+            return inputsPerNetwork;
+        }
+        const uint getOutputsPerNetwork() const
+        {
+            return outputsPerNetwork;
+        }
+        uint getTotalNumInputs() const
+        {
+            return totalNumInputs;
+        }
+        uint getTotalNumOutputs() const
+        {
+            return totalNumOutputs;
+        }
     };
 }
+
+
+
+
+
+
+
+
+
+
 #endif /* NETWORKESPCOMBINER_H_ */

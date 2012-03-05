@@ -12,23 +12,24 @@
 
 namespace EspPredPreyHunter
 {
-    NetworkContainerEsp::NetworkContainerEsp()
-            : NetworkContainer(0, 0, 0), networks(0)
+    NetworkContainerEsp::NetworkContainerEsp() :
+            NetworkContainer(0, 0, 0), networks(0)
     {
 
     }
 
-    NetworkContainerEsp::NetworkContainerEsp(const vector<Network*> networks)
-            : NetworkContainer(networks[0]->numInputs, networks[0]->numOutputs, networks.size()), networks(networks)
+    NetworkContainerEsp::NetworkContainerEsp(const vector<Network*> networks) :
+            NetworkContainer(networks[0]->numInputs, networks[0]->numOutputs, networks.size()), networks(
+                    networks)
     {
         combine = (networks.size() == 1) ? 0 : 1;
     }
 
     NetworkContainerEsp::NetworkContainerEsp(const uint& nHiddenNeurons, const uint& popSize,
             const uint& netTp, const uint& numNetworks, const uint& numInputsPerNetwork,
-            const uint& numOutputsPerNetwork)
-            : NetworkContainer(numInputsPerNetwork, numOutputsPerNetwork,
-                    numNetworks + (numNetworks == 1? 0 : 1))
+            const uint& numOutputsPerNetwork) :
+            NetworkContainer(numInputsPerNetwork, numOutputsPerNetwork,
+                    numNetworks + (numNetworks == 1 ? 0 : 1))
     {
         combine = (numNetworks == 1) ? 0 : 1;
 
@@ -59,14 +60,14 @@ namespace EspPredPreyHunter
     }
 
     /*
-    void NetworkContainerEsp::setNetwork(const NetworkContainer& networkContainer)
-    {
-        networks = networkContainer.getNetworks();
-        if (networks.size() == 1)
-            combine = 0;
-        else
-            combine = 1;
-    }*/
+     void NetworkContainerEsp::setNetwork(const NetworkContainer& networkContainer)
+     {
+     networks = networkContainer.getNetworks();
+     if (networks.size() == 1)
+     combine = 0;
+     else
+     combine = 1;
+     }*/
 
     void NetworkContainerEsp::setFitness(const double& fitness)
     {
@@ -142,13 +143,18 @@ namespace EspPredPreyHunter
         if (networks.size() == 0)
             LOG(FATAL) << "Trying to activate empty container!";
 
+        const int k = networks[0]->numInputs;
+        const int l = input.size() / networks.size();
+        const int m = networks[0]->numOutputs;
+
         vector<double> tempSingleOutputs;
         for (uint i = 0; i < networks.size() - combine; i++) {     // sans combiner
-            // FIXME Assuming that the number of outputs is 5
-            vector<double> tempOutput = vector<double>(5);
-            // FIXME assuming number of inputs is 3 -- x, y, and type of agent
-            const double tempInput[] = { input[3 * i], input[3 * i + 1], input[3 * i + 2] };
-            networks[i]->activate(makeVector(tempInput), tempOutput);
+            vector<double> tempOutput = vector<double>(m);
+            vector<double> tempInput = vector<double>();
+            for (int j = 0; j < k; j++) {
+                tempInput.push_back(input[l * i + j]);
+            }
+            networks[i]->activate(tempInput, tempOutput);
             tempSingleOutputs.insert(tempSingleOutputs.end(), tempOutput.begin(), tempOutput.end());
         }
 
