@@ -40,12 +40,9 @@ namespace PredatorPreyHunter
     template<class T>
     DomainOne<T>::~DomainOne()
     {
-        /*
          delete ptrPredator;
          delete ptrOtherAgent;
-         delete ptrHunter;
          delete ptrGridWorld;
-         */
     }
 
     template<class T>
@@ -59,11 +56,9 @@ namespace PredatorPreyHunter
         // initialize prey
         randomPosition = ptrGridWorld->getRandomPosition();
         this->ptrOtherAgent = new T(ptrGridWorld, 2, randomPosition, agentMoveProb);
-        LOG(INFO) << "Prey move probability is " << agentMoveProb;
-        LOG(INFO) << "[CREATED] Prey at " << randomPosition.x << ", " << randomPosition.y
+        LOG(INFO) << "Agent move probability is " << agentMoveProb;
+        LOG(INFO) << "[CREATED] Agent at " << randomPosition.x << ", " << randomPosition.y
                 << " with id " << 2 << endl;
-
-        randomPosition = ptrGridWorld->getRandomPosition();
     }
 
     template<class T>

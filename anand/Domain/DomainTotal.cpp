@@ -24,15 +24,15 @@ namespace PredatorPreyHunter
     using std::string;
     using PredPreyHunterVisualizer::Visualizer;
 
-    DomainTotal::DomainTotal() :
-            Domain()
+    DomainTotal::DomainTotal()
+            : Domain()
     {
     }
 
     DomainTotal::DomainTotal(const uint& maxSteps, const uint& width, const uint& height,
             const uint& numPredators, const uint& numPrey, const uint& numHunters,
-            const double& preyMoveProb, const double& hunterMoveProb) :
-            Domain(maxSteps, width, height), numPredators(numPredators), numPrey(numPrey), numHunters(
+            const double& preyMoveProb, const double& hunterMoveProb)
+            : Domain(maxSteps, width, height), numPredators(numPredators), numPrey(numPrey), numHunters(
                     numHunters), preyMoveProb(preyMoveProb), hunterMoveProb(hunterMoveProb)
     {
         numOtherAgents = numPrey + numHunters;
@@ -41,9 +41,11 @@ namespace PredatorPreyHunter
 
     DomainTotal::DomainTotal(const uint& maxSteps, const uint& width, const uint& height,
             const uint& numPredators, const uint& numPrey, const uint& numHunters,
-            const double& preyMoveProb, const double& hunterMoveProb, const double& hunterRoleReversalProbability) :
-            Domain(maxSteps, width, height), numPredators(numPredators), numPrey(numPrey), numHunters(
-                    numHunters), preyMoveProb(preyMoveProb), hunterMoveProb(hunterMoveProb), hunterRoleReversalProbability(hunterRoleReversalProbability)
+            const double& preyMoveProb, const double& hunterMoveProb,
+            const double& hunterRoleReversalProbability)
+            : Domain(maxSteps, width, height), numPredators(numPredators), numPrey(numPrey), numHunters(
+                    numHunters), preyMoveProb(preyMoveProb), hunterMoveProb(hunterMoveProb), hunterRoleReversalProbability(
+                    hunterRoleReversalProbability)
     {
         numOtherAgents = numPrey + numHunters;
     }
@@ -71,7 +73,8 @@ namespace PredatorPreyHunter
                 << " with id " << 2 << endl;
 
         randomPosition = ptrGridWorld->getRandomPosition();
-        ptrHunter = new Hunter(ptrGridWorld, 3, randomPosition, hunterMoveProb, hunterRoleReversalProbability);
+        ptrHunter = new Hunter(ptrGridWorld, 3, randomPosition, hunterMoveProb,
+                hunterRoleReversalProbability);
         LOG(INFO) << "Hunter move probability is " << hunterMoveProb;
         LOG(INFO) << "[CREATED] Hunter at " << randomPosition.x << ", " << randomPosition.y
                 << " with id " << 3 << endl;
@@ -131,9 +134,15 @@ namespace PredatorPreyHunter
 
         if ((aiHunter.position.x == aiPredator.position.x)
                 && (aiHunter.position.y == aiPredator.position.y)) {
-            LOG(INFO) << "Predator caught by Hunter";
-            predatorCaughtIds.push_back(aiPredator.agentId);
-            numPredCaught++;
+            if (aiHunter.agentType == HUNTER) {
+                LOG(INFO) << "Predator caught by Hunter";
+                predatorCaughtIds.push_back(aiPredator.agentId);
+                numPredCaught++;
+            } else if (aiHunter.agentType == HUNTER_WEAK) {
+                LOG(INFO) << "Weak hunter caught by predator!";
+                hunterCaughtIds.push_back(aiPredator.agentId);
+                numHunterCaught++;
+            }
         }
 
         // Show display
@@ -154,10 +163,13 @@ namespace PredatorPreyHunter
         uint noSteps = 0;
         uint prevNumPreyCaught = 0;
         uint prevNumPredCaught = 0;
+        uint prevNumHunterCaught = 0;
         numPredCaught = 0;
         numPreyCaught = 0;
+        numHunterCaught = 0;
         predatorCaughtIds = vector<uint>();
         preyCaughtIds = vector<uint>();
+        hunterCaughtIds = vector<uint>();
 
         if (displayEnabled) {
             visualizer.createWindow();
@@ -186,6 +198,16 @@ namespace PredatorPreyHunter
                     LOG(INFO) << "All predators caught in " << noSteps << " steps!";
                     return calculateFitness(noSteps);
                 }
+            } else if (numHunterCaught > 0 && numHunterCaught > prevNumHunterCaught) {
+                LOG(INFO) << "WEAK HUNTER CAUGHT!!!!" << endl;
+                prevNumHunterCaught = numHunterCaught;
+                VLOG(5)
+                        << "Number of weak hunters caught is " << numHunterCaught
+                                << " and the total number of hunters is " << numHunters;
+                if (numHunterCaught == numHunters) {
+                    LOG(INFO) << "All hunters caught in " << noSteps << " steps!";
+                    return calculateFitness(noSteps);
+                }
             }
         } while (noSteps++ < maxSteps);
 
@@ -201,10 +223,13 @@ namespace PredatorPreyHunter
         uint noSteps = 0;
         uint prevNumPreyCaught = 0;
         uint prevNumPredCaught = 0;
+        uint prevNumHunterCaught = 0;
         numPredCaught = 0;
         numPreyCaught = 0;
+        numHunterCaught = 0;
         predatorCaughtIds = vector<uint>();
         preyCaughtIds = vector<uint>();
+        hunterCaughtIds = vector<uint>();
 
         if (displayEnabled) {
             visualizer.createWindow();
@@ -228,7 +253,6 @@ namespace PredatorPreyHunter
                 prevNumPreyCaught = numPreyCaught;
                 if (numPreyCaught == numPrey) {
                     LOG(INFO) << "All prey caught in " << noSteps << " steps!";
-                    fout.close();
                     return calculateFitness(noSteps);
                 }
             } else if (numPredCaught > 0 && numPredCaught > prevNumPredCaught) {
@@ -241,6 +265,16 @@ namespace PredatorPreyHunter
                     LOG(INFO) << "All predators caught in " << noSteps << " steps!";
                     return calculateFitness(noSteps);
                 }
+            } else if (numHunterCaught > 0 && numHunterCaught > prevNumHunterCaught) {
+                LOG(INFO) << "WEAK HUNTER CAUGHT!!!!" << endl;
+                prevNumHunterCaught = numHunterCaught;
+                VLOG(5)
+                        << "Number of weak hunters caught is " << numHunterCaught
+                                << " and the total number of hunters is " << numHunters;
+                if (numHunterCaught == numHunters) {
+                    LOG(INFO) << "All hunters caught in " << noSteps << " steps!";
+                    return calculateFitness(noSteps);
+                }
             }
             positionPredator = ptrPredator->getPosition();
             positionPrey = ptrPrey->getPosition();
@@ -251,19 +285,20 @@ namespace PredatorPreyHunter
         } while (noSteps++ < maxSteps);
         fout.close();
         LOG(INFO) << "[ENDS] Experiment::run()" << endl;
-        return fitness;
+        return calculateFitness(noSteps);
     }
 
     double DomainTotal::calculateFitness(const uint& stepCurrent)
     {
         double fitness = 0.0;
-        if (numPreyCaught > 0) {     // Yay
+        if (numPreyCaught > 0) {     // Yay!
             fitness = static_cast<double>(10) * (maxSteps - stepCurrent) * numPreyCaught;
             return fitness;
         } else if (numPredCaught > 0) {     // :-(
-            VLOG(2) << "maxSteps - stepCurrent: " << maxSteps - stepCurrent << endl;
-            fitness = static_cast<double>(-1) * 10 * (maxSteps - stepCurrent) * numPredCaught;
-            LOG(INFO) << "Fitness: " << fitness << endl;
+            fitness = static_cast<double>(-10) * (maxSteps - stepCurrent) * numPredCaught;
+            return fitness;
+        } else if (numHunterCaught > 0) {     // Double Yay!
+            fitness = static_cast<double>(100) * (maxSteps - stepCurrent) * numPredCaught;
             return fitness;
         } else {
             // calculate distance from hunter and prey
@@ -276,7 +311,7 @@ namespace PredatorPreyHunter
             // reward for being close to prey and far away from hunter
             distancePrey = ptrGridWorld->getWidth() + ptrGridWorld->getHeight() - distancePrey;
             // take into account the size of the grid for rewarding later
-            fitness = static_cast<double>(distancePrey) + distanceHunter; // if by any chance it reaches here although it won't
+            fitness = static_cast<double>(distancePrey) + distanceHunter;     // if by any chance it reaches here although it won't
             return fitness;
         }
     }

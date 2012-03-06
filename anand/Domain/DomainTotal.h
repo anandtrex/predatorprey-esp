@@ -32,9 +32,11 @@ namespace PredatorPreyHunter
 
         uint numPredCaught;
         uint numPreyCaught;
+        uint numHunterCaught;
 
         vector<uint> preyCaughtIds;
         vector<uint> predatorCaughtIds;
+        vector<uint> hunterCaughtIds;
 
         double preyMoveProb;
         double hunterMoveProb;

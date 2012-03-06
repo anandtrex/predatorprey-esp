@@ -51,7 +51,10 @@ namespace EspPredPreyHunter
         combinerNetwork->activate(input, tempOutput);
 
         if (output.size() != 5)
-            LOG(ERROR) << "Output size wasn't 5!";
+            LOG(FATAL) << "Output size wasn't 5!";
+
+        if(tempSingleOutputs.size() != 10)
+            LOG(FATAL) << "tempSingleOutputs size wasn't 10!!";
 
         if (tempOutput[0] > tempOutput[1]) {
             for (int i = 0; i < 5; i++) {

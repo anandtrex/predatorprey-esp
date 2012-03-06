@@ -58,6 +58,7 @@ namespace PredatorPreyHunter
 
         vector<double> input = vector<double>(tempInput);
 
+        // FIXME Number of actions hardcoded as 5!
         vector<double> output = vector<double>(5);
         networkContainer->activate(input, output);
         Action predatorAction = (Action)getMaxIndex(output);

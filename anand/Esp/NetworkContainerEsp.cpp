@@ -152,6 +152,7 @@ namespace EspPredPreyHunter
             vector<double> tempOutput = vector<double>(m);
             vector<double> tempInput = vector<double>();
             for (int j = 0; j < k; j++) {
+                // NOTE l here, not k!
                 tempInput.push_back(input[l * i + j]);
             }
             networks[i]->activate(tempInput, tempOutput);

@@ -92,17 +92,6 @@ namespace EspPredPreyHunter
         return networkContainers;
     }
 
-    /*
-     void NetworkContainerSubtask::setNetwork(const NetworkContainer& networkContainer)
-     {
-     // NOTE: This will be just one network!
-     vector<Network*> networks = networkContainer.getNetworks();
-     if (networks.size() != 1) {
-     LOG(FATAL) << "There can't be more than one hall of fame network!";
-     }
-     combinerNetwork = networks[0];
-     }*/
-
     void NetworkContainerSubtask::setNetworkContainers(
             const vector<NetworkContainer*>& networkContainers)
     {
@@ -115,7 +104,6 @@ namespace EspPredPreyHunter
             LOG(FATAL) << "Trying to activate empty container!";
 
         // TODO change the input to duplicate hunter position for the two chasing networks
-
         vector<double> tempSingleOutputs(input);
 
         const int k = networkContainers[0]->getInputsPerNetwork();

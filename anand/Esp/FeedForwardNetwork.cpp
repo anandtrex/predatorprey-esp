@@ -20,7 +20,7 @@ namespace EspPredPreyHunter
         if(bias)
             biasedInput.push_back(1.0); // Bias
 
-        if(( biasedInput.size() + output.size()) != geneSize){
+        if(( biasedInput.size() + output.size() ) != geneSize){
             LOG(ERROR) << "Mismatch between genesize and input + output size";
             LOG(ERROR) << "Input size is " << biasedInput.size();
             LOG(ERROR) << "Output size is " << output.size();
