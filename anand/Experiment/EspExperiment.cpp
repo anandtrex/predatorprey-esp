@@ -92,7 +92,7 @@ namespace EspPredPreyHunter
         numGenerations = cfg.lookup("experiment:esp:num_generations");
         LOG(INFO) << "Number of generations is " << numGenerations;
 
-        numEvalTrials = 5;
+        numEvalTrials = cfg.lookup("experiment:esp:num_eval_trials");
         LOG(INFO) << "Number of trials for evaluation is " << numEvalTrials;
 
         // NOTE
