@@ -139,6 +139,7 @@ Population *predatorpreyhunter_test(
     } // end of for loop experiments
     delete ptrOrganismPrey;
     delete ptrOrganismHunter;
+    delete start_genome;
     return pop;
 }
 

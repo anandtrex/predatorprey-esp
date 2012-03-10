@@ -13,8 +13,8 @@ namespace PredatorPreyHunter {
     uint noOtherAgents;
   protected:
     int computeHigher( NEAT::Network* ptrNetwork, const std::vector<AgentInformation>& vAgentInformation );
-    int computePrey( NEAT::Network* ptrNetwork, const std::vector<AgentInformation>& vAgentInformation );
-    int computeHunter( NEAT::Network* ptrNetwork, const std::vector<AgentInformation>& vAgentInformation );
+    int computePrey( NEAT::Network* ptrNetwork, const AgentInformation& agentInformation );
+    int computeHunter( NEAT::Network* ptrNetwork, const AgentInformation& agentInformation );
     struct Input {
       double xRelative;
       double yRelative;

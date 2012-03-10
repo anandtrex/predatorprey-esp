@@ -17,6 +17,7 @@ namespace PredatorPreyHunter {
     virtual Position move( const std::vector<AgentInformation>& vAgentInformation ) = 0;
     AgentInformation getAgentInformation();
     Position getPosition() { return position; }
+    TypeAgent getType() { return typeAgent; }
   };
 }
 

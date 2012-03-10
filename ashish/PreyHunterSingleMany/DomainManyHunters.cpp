@@ -1,4 +1,4 @@
-#include "Domain.h"
+#include "DomainManyHunters.h"
 #include <iostream>
 #include <fstream>
 #include <utility>
@@ -37,7 +37,7 @@ namespace PredatorPreyHunter {
     return position;
   }
       
-  DomainManyHunters::DomainManyHunters( const int& maxSteps, const int& width, const int& height, NEAT::Network* ptrNetwork, const uint& noHunters ) {
+  DomainManyHunters::DomainManyHunters( const int& maxSteps, const int& width, const int& height, NEAT::Network* ptrNetworkHigher, NEAT::Network* ptrNetworkPrey, NEAT::Network* ptrNetworkHunter, const uint& noHunters ) {
     this->maxSteps = maxSteps;
     ptrGridWorld = new GridWorld( width, height ); 
     cout << "[CREATED] GridWorld of size " << width << ", " << height << endl;
@@ -46,7 +46,7 @@ namespace PredatorPreyHunter {
     // initialize predator 
     Position position;
     position = getNewPosition( width, height, vPositionsAllocated );
-    ptrPredatorSelection = new PredatorSelection( ptrGridWorld, 1, position, ptrNetworkHigher, ptrNetworkPrey, ptrNetworkHunter, noHunters + 1 );
+    ptrPredatorSelection = new PredatorSelection( ptrGridWorld, 1, position, ptrNetworkHigher, ptrNetworkPrey, ptrNetworkHunter, noHunters + 1 ); // noOtherAgents = noHunters + noPrey
     cout << "[CREATED] Predator at " << position.x << ", " << position.y << endl;
     // initialize prey
     position = getNewPosition( width, height, vPositionsAllocated );
@@ -60,7 +60,7 @@ namespace PredatorPreyHunter {
       cout << "[CREATED] Hunter at " << position.x << ", " << position.y << endl;
     }
   }
-  Domain::~Domain() {
+  DomainManyHunters::~DomainManyHunters() {
     delete ptrPredatorSelection;
     delete ptrPrey;
     for ( uint i = 0; i < vPtrHunter.size(); i++ ) {
@@ -68,7 +68,7 @@ namespace PredatorPreyHunter {
     }
     delete ptrGridWorld;
   }
-  double Domain::calculateFitness( const Caught& caught, const uint& stepCurrent ) {
+  double DomainManyHunters::calculateFitness( const Caught& caught, const uint& stepCurrent ) {
     double fitness = 0.0;
     if ( PREY_CAUGHT == caught ) { // Yay 
       fitness = static_cast<double>(10) * ( maxSteps - stepCurrent );
@@ -206,7 +206,7 @@ namespace PredatorPreyHunter {
       //cout << "step: " << noSteps << endl;
       positionPredator = ptrPredatorSelection->getPosition(); 
       positionPrey = ptrPrey->getPosition();
-      fout << ptrPredator->getType() << " " << positionPredator.x << " " << positionPredator.y << " ";
+      fout << ptrPredatorSelection->getType() << " " << positionPredator.x << " " << positionPredator.y << " ";
       fout << ptrPrey->getType() << " " << positionPrey.x << " " << positionPrey.y << " ";
       for ( uint i = 0; i < vPtrHunter.size(); i++ ) {
         positionHunter = ( vPtrHunter[i] )->getPosition();

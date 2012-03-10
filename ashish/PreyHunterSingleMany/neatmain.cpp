@@ -41,15 +41,16 @@ int main(int argc, char *argv[]) {
       the numbers will be different every time we run.    */
   srand( (unsigned)time( NULL ) );
 
-  if (argc < 9) {
+  if (argc < 10) {
     cerr << "1. A NEAT parameters file (.ne file) is required to run the experiments!" << endl; // ARG 1
     cerr << "2. number of generations is expected" << endl; // ARG 2
     cerr << "3. map width is expected" << endl; // ARG 3
     cerr << "4. map height is expected" << endl; // ARG 4
-    cerr << "5. path of starter genome file for predator higher network is expected" << endl; // ARG 5
-    cerr << "6. path of starter genome file for predator prey only network is expected" << endl; 
-    cerr << "7. path of starter genome file for predator hunter only network is expected" << endl; 
-    cerr << "8. name for plotting is expected" << endl; // ARG 6
+    cerr << "5. noHunters is expected" << endl;
+    cerr << "6. path of starter genome file for predator higher network is expected" << endl; // ARG 5
+    cerr << "7. path of starter genome file for predator prey only network is expected" << endl; 
+    cerr << "8. path of starter genome file for predator hunter only network is expected" << endl; 
+    cerr << "9. name for plotting is expected" << endl; // ARG 6
     return -1;
   }
 
@@ -58,21 +59,18 @@ int main(int argc, char *argv[]) {
 
   cout<<"loaded"<<endl;
 
-  //Here is an example of how to run an experiment directly from main
-  //and then visualize the speciation that took place
-  //p=xor_test(100);  //100 generation XOR experiment
-
   // get the required parameters
   istringstream sin;
   int gens = extract( argv[2] ); 
   int mapWidth = extract( argv[3] );
   int mapHeight = extract( argv[4] );
-  string pathStarterGenomeFileHigher( argv[5] );
-  string pathStarterGenomeFilePreyOnly( argv[6] );
-  string pathStarterGenomeFileHunterOnly( argv[7] );
-  string namePlotFile( argv[8] );
+  int noHunters = extract( argv[5] );
+  string pathStarterGenomeFileHigher( argv[6] );
+  string pathStarterGenomeFilePreyOnly( argv[7] );
+  string pathStarterGenomeFileHunterOnly( argv[8] );
+  string namePlotFile( argv[9] );
   cout << "Beginnning predatorpreyhunter_test";
-  p = predatorpreyhunter_test( gens, pathStarterGenomeFileHigher, pathStarterGenomeFilePreyOnly, pathStarterGenomeFileHunterOnly, namePlotFile, mapWidth, mapHeight );
+  p = predatorpreyhunter_test( gens, pathStarterGenomeFileHigher, pathStarterGenomeFilePreyOnly, pathStarterGenomeFileHunterOnly, namePlotFile, mapWidth, mapHeight, noHunters );
 
   if (p)
     delete p;
