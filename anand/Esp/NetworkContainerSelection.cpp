@@ -5,7 +5,7 @@
  *      Author: anand
  */
 
-#include "NetworkContainerSubtaskInverted.h"
+#include "NetworkContainerSelection.h"
 #include <sstream>
 
 namespace EspPredPreyHunter
@@ -14,27 +14,26 @@ namespace EspPredPreyHunter
     using PredatorPreyHunter::getMaxIndex;
     using std::endl;
 
-    NetworkContainerSubtaskInverted::NetworkContainerSubtaskInverted() :
-            NetworkContainerSubtask()
+    NetworkContainerSelection::NetworkContainerSelection()
+            : NetworkContainerCombiner()
     {
 
     }
 
-    NetworkContainerSubtaskInverted::NetworkContainerSubtaskInverted(const uint& nHiddenNeurons,
+    NetworkContainerSelection::NetworkContainerSelection(const uint& nHiddenNeurons,
             const uint& popSize, const uint& netTp, const uint& numNetworks,
-            const uint& numInputsPerNetwork, const uint& numOutputsPerNetwork) :
-            NetworkContainerSubtask(nHiddenNeurons, popSize, netTp, numNetworks,
+            const uint& numInputsPerNetwork, const uint& numOutputsPerNetwork)
+            : NetworkContainerCombiner(nHiddenNeurons, popSize, netTp, numNetworks,
                     numInputsPerNetwork, numOutputsPerNetwork)
     {
     }
 
-    NetworkContainerSubtaskInverted::~NetworkContainerSubtaskInverted()
+    NetworkContainerSelection::~NetworkContainerSelection()
     {
 
     }
 
-    void NetworkContainerSubtaskInverted::activate(const vector<double>& input,
-            vector<double>& output)
+    void NetworkContainerSelection::activate(const vector<double>& input, vector<double>& output)
     {
         const uint indepInputs = totalNumInputs;
         vector<double> newInput;
@@ -74,7 +73,8 @@ namespace EspPredPreyHunter
         const uint maxIndex = getMaxIndex(tempOutput);
         //LOG(ERROR) << "maxIndex is " << maxIndex;
 
-        output.assign(tempSingleOutputs.begin() + maxIndex * m, tempSingleOutputs.begin() + maxIndex * m + m);
+        output.assign(tempSingleOutputs.begin() + maxIndex * m,
+                tempSingleOutputs.begin() + maxIndex * m + m);
         //LOG(ERROR) << "Output is " << vecToString(output);
     }
 }

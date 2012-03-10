@@ -5,20 +5,20 @@
  *      Author: anand
  */
 
-#include "NetworkContainerSubtask.h"
+#include "NetworkContainerCombiner.h"
 #include "FeedForwardNetwork.h"
 
 namespace EspPredPreyHunter
 {
-    NetworkContainerSubtask::NetworkContainerSubtask() :
-            NetworkContainer(0, 0, 0), networkContainers(0)
+    NetworkContainerCombiner::NetworkContainerCombiner()
+            : NetworkContainer(0, 0, 0), networkContainers(0)
     {
     }
 
-    NetworkContainerSubtask::NetworkContainerSubtask(const uint& nHiddenNeurons,
+    NetworkContainerCombiner::NetworkContainerCombiner(const uint& nHiddenNeurons,
             const uint& popSize, const uint& netTp, const uint& numNetworks,
-            const uint& numInputsPerNetwork, const uint& numOutputsPerNetwork) :
-            NetworkContainer(numInputsPerNetwork, numOutputsPerNetwork,
+            const uint& numInputsPerNetwork, const uint& numOutputsPerNetwork)
+            : NetworkContainer(numInputsPerNetwork, numOutputsPerNetwork,
                     numNetworks + (numNetworks == 1 ? 0 : 1))
     {
         LOG(INFO) << "Creating combiner network with num inputs " << numInputsPerNetwork
@@ -27,50 +27,50 @@ namespace EspPredPreyHunter
                 numOutputsPerNetwork, true);
     }
 
-    NetworkContainerSubtask::~NetworkContainerSubtask()
+    NetworkContainerCombiner::~NetworkContainerCombiner()
     {
     }
 
-    void NetworkContainerSubtask::initializeNetworks()
+    void NetworkContainerCombiner::initializeNetworks()
     {
         combinerNetwork->setNeurons();
     }
 
-    void NetworkContainerSubtask::setFitness(const double& fitness)
+    void NetworkContainerCombiner::setFitness(const double& fitness)
     {
         VLOG(5) << "Setting fitness";
         combinerNetwork->setFitness(fitness);
     }
 
-    void NetworkContainerSubtask::incrementTests()
+    void NetworkContainerCombiner::incrementTests()
     {
         combinerNetwork->incrementTests();
     }
 
-    void NetworkContainerSubtask::average()
+    void NetworkContainerCombiner::average()
     {
         VLOG(5) << "Averaging.";
         combinerNetwork->average();
     }
 
-    void NetworkContainerSubtask::qsortNeurons()
+    void NetworkContainerCombiner::qsortNeurons()
     {
         VLOG(5) << "Sorting.";
         combinerNetwork->qsortNeurons();
     }
 
-    void NetworkContainerSubtask::mutate()
+    void NetworkContainerCombiner::mutate()
     {
         VLOG(5) << "Doing mutate";
         combinerNetwork->mutate();
     }
 
-    void NetworkContainerSubtask::evalReset()
+    void NetworkContainerCombiner::evalReset()
     {
         combinerNetwork->evalReset();
     }
 
-    void NetworkContainerSubtask::recombineHallOfFame(NetworkContainer* hallOfFameNetwork)
+    void NetworkContainerCombiner::recombineHallOfFame(NetworkContainer* hallOfFameNetwork)
     {
         VLOG(5) << "Doing recombine hall of fame";
         vector<Network*> hallOfFameNetworks = hallOfFameNetwork->getNetworks();
@@ -80,30 +80,31 @@ namespace EspPredPreyHunter
         combinerNetwork->recombineHallOfFame(hallOfFameNetworks[0]);
     }
 
-    vector<Network*> NetworkContainerSubtask::getNetworks() const
+    vector<Network*> NetworkContainerCombiner::getNetworks() const
     {
         vector<Network*> tempNetworks = vector<Network*>();
         tempNetworks.push_back(combinerNetwork);
         return tempNetworks;
     }
 
-    vector<NetworkContainer*> NetworkContainerSubtask::getNetworkContainers() const
+    vector<NetworkContainer*> NetworkContainerCombiner::getNetworkContainers() const
     {
         return networkContainers;
     }
 
-    void NetworkContainerSubtask::setNetworkContainers(
+    void NetworkContainerCombiner::setNetworkContainers(
             const vector<NetworkContainer*>& networkContainers)
     {
         this->networkContainers = networkContainers;
     }
 
-    void NetworkContainerSubtask::activate(const vector<double>& input, vector<double>& output)
+    void NetworkContainerCombiner::activate(const vector<double>& input, vector<double>& output)
     {
         if (networkContainers.size() == 0)
             LOG(FATAL) << "Trying to activate empty container!";
 
-        const uint indepInputs = totalNumInputs - (networkContainers[0]->getOutputsPerNetwork() * networkContainers.size());
+        const uint indepInputs = totalNumInputs
+                - (networkContainers[0]->getOutputsPerNetwork() * networkContainers.size());
         vector<double> newInput(indepInputs);
 
         newInput.assign(input.begin(), input.begin() + indepInputs);

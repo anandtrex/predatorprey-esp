@@ -12,14 +12,14 @@
 
 namespace EspPredPreyHunter
 {
-    NetworkContainerEsp::NetworkContainerEsp() :
-            NetworkContainer(0, 0, 0), networks(0)
+    NetworkContainerEsp::NetworkContainerEsp()
+            : NetworkContainer(0, 0, 0), networks(0)
     {
 
     }
 
-    NetworkContainerEsp::NetworkContainerEsp(const vector<Network*> networks) :
-            NetworkContainer(networks[0]->numInputs, networks[0]->numOutputs, networks.size()), networks(
+    NetworkContainerEsp::NetworkContainerEsp(const vector<Network*> networks)
+            : NetworkContainer(networks[0]->numInputs, networks[0]->numOutputs, networks.size()), networks(
                     networks)
     {
         combine = (networks.size() == 1) ? 0 : 1;
@@ -27,8 +27,8 @@ namespace EspPredPreyHunter
 
     NetworkContainerEsp::NetworkContainerEsp(const uint& nHiddenNeurons, const uint& popSize,
             const uint& netTp, const uint& numNetworks, const uint& numInputsPerNetwork,
-            const uint& numOutputsPerNetwork) :
-            NetworkContainer(numInputsPerNetwork, numOutputsPerNetwork,
+            const uint& numOutputsPerNetwork)
+            : NetworkContainer(numInputsPerNetwork, numOutputsPerNetwork,
                     numNetworks + (numNetworks == 1 ? 0 : 1))
     {
         combine = (numNetworks == 1) ? 0 : 1;

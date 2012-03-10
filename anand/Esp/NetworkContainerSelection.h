@@ -9,7 +9,7 @@
 #define NETWORKCONTAINERSUBTASKINVERTED_H_
 
 #include "Network.h"
-#include "NetworkContainerSubtask.h"
+#include "NetworkContainerCombiner.h"
 
 namespace EspPredPreyHunter
 {
@@ -19,14 +19,14 @@ namespace EspPredPreyHunter
      * This is the network combiner for the multi-agent ESP case. This is always used, irrespective
      * of the combination mechanism of the sub-tasks
      */
-    class NetworkContainerSubtaskInverted: public NetworkContainerSubtask
+    class NetworkContainerSelection: public NetworkContainerCombiner
     {
     public:
-        NetworkContainerSubtaskInverted();
-        NetworkContainerSubtaskInverted(const uint& nHiddenNeurons, const uint& popSize,
-                           const uint& netTp, const uint& numNetworks, const uint& numInputsPerNetwork,
-                           const uint& numOutputsPerNetwork);
-        ~NetworkContainerSubtaskInverted();
+        NetworkContainerSelection();
+        NetworkContainerSelection(const uint& nHiddenNeurons, const uint& popSize,
+                const uint& netTp, const uint& numNetworks, const uint& numInputsPerNetwork,
+                const uint& numOutputsPerNetwork);
+        ~NetworkContainerSelection();
         /**
          * Returns the output from the given input and outputs
          * @param input

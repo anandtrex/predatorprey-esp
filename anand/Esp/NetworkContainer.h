@@ -84,13 +84,4 @@ namespace EspPredPreyHunter
     };
 }
 
-
-
-
-
-
-
-
-
-
 #endif /* NETWORKESPCOMBINER_H_ */

@@ -7,8 +7,8 @@
 
 #include "EspExperimentSubtask.h"
 #include "../Esp/NetworkContainerEsp.h"
-#include "../Esp/NetworkContainerSubtask.h"
-#include "../Esp/NetworkContainerSubtaskInverted.h"
+#include "../Esp/NetworkContainerCombiner.h"
+#include "../Esp/NetworkContainerSelection.h"
 
 #include <limits>
 
@@ -182,7 +182,7 @@ namespace EspPredPreyHunter
     }
 
     template<>
-    NetworkContainer* EspExperimentSubtask<NetworkContainerSubtask>::generateNetworkContainer(
+    NetworkContainer* EspExperimentSubtask<NetworkContainerCombiner>::generateNetworkContainer(
             const uint& numHiddenNeurons, const uint& netType, const uint& numOutputsPerNetwork,
             const uint& numNonPredAgents, const uint& numInputsPerNetwork, const uint& popSize)
     {
@@ -193,12 +193,12 @@ namespace EspPredPreyHunter
                 << " as number of hidden neurons, " << "population size " << popSize
                 << ", number of networks as " << 1 << " number of inputs per network as "
                 << numInputs << " and number of outputs as " << numOutputsPerNetwork;
-        return new NetworkContainerSubtask(numHiddenNeurons, popSize, netType, 1, numInputs,
+        return new NetworkContainerCombiner(numHiddenNeurons, popSize, netType, 1, numInputs,
                 numOutputsPerNetwork);
     }
 
     template<>
-    NetworkContainer* EspExperimentSubtask<NetworkContainerSubtaskInverted>::generateNetworkContainer(
+    NetworkContainer* EspExperimentSubtask<NetworkContainerSelection>::generateNetworkContainer(
             const uint& numHiddenNeurons, const uint& netType, const uint& numOutputsPerNetwork,
             const uint& numNonPredAgents, const uint& numInputsPerNetwork, const uint& popSize)
     {
@@ -209,11 +209,11 @@ namespace EspPredPreyHunter
                 << " as number of hidden neurons, " << "population size " << popSize
                 << ", number of networks as " << 1 << " number of inputs per network as "
                 << numInputs << " and number of outputs as " << numOutputs;
-        return new NetworkContainerSubtaskInverted(numHiddenNeurons, popSize, netType, 1, numInputs,
+        return new NetworkContainerSelection(numHiddenNeurons, popSize, netType, 1, numInputs,
                 numOutputs);
     }
 
-    template class EspExperimentSubtask<NetworkContainerSubtask> ;
-    template class EspExperimentSubtask<NetworkContainerSubtaskInverted> ;
+    template class EspExperimentSubtask<NetworkContainerCombiner> ;
+    template class EspExperimentSubtask<NetworkContainerSelection> ;
 }
 

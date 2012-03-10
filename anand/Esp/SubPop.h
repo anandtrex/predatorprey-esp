@@ -18,8 +18,8 @@ namespace EspPredPreyHunter
     {
 
         // constants! FIXME
-        static const double MUT_RATE;  // mutation rate
-        static const int MIN = 0; //0 means higher fitness better, 1 otherwise
+        static const double MUT_RATE;     // mutation rate
+        static const int MIN = 0;     //0 means higher fitness better, 1 otherwise
 
         uint geneSize;
 
@@ -32,14 +32,14 @@ namespace EspPredPreyHunter
         SubPop(const int& size, const int& geneSize);
         ~SubPop()
         {
-            for(uint i = 0; i < pop.size(); i++){
+            for (uint i = 0; i < pop.size(); i++) {
                 delete pop[i];
             }
             pop.clear();
         }
         //  subPop(const subPop &s);
         //void addHiddenLayer(int size);
-        void create();  // creates a random subpopulation of neurons
+        void create();     // creates a random subpopulation of neurons
         void evalReset();
         Neuron* selectNeuron();
         void average();
@@ -59,7 +59,7 @@ namespace EspPredPreyHunter
         void printDelta(FILE *file);
         void recombineHallOfFame(Network* hallOfFameNetwork, const uint& neuronNumber);
     private:
-        int numBreed;  //number of neurons to be mated in subpop
+        int numBreed;     //number of neurons to be mated in subpop
         void crossover(const std::vector<double> &parent1, const std::vector<double> &parent2,
                 std::vector<double> &child1, std::vector<double> &child2);
         int findMate(int num);

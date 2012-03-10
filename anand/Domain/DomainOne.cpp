@@ -40,9 +40,9 @@ namespace PredatorPreyHunter
     template<class T>
     DomainOne<T>::~DomainOne()
     {
-         delete ptrPredator;
-         delete ptrOtherAgent;
-         delete ptrGridWorld;
+        delete ptrPredator;
+        delete ptrOtherAgent;
+        delete ptrGridWorld;
     }
 
     template<class T>
@@ -193,7 +193,7 @@ namespace PredatorPreyHunter
         }
     }
 
-    template class DomainOne<Prey>;
-    template class DomainOne<Hunter>;
+    template class DomainOne<Prey> ;
+    template class DomainOne<Hunter> ;
 }
 

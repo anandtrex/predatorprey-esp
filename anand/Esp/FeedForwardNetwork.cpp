@@ -17,10 +17,10 @@ namespace EspPredPreyHunter
 
         vector<double> biasedInput(input);
 
-        if(bias)
-            biasedInput.push_back(1.0); // Bias
+        if (bias)
+            biasedInput.push_back(1.0);     // Bias
 
-        if(( biasedInput.size() + output.size() ) != geneSize){
+        if ((biasedInput.size() + output.size()) != geneSize) {
             LOG(ERROR) << "Mismatch between genesize and input + output size";
             LOG(ERROR) << "Input size is " << biasedInput.size();
             LOG(ERROR) << "Output size is " << output.size();
@@ -30,7 +30,7 @@ namespace EspPredPreyHunter
         VLOG(5) << "Input is " << vecToString(biasedInput);
 
         // evaluate hidden/output layer
-        for (i = 0; i < numHiddenNeurons; ++i) {  //for each hidden unit
+        for (i = 0; i < numHiddenNeurons; ++i) {     //for each hidden unit
             //if(!pop[i]->lesioned){
             activation[i] = 0.0;
             for (j = 0; j < biasedInput.size(); ++j) {
@@ -44,8 +44,6 @@ namespace EspPredPreyHunter
             activation[i] = sigmoid(activation[i]);
             //}
         }
-
-
 
         VLOG(4) << "Inputs evaluated";
 

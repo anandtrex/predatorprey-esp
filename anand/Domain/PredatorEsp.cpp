@@ -16,12 +16,13 @@ namespace PredatorPreyHunter
     using std::abs;
 
     PredatorEsp::PredatorEsp(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p,
-            NetworkContainer* networkContainer) :
-            Predator(ptrGridWorld, agentId, p), networkContainer(networkContainer)
+            NetworkContainer* networkContainer)
+            : Predator(ptrGridWorld, agentId, p), networkContainer(networkContainer)
     {
     }
 
-    Position PredatorEsp::move(const std::vector<AgentInformation>& vAgentInformation, const uint& stepNo)
+    Position PredatorEsp::move(const std::vector<AgentInformation>& vAgentInformation,
+            const uint& stepNo)
     {
         VLOG(5) << "Moving";
         typedef vector<AgentInformation>::const_iterator VAICI;

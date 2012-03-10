@@ -24,7 +24,7 @@ namespace PredatorPreyHunter
     using std::vector;
     using EspPredPreyHunter::NetworkContainer;
 
-    class DomainTotal : public Domain
+    class DomainTotal: public Domain
     {
         uint numPredators;
         uint numPrey;
@@ -55,15 +55,16 @@ namespace PredatorPreyHunter
                 const uint& numPredators, const uint& numPrey, const uint& numHunters,
                 const double& preyMoveProb, const double& hunterMoveProb);
         DomainTotal(const uint& maxSteps, const uint& width, const uint& height,
-                        const uint& numPredators, const uint& numPrey, const uint& numHunters,
-                        const double& preyMoveProb, const double& hunterMoveProb, const double& hunterRoleReversalProbability);
+                const uint& numPredators, const uint& numPrey, const uint& numHunters,
+                const double& preyMoveProb, const double& hunterMoveProb,
+                const double& hunterRoleReversalProbability);
         ~DomainTotal();
         virtual void init(NetworkContainer* espNetwork);
-        virtual void enableDisplay(const vector<double>& predatorColour, const vector<double>& preyColour,
-                const vector<double>& hunterColour);
-        virtual double run(); // return fitness
+        virtual void enableDisplay(const vector<double>& predatorColour,
+                const vector<double>& preyColour, const vector<double>& hunterColour);
+        virtual double run();     // return fitness
         virtual double run(std::string stepsFilePath);     // return fitness
-        virtual double calculateFitness(const uint& stepCurrent );
+        virtual double calculateFitness(const uint& stepCurrent);
     };
 }
 

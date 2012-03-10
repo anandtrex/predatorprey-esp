@@ -10,8 +10,8 @@
 #include "Domain/GridWorld.h"
 #include "Experiment/EspExperiment.h"
 #include "Experiment/EspExperimentSubtask.h"
-#include "Esp/NetworkContainerSubtask.h"
-#include "Esp/NetworkContainerSubtaskInverted.h"
+#include "Esp/NetworkContainerCombiner.h"
+#include "Esp/NetworkContainerSelection.h"
 
 using namespace PredatorPreyHunter;
 using namespace EspPredPreyHunter;
@@ -28,7 +28,7 @@ void reseed(int val)
 }
 
 int main(int argc, char **argv)
- {
+{
     google::InitGoogleLogging("");
     LOG(INFO) << "Main function";
 
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     bool subInvTaskEx = false;
 
     while ((c = getopt(argc, argv, "c:esi")) != -1) {
-        switch(c){
+        switch (c) {
             case 'c':
                 configFilePath = optarg;
                 break;
@@ -60,14 +60,14 @@ int main(int argc, char **argv)
         }
     }
 
-    if(espEx){
+    if (espEx) {
         EspExperiment experiment(configFilePath);
         experiment.start();
     } else if (subTaskEx) {
-        EspExperimentSubtask<NetworkContainerSubtask> experiment(configFilePath);
+        EspExperimentSubtask<NetworkContainerCombiner> experiment(configFilePath);
         experiment.start();
     } else if (subInvTaskEx) {
-        EspExperimentSubtask<NetworkContainerSubtaskInverted> experiment(configFilePath);
+        EspExperimentSubtask<NetworkContainerSelection> experiment(configFilePath);
         experiment.start();
     }
     return 0;
