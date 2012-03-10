@@ -95,6 +95,7 @@ Population *predatorpreyhunter_test(int gens, string pathFileGenome, string name
       fout.close();
       if ( expcount < NEAT::num_runs - 1 ) delete pop; // delete all but the last population
     } // end of for loop experiments
+    delete start_genome;
     return pop;
 }
 
