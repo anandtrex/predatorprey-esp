@@ -38,9 +38,10 @@ namespace PredatorPreyHunter
         }
         virtual ~Agent()
         {
+            delete ptrGridWorld;
         }
 
-        virtual Position move(const std::vector<AgentInformation>& vAgentInformation) = 0;
+        virtual Position move(const std::vector<AgentInformation>& vAgentInformation, const uint& stepNo) = 0;
         AgentInformation getAgentInformation();
         Position getPosition()
         {

@@ -100,7 +100,7 @@ namespace PredatorPreyHunter
         visualizer = Visualizer(idColorMapping, ptrGridWorld->width, ptrGridWorld->height);
     }
 
-    void DomainTotal::step()
+    void DomainTotal::step(const uint& stepNo)
     {
         AgentInformation aiPredator, aiPrey, aiHunter;
         aiPredator = ptrPredator->getAgentInformation();
@@ -119,7 +119,7 @@ namespace PredatorPreyHunter
         // move hunter
         ptrHunter->move(vAgentInformation);
         // move predator
-        ptrPredator->move(vAgentInformation);
+        ptrPredator->move(vAgentInformation, stepNo);
 
         VLOG(2) << "Predator at " << aiPredator.position.x << "," << aiPredator.position.y;
         VLOG(2) << "Prey at " << aiPrey.position.x << "," << aiPrey.position.y;
@@ -176,8 +176,8 @@ namespace PredatorPreyHunter
         }
 
         do {
-            VLOG(1) << "step: " << noSteps << endl;
-            (void) step();
+            LOG(INFO) << "step: " << noSteps << endl;
+            (void) step(noSteps);
             if (numPreyCaught > 0 && numPreyCaught > prevNumPreyCaught) {
                 LOG(INFO) << "PREY CAUGHT!!!!" << endl;
                 VLOG(5)
@@ -240,11 +240,10 @@ namespace PredatorPreyHunter
         if (!fout.is_open()) {
             LOG(FATAL) << "Could not open file " << stepsFilePath << " for writing!" << endl;
         }
-        double fitness = 0.0;
         Position positionPredator, positionPrey, positionHunter;
         do {
             VLOG(1) << "step: " << noSteps << endl;
-            (void) step();
+            (void) step(noSteps);
             if (numPreyCaught > 0 && numPreyCaught > prevNumPreyCaught) {
                 LOG(INFO) << "PREY CAUGHT!!!!" << endl;
                 VLOG(5)
@@ -298,7 +297,7 @@ namespace PredatorPreyHunter
             fitness = static_cast<double>(-10) * (maxSteps - stepCurrent) * numPredCaught;
             return fitness;
         } else if (numHunterCaught > 0) {     // Double Yay!
-            fitness = static_cast<double>(100) * (maxSteps - stepCurrent) * numPredCaught;
+            fitness = static_cast<double>(100) * (maxSteps - stepCurrent) * numHunterCaught;
             return fitness;
         } else {
             // calculate distance from hunter and prey
@@ -311,7 +310,7 @@ namespace PredatorPreyHunter
             // reward for being close to prey and far away from hunter
             distancePrey = ptrGridWorld->getWidth() + ptrGridWorld->getHeight() - distancePrey;
             // take into account the size of the grid for rewarding later
-            fitness = static_cast<double>(distancePrey) + distanceHunter;     // if by any chance it reaches here although it won't
+            fitness = static_cast<double>(distancePrey) + distanceHunter;
             return fitness;
         }
     }

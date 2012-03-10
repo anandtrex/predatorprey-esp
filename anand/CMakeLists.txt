@@ -20,12 +20,21 @@ set(CMAKE_CXX_FLAGS "-O3 -Wall")
 set(CORELIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${X11_LIBRARY} m)
 set(CMAKE_EXE_LINKER_FLAGS "-L${CMAKE_BINARY_DIR}/glog/lib -L${CMAKE_BINARY_DIR}/libconfig/lib")
 
-if(NOT EXISTS ${CMAKE_BINARY_DIR}/glog)
 include(ExternalProject)
+if(NOT EXISTS ${CMAKE_BINARY_DIR}/glog)
 ExternalProject_Add(
 	glog-0.3.2
 	URL http://google-glog.googlecode.com/files/glog-0.3.2.tar.gz
 	CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_BINARY_DIR}/glog
+	BUILD_COMMAND make -j8
+)
+endif()
+if(NOT EXISTS ${CMAKE_BINARY_DIR}/gflags)
+ExternalProject_Add(
+	gflags-2.0
+	BUILD_IN_SOURCE 1
+	URL http://gflags.googlecode.com/files/gflags-2.0.tar.gz
+	CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_BINARY_DIR}/gflags
 	BUILD_COMMAND make -j8
 )
 endif()

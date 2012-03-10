@@ -80,7 +80,7 @@ namespace PredatorPreyHunter
     }
 
     template<class T>
-    void DomainOne<T>::step()
+    void DomainOne<T>::step(const uint& stepNo)
     {
         AgentInformation aiPredator, aiOtherAgent;
         aiPredator = ptrPredator->getAgentInformation();
@@ -93,9 +93,9 @@ namespace PredatorPreyHunter
         vAgentInformation.push_back(aiOtherAgent);
 
         // move prey
-        ptrOtherAgent->move(vAgentInformation);
+        ptrOtherAgent->move(vAgentInformation, stepNo);
         // move predator
-        ptrPredator->move(vAgentInformation);
+        ptrPredator->move(vAgentInformation, stepNo);
 
         VLOG(2) << "Predator at " << aiPredator.position.x << "," << aiPredator.position.y;
         VLOG(2)
@@ -136,7 +136,7 @@ namespace PredatorPreyHunter
 
         do {
             VLOG(1) << "Step: " << noSteps << endl;
-            (void) step();
+            (void) step(noSteps);
             if (numAgentsCaught > 0 && numAgentsCaught > prevNumAgentsCaught) {
                 LOG(INFO) << "CAUGHT!!!!" << endl;
                 prevNumAgentsCaught = numAgentsCaught;

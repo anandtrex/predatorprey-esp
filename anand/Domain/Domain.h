@@ -29,7 +29,7 @@ namespace PredatorPreyHunter
          */
         uint numOtherAgents;
 
-        virtual void step() = 0;
+        virtual void step(const uint& stepNo) = 0;
         virtual double calculateFitness(const uint& stepCurrent) = 0;
 
     public:

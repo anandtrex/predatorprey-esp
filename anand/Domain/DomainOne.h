@@ -40,7 +40,7 @@ namespace PredatorPreyHunter
     protected:
         Predator* ptrPredator;
         Agent* ptrOtherAgent;
-        void step();
+        void step(const uint& stepNo);
 
     public:
         DomainOne();

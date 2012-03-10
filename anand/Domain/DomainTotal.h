@@ -47,7 +47,7 @@ namespace PredatorPreyHunter
         Predator* ptrPredator;
         Hunter* ptrHunter;
         Prey* ptrPrey;
-        void step();
+        void step(const uint& stepNo);
 
     public:
         DomainTotal();

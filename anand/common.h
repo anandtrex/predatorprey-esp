@@ -20,8 +20,18 @@ typedef unsigned int uint;
 // fetch random number between 0 and 1
 namespace PredatorPreyHunter
 {
+    using std::vector;
+
     double fetchRandomDouble();
     long fetchRandomLong();
+
+    /**
+     * Returns the index of the maximum element in a given vector. If there are more than one maximum elements,
+     * it returns a random index among the maximum elements
+     * @param vec
+     * @return
+     */
+    uint getMaxIndex(const vector<double>& vec);
 }
 
 namespace EspPredPreyHunter
@@ -30,7 +40,7 @@ namespace EspPredPreyHunter
     using std::string;
     string vecToString(const vector<double>& vec);
     template<typename T, size_t N>
-    vector<T> makeVector(const T(&data)[N])
+    vector<T> makeVector(const T (&data)[N])
     {
         return std::vector<T>(data, data + N);
     }
@@ -39,6 +49,7 @@ namespace EspPredPreyHunter
      */
     double rndCauchy(double wtrange);
     string concatStringDouble(string s, double d);
+
 }
 
 #endif /* COMMON_H_ */

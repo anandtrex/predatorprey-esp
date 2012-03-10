@@ -173,7 +173,7 @@ namespace EspPredPreyHunter
         // while activating
         networkContainers.push_back(networkContainerChase);
         networkContainers.push_back(networkContainerEvade);
-        //networkContainers.push_back(networkContainerChase);
+        networkContainers.push_back(networkContainerChase);
         LOG(INFO) << "Evolving for overall task";
         VLOG(5) << "NetworkContainers size is " << networkContainers.size();
         (dynamic_cast<T*>(networkContainerTotal))->setNetworkContainers(networkContainers);
@@ -186,8 +186,9 @@ namespace EspPredPreyHunter
             const uint& numHiddenNeurons, const uint& netType, const uint& numOutputsPerNetwork,
             const uint& numNonPredAgents, const uint& numInputsPerNetwork, const uint& popSize)
     {
-        const int numInputs = numOutputsPerNetwork * numNonPredAgents
-                + (numInputsPerNetwork + 1)/* extra agent type input*/* (numNonPredAgents);
+        const int numInputs = numOutputsPerNetwork * (numNonPredAgents + 1)
+                + (numInputsPerNetwork + 1) * (numNonPredAgents)/* extra agent type input*/
+                ;
         LOG(INFO) << "Initialising total network container with " << numHiddenNeurons
                 << " as number of hidden neurons, " << "population size " << popSize
                 << ", number of networks as " << 1 << " number of inputs per network as "
@@ -201,13 +202,15 @@ namespace EspPredPreyHunter
             const uint& numHiddenNeurons, const uint& netType, const uint& numOutputsPerNetwork,
             const uint& numNonPredAgents, const uint& numInputsPerNetwork, const uint& popSize)
     {
-        const int numInputs = (numInputsPerNetwork + 1) * (numNonPredAgents);
+        const int numInputs = (numInputsPerNetwork + 1) /* extra agent type input*/
+                * (numNonPredAgents);
+        const int numOutputs = 3;
         LOG(INFO) << "Initialising total network container with " << numHiddenNeurons
                 << " as number of hidden neurons, " << "population size " << popSize
                 << ", number of networks as " << 1 << " number of inputs per network as "
-                << numInputs << " and number of outputs as " << 2;
+                << numInputs << " and number of outputs as " << numOutputs;
         return new NetworkContainerSubtaskInverted(numHiddenNeurons, popSize, netType, 1, numInputs,
-                2);
+                numOutputs);
     }
 
     template class EspExperimentSubtask<NetworkContainerSubtask> ;

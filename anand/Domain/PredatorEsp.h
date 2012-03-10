@@ -23,16 +23,9 @@ namespace PredatorPreyHunter
     {
         NetworkContainer* networkContainer;
 
-        /**
-         * Returns the index of the maximum element in a given vector. If there are more than one maximum elements,
-         * it returns a random index among the maximum elements
-         * @param vec
-         * @return
-         */
-        uint getMaxIndex(const vector<double>& vec);
     public:
         PredatorEsp(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p, NetworkContainer *network);
-        Position move(const std::vector<AgentInformation>& vAgentInformation);
+        Position move(const std::vector<AgentInformation>& vAgentInformation, const uint& stepNo = -1);
     };
 }
 

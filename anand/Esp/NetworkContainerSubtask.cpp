@@ -103,8 +103,12 @@ namespace EspPredPreyHunter
         if (networkContainers.size() == 0)
             LOG(FATAL) << "Trying to activate empty container!";
 
-        // TODO change the input to duplicate hunter position for the two chasing networks
-        vector<double> tempSingleOutputs(input);
+        const uint indepInputs = totalNumInputs - (networkContainers[0]->getOutputsPerNetwork() * networkContainers.size());
+        vector<double> newInput(indepInputs);
+
+        newInput.assign(input.begin(), input.begin() + indepInputs);
+
+        vector<double> tempSingleOutputs(newInput);
 
         const int k = networkContainers[0]->getInputsPerNetwork();
         const int l = input.size() / networkContainers.size();

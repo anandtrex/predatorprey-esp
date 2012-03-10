@@ -26,30 +26,44 @@ namespace EspPredPreyHunter
     using PredatorPreyHunter::Domain;
     using PredatorPreyHunter::fetchRandomDouble;
 
-    EspExperiment::EspExperiment(const char* configFilePath)
-            : Experiment()
+    EspExperiment::EspExperiment(const char* configFilePath) :
+            Experiment()
     {
         libconfig::Config cfg;
 
         LOG(INFO) << "Reading from config file " << configFilePath;
         cfg.readFile(configFilePath);
 
-        uint maxSteps = cfg.lookup("experiment:max_steps");
+        const uint maxSteps = cfg.lookup("experiment:max_steps");
         LOG(INFO) << "Max steps in experiment is "
                 << static_cast<uint>(cfg.lookup("experiment:max_steps"));
 
-        uint gridWidth = cfg.lookup("experiment:grid:width");
-        uint gridHeight = cfg.lookup("experiment:grid:height");
+        const uint gridWidth = cfg.lookup("experiment:grid:width");
+        const uint gridHeight = cfg.lookup("experiment:grid:height");
         LOG(INFO) << "Grid size is " << static_cast<uint>(gridWidth) << "x"
                 << static_cast<uint>(gridHeight);
 
-        uint numHunters = static_cast<uint>(cfg.lookup("agents:hunter:number"));
-        uint numPredators = static_cast<uint>(cfg.lookup("agents:predator:number"));
-        uint numPrey = static_cast<uint>(cfg.lookup("agents:prey:number"));
+        const uint numHunters = static_cast<uint>(cfg.lookup("agents:hunter:number"));
+        const uint numPredators = static_cast<uint>(cfg.lookup("agents:predator:number"));
+        const uint numPrey = static_cast<uint>(cfg.lookup("agents:prey:number"));
 
-        domainTotal = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey, numHunters,
-                static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability")),
-                static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability")));
+        const uint hunterType = static_cast<uint>(cfg.lookup("agents:hunter:hunters:[0]:type"));
+        const double hunterMoveProb = static_cast<double>(cfg.lookup(
+                "agents:hunter:hunters:[0]:move_probability"));
+        const double preyMoveProb = static_cast<double>(cfg.lookup(
+                        "agents:prey:preys:[0]:move_probability"));
+
+        if (hunterType == 0) {
+            domainTotal = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey,
+                    numHunters, preyMoveProb - 0.1, hunterMoveProb - 0.1);
+        } else if (hunterType == 1) {
+            const double hunterRoleReversalProb = static_cast<double>(cfg.lookup(
+                    "agents:hunter:hunters:[0]:role_reversal_probability"));
+            domainTotal = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey,
+                    numHunters, preyMoveProb - 0.1, hunterMoveProb - 0.1, hunterRoleReversalProb);
+            LOG(INFO) << "Hunter has MPD. Role reversal probability is "
+                    << hunterRoleReversalProb;
+        }
         LOG(INFO) << "Initialized domain with " << numPredators << " predators," << numPrey
                 << " prey and " << numHunters << " hunters.";
         LOG(INFO) << "Hunter move probability is "
@@ -67,19 +81,11 @@ namespace EspPredPreyHunter
         const int numOutputsPerNetwork = 5;
 
         LOG(INFO) << "Initialising network container with " << numHiddenNeurons
-                       << " as number of hidden neurons, " << "population size " << popSize
-                       << ", number of networks as " << numHunters + numPrey
-                       << " number of inputs per network as " << numInputsPerNetwork
-                       << " and number of outputs as " << numOutputsPerNetwork;
+                << " as number of hidden neurons, " << "population size " << popSize
+                << ", number of networks as " << numHunters + numPrey
+                << " number of inputs per network as " << numInputsPerNetwork
+                << " and number of outputs as " << numOutputsPerNetwork;
 
-        /*
-         esp = new Esp(static_cast<uint>(cfg.lookup("experiment:esp:num_hidden_neurons")), popSize,
-         0, numHunters + numPrey, numInputsPerNetwork, numOutputsPerNetwork);
-         LOG(INFO) << "Initialized esp with "
-         << static_cast<uint>(cfg.lookup("experiment:esp:num_hidden_neurons"))
-         << " as number of hidden neurons, " << "population size " << popSize
-         << ", number of other agents as " << numHunters + numPrey << "and "
-         << "number of actions as " << numOutputsPerNetwork;*/
         networkContainerTotal = new NetworkContainerEsp(numHiddenNeurons, popSize, netType,
                 numHunters + numPrey, numInputsPerNetwork, numOutputsPerNetwork);
 
@@ -94,7 +100,7 @@ namespace EspPredPreyHunter
         LOG(INFO) << "Number of trials per generation is " << numTrialsPerGen;
 
         // Display related stuff
-        bool displayEnabled = cfg.lookup("experiment:display");
+        const bool displayEnabled = cfg.lookup("experiment:display");
 
         if (displayEnabled) {
             LOG(INFO) << "Display enabled";

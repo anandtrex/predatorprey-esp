@@ -16,7 +16,7 @@ namespace PredatorPreyHunter
         this->typeAgent = PREY;
     }
 
-    Position Prey::move(const std::vector<AgentInformation>& vAgentInformation)
+    Position Prey::move(const std::vector<AgentInformation>& vAgentInformation, const uint& stepNo)
     {
         VLOG(5) << "Moving";
         typedef vector<AgentInformation>::const_iterator VAICI;
