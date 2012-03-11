@@ -47,6 +47,10 @@ namespace EspPredPreyHunter
         const uint l = input.size() / networkContainers.size();
         const uint m = networkContainers[0]->getOutputsPerNetwork();
 
+        if(k + 1 != l){
+            LOG(ERROR) << "Input size doesn't match!";
+        }
+
         for (uint i = 0; i < networkContainers.size(); i++) {
             vector<double> tempOutput = vector<double>(m);
             vector<double> tempInput = vector<double>();

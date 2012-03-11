@@ -39,7 +39,7 @@ namespace EspPredPreyHunter
         LOG(INFO) << "Grid size is " << static_cast<uint>(gridWidth) << "x"
                 << static_cast<uint>(gridHeight);
 
-        const uint numHunters = static_cast<uint>(cfg.lookup("agents:hunter:number"));
+        numHunters = static_cast<uint>(cfg.lookup("agents:hunter:number"));
         const uint numPredators = static_cast<uint>(cfg.lookup("agents:predator:number"));
         const uint numPrey = static_cast<uint>(cfg.lookup("agents:prey:number"));
 
@@ -172,8 +172,9 @@ namespace EspPredPreyHunter
         // because this is the order in which the inputs are given by the predator, and used
         // while activating
         networkContainers.push_back(networkContainerChase);
-        networkContainers.push_back(networkContainerEvade);
-        networkContainers.push_back(networkContainerChase);
+        for(uint i = 0; i < numHunters; i++){
+            networkContainers.push_back(networkContainerEvade);
+        }
         LOG(INFO) << "Evolving for overall task";
         VLOG(5) << "NetworkContainers size is " << networkContainers.size();
         (dynamic_cast<T*>(networkContainerTotal))->setNetworkContainers(networkContainers);
