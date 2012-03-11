@@ -31,7 +31,7 @@ namespace EspPredPreyHunter
         DomainOne<Hunter>* domainHunter;
 
     public:
-        EspExperimentSubtask(const char* configFilePath);
+        EspExperimentSubtask(const string& configFilePath);
         ~EspExperimentSubtask()
         {
         }

@@ -26,7 +26,7 @@ namespace EspPredPreyHunter
         uint numEvalTrials;
         uint numTrialsPerGen;
     public:
-        EspExperiment(const char* configFilePath);
+        EspExperiment(const string& configFilePath);
         EspExperiment()
                 : Experiment()
         {

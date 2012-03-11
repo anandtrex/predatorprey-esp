@@ -7,11 +7,18 @@
 
 #include <iostream>
 
+#include <gflags/gflags.h>
+
 #include "Domain/GridWorld.h"
 #include "Experiment/EspExperiment.h"
 #include "Experiment/EspExperimentSubtask.h"
 #include "Esp/NetworkContainerCombiner.h"
 #include "Esp/NetworkContainerSelection.h"
+
+DEFINE_string(c, "", "Path for the config file");
+DEFINE_bool(e, false, "Set to true to run experiment with monolithic network");
+DEFINE_bool(s, false, "Set to true to run experiment with subtask combiner network");
+DEFINE_bool(i, false, "Set to true to run experiment with subtask selection network");
 
 using namespace PredatorPreyHunter;
 using namespace EspPredPreyHunter;
@@ -29,45 +36,21 @@ void reseed(int val)
 
 int main(int argc, char **argv)
 {
+    google::ParseCommandLineFlags(&argc, &argv, true);
+
     google::InitGoogleLogging("");
     LOG(INFO) << "Main function";
 
     reseed(getpid());
 
-    int c;
-    char* configFilePath = "";
-    bool espEx = false;
-    bool subTaskEx = false;
-    bool subInvTaskEx = false;
-
-    while ((c = getopt(argc, argv, "c:esi")) != -1) {
-        switch (c) {
-            case 'c':
-                configFilePath = optarg;
-                break;
-            case 'e':
-                espEx = true;
-                break;
-            case 's':
-                subTaskEx = true;
-                break;
-            case 'i':
-                subInvTaskEx = true;
-                break;
-            default:
-                abort();
-                break;
-        }
-    }
-
-    if (espEx) {
-        EspExperiment experiment(configFilePath);
+    if (FLAGS_e) {
+        EspExperiment experiment(FLAGS_c);
         experiment.start();
-    } else if (subTaskEx) {
-        EspExperimentSubtask<NetworkContainerCombiner> experiment(configFilePath);
+    } else if (FLAGS_s) {
+        EspExperimentSubtask<NetworkContainerCombiner> experiment(FLAGS_c);
         experiment.start();
-    } else if (subInvTaskEx) {
-        EspExperimentSubtask<NetworkContainerSelection> experiment(configFilePath);
+    } else if (FLAGS_i) {
+        EspExperimentSubtask<NetworkContainerSelection> experiment(FLAGS_c);
         experiment.start();
     }
     return 0;

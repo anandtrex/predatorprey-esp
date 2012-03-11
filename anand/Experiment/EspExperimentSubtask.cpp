@@ -22,13 +22,13 @@ namespace EspPredPreyHunter
     using PredatorPreyHunter::fetchRandomDouble;
 
     template<class T>
-    EspExperimentSubtask<T>::EspExperimentSubtask(const char* configFilePath) :
+    EspExperimentSubtask<T>::EspExperimentSubtask(const string& configFilePath) :
             EspExperiment()
     {
         libconfig::Config cfg;
 
         LOG(INFO) << "Reading from config file " << configFilePath;
-        cfg.readFile(configFilePath);
+        cfg.readFile(configFilePath.c_str());
 
         const uint maxSteps = cfg.lookup("experiment:max_steps");
         LOG(INFO) << "Max steps in experiment is "
@@ -99,14 +99,14 @@ namespace EspPredPreyHunter
                 << " as number of hidden neurons, " << "population size " << popSize
                 << ", number of networks as " << numPrey << " number of inputs per network as "
                 << numInputsPerNetwork << " and number of outputs as " << numOutputsPerNetwork;
-        networkContainerPrey = new NetworkContainerEsp(numHiddenNeurons, popSize, netType, numPrey,
+        networkContainerPrey = new NetworkContainerEsp(numHiddenNeurons, popSize, netType, 1,
                 numInputsPerNetwork, numOutputsPerNetwork);
         LOG(INFO) << "Initialising hunter network container with " << numHiddenNeurons
                 << " as number of hidden neurons, " << "population size " << popSize
                 << ", number of networks as " << numHunters << " number of inputs per network as "
                 << numInputsPerNetwork << " and number of outputs as " << numOutputsPerNetwork;
         networkContainerHunter = new NetworkContainerEsp(numHiddenNeurons, popSize, netType,
-                numHunters, numInputsPerNetwork, numOutputsPerNetwork);
+                1, numInputsPerNetwork, numOutputsPerNetwork);
 
         numGenerations = cfg.lookup("experiment:esp:num_generations");
         LOG(INFO) << "Number of generations is " << numGenerations;
@@ -204,7 +204,7 @@ namespace EspPredPreyHunter
     {
         const int numInputs = (numInputsPerNetwork + 1) /* extra agent type input*/
                 * (numNonPredAgents);
-        const int numOutputs = 3;
+        const int numOutputs = numNonPredAgents;
         LOG(INFO) << "Initialising total network container with " << numHiddenNeurons
                 << " as number of hidden neurons, " << "population size " << popSize
                 << ", number of networks as " << 1 << " number of inputs per network as "

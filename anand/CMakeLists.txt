@@ -14,10 +14,10 @@ if(DOXYGEN_FOUND)
  )
 endif(DOXYGEN_FOUND)
 
-set(CMAKE_CXX_COMPILER "clang++")
+set(CMAKE_CXX_COMPILER "g++")
 set(CMAKE_CXX_FLAGS "-O3 -Wall")
 set(CORELIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${X11_LIBRARY} m)
-set(CMAKE_EXE_LINKER_FLAGS "-L${CMAKE_BINARY_DIR}/glog/lib -L${CMAKE_BINARY_DIR}/libconfig/lib")
+set(CMAKE_EXE_LINKER_FLAGS "-L${CMAKE_BINARY_DIR}/glog/lib -L${CMAKE_BINARY_DIR}/libconfig/lib -L${CMAKE_BINARY_DIR}/gflags/lib")
 
 include(ExternalProject)
 if(NOT EXISTS ${CMAKE_BINARY_DIR}/glog)
@@ -32,7 +32,7 @@ ExternalProject_Add(
 	glog-0.3.2
 	DEPENDS gflags-2.0
 	URL http://google-glog.googlecode.com/files/glog-0.3.2.tar.gz
-	CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_BINARY_DIR}/glog "CXXFLAGS=-I${CMAKE_BINARY_DIR}/gflags/include"
+	CONFIGURE_COMMAND "CXXFLAGS=-I${CMAKE_BINARY_DIR}/gflags/include" <SOURCE_DIR>/configure --prefix=${CMAKE_BINARY_DIR}/glog 
 	BUILD_COMMAND make
 )
 endif()
@@ -77,11 +77,11 @@ Experiment/EspExperimentSubtask.cpp
 
 add_executable(esp-predprey ${SRCS})
 #target_link_libraries(esp-predprey ${CORELIBS} ${CMAKE_BINARY_DIR}/glog/lib/glog.so ${CMAKE_BINARY_DIR}/libconfig/lib/libconfig++.so)
-target_link_libraries(esp-predprey ${CORELIBS} glog config++)
+target_link_libraries(esp-predprey ${CORELIBS} glog config++ gflags)
 
 ADD_DEPENDENCIES(esp-predprey glog-0.3.2)
 ADD_DEPENDENCIES(esp-predprey libconfig-1.4.8)
-#ADD_DEPENDENCIES(esp-predprey gflags-2.0)
+ADD_DEPENDENCIES(esp-predprey gflags-2.0)
 
 configure_file(${CMAKE_SOURCE_DIR}/esp_predprey.cfg
     ${CMAKE_BINARY_DIR}/esp_predprey.cfg COPYONLY)

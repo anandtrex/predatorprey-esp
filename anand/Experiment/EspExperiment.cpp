@@ -26,13 +26,13 @@ namespace EspPredPreyHunter
     using PredatorPreyHunter::Domain;
     using PredatorPreyHunter::fetchRandomDouble;
 
-    EspExperiment::EspExperiment(const char* configFilePath) :
+    EspExperiment::EspExperiment(const string& configFilePath) :
             Experiment()
     {
         libconfig::Config cfg;
 
         LOG(INFO) << "Reading from config file " << configFilePath;
-        cfg.readFile(configFilePath);
+        cfg.readFile(configFilePath.c_str());
 
         const uint maxSteps = cfg.lookup("experiment:max_steps");
         LOG(INFO) << "Max steps in experiment is "

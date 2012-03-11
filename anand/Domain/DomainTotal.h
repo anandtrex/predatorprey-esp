@@ -44,9 +44,9 @@ namespace PredatorPreyHunter
         double hunterRoleReversalProbability;
 
     protected:
-        Predator* ptrPredator;
-        Hunter* ptrHunter;
-        Prey* ptrPrey;
+        vector<Predator*> vPredators;
+        vector<Hunter*> vHunters;
+        vector<Prey*> vPreys;
         void step(const uint& stepNo);
 
     public:

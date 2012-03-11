@@ -47,11 +47,12 @@ namespace PredatorPreyHunter
                 // NOTE Type should always be AFTER position
                 tempInput.push_back(HUNTER);
 
+                /*
                 // FIXME Hack to handle another network that takes in same input
                 tempInput.push_back(ptrGridWorld->distanceX(this->position, itAgent->position));
                 tempInput.push_back(ptrGridWorld->distanceY(this->position, itAgent->position));
                 // NOTE Type should always be AFTER position
-                tempInput.push_back(HUNTER);
+                tempInput.push_back(HUNTER);*/
 
             } else if (itAgent->agentType == HUNTER_WEAK) {
                 tempInput.push_back(ptrGridWorld->distanceX(this->position, itAgent->position));
@@ -59,11 +60,12 @@ namespace PredatorPreyHunter
                 // NOTE Type should always be AFTER position
                 tempInput.push_back(HUNTER_WEAK);
 
+                /*
                 // FIXME Hack to handle another network that takes in same input
                 tempInput.push_back(ptrGridWorld->distanceX(this->position, itAgent->position));
                 tempInput.push_back(ptrGridWorld->distanceY(this->position, itAgent->position));
                 // NOTE Type should always be AFTER position
-                tempInput.push_back(HUNTER_WEAK);
+                tempInput.push_back(HUNTER_WEAK);*/
             }
         }
         VLOG(5) << "Done hunter";
