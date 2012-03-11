@@ -161,7 +161,7 @@ namespace EspPredPreyHunter
         networkContainer->initializeNetworks();
         VLOG(4) << "Done initializing networks";
 
-        for (uint generation = 0; generation < numGenerations; generation++) {
+        for (uint generation = 1; generation <= numGenerations; generation++) {
             genMaxFitness = -numeric_limits<double>::max();     // Minimum possible float value
             genAverageFitness = 0.0;
             networkContainer->evalReset();
@@ -196,7 +196,7 @@ namespace EspPredPreyHunter
             LOG(INFO) << "Generation max fitness was: " << genMaxFitness;
             genAverageFitness /= numTrialsPerGen;
             LOG(INFO) << "Generation average fitness was: "
-                    << static_cast<double>(genAverageFitness);
+                    << genAverageFitness;
             foutGenAverage << generation << " " << genAverageFitness << "\n";
             foutGenMax << generation << " " << genMaxFitness << "\n";
             // Run it once with the generation champion to get file output

@@ -76,8 +76,10 @@ namespace PredatorPreyHunter
         vector<double> output = vector<double>(5);
         networkContainer->activate(input, output);
         Action predatorAction = (Action) getMaxIndex(output);
-        VLOG(2) << "Action selected is " << predatorAction;
+        //LOG(INFO) << "Predator is at " << position.x << ", " << position.y;
+        //LOG(INFO) << "Action selected by predator is " << predatorAction;
         position = ptrGridWorld->move(position, predatorAction);
+        //LOG(INFO) << "Moved to " << position.x << ", " << position.y;
         VLOG(5) << "Moved";
         return position;
     }

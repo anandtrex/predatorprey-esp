@@ -37,6 +37,7 @@ namespace EspPredPreyHunter
         LOG(INFO) << "Number of networks (including combiner) is " << this->numNetworks;
 
         const uint combinerNetworkNumInputs = numNetworks * numOutputsPerNetwork;
+
         LOG(INFO) << "Number of combiner network inputs is " << combinerNetworkNumInputs;
 
         // Initialize and create networks

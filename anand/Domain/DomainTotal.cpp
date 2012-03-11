@@ -37,6 +37,8 @@ namespace PredatorPreyHunter
     {
         numOtherAgents = numPrey + numHunters;
         hunterRoleReversalProbability = 0.0;
+        LOG(INFO) << "Initialized DomainTotal with number of predators " << numPredators << ", num of prey " << numPrey
+                        << ", number of hunters " << numHunters;
     }
 
     DomainTotal::DomainTotal(const uint& maxSteps, const uint& width, const uint& height,
@@ -48,6 +50,8 @@ namespace PredatorPreyHunter
                     hunterRoleReversalProbability)
     {
         numOtherAgents = numPrey + numHunters;
+        LOG(INFO) << "Initialized DomainTotal with number of predators " << numPredators << ", num of prey " << numPrey
+                << ", number of hunters " << numHunters;
     }
 
     DomainTotal::~DomainTotal()
@@ -70,13 +74,16 @@ namespace PredatorPreyHunter
     {
         Position randomPosition;
         uint id = 1;
+        vPredators.clear();
+        vPreys.clear();
+        vHunters.clear();
         for (uint i = 0; i < numPredators; i++) {
             randomPosition = ptrGridWorld->getRandomPosition();
             vPredators.push_back(
                     dynamic_cast<Predator*>(new PredatorEsp(ptrGridWorld, id++, randomPosition,
                             espNetwork)));
             LOG(INFO) << "[CREATED] Predator at " << randomPosition.x << ", "
-                    << randomPosition.y << " with id " << 1 << endl;
+                    << randomPosition.y << " with id " << id << endl;
         }
 
         // initialize prey
@@ -85,7 +92,7 @@ namespace PredatorPreyHunter
             vPreys.push_back(new Prey(ptrGridWorld, id++, randomPosition, preyMoveProb));
             LOG(INFO) << "Prey move probability is " << preyMoveProb;
             LOG(INFO) << "[CREATED] Prey at " << randomPosition.x << ", " << randomPosition.y
-                    << " with id " << 2 << endl;
+                    << " with id " << id << endl;
         }
 
         for (uint i = 0; i < numHunters; i++) {
@@ -95,7 +102,7 @@ namespace PredatorPreyHunter
                             hunterRoleReversalProbability));
             LOG(INFO) << "Hunter move probability is " << hunterMoveProb;
             LOG(INFO) << "[CREATED] Hunter at " << randomPosition.x << ", " << randomPosition.y
-                    << " with id " << 3 << endl;
+                    << " with id " << id << endl;
         }
     }
 
@@ -158,7 +165,9 @@ namespace PredatorPreyHunter
                         && (vAiPrey[i].position.y == vAiPredator[j].position.y)) {
                     LOG(INFO) << "Prey caught by Predator";
                     preyCaughtIds.push_back(vAiPrey[i].agentId);
-                    numPreyCaught++;
+                    if(numPreyCaught < numPrey){
+                        numPreyCaught++;
+                    }
                 }
             }
         }
@@ -169,12 +178,18 @@ namespace PredatorPreyHunter
                         && (vAiHunter[j].position.y == vAiPredator[i].position.y)) {
                     if (vAiHunter[j].agentType == HUNTER) {
                         LOG(INFO) << "Predator caught by Hunter";
+                        LOG(INFO) << "Predator at " << vAiPredator[i].position.x << ", " << vAiPredator[i].position.y;
+                        LOG(INFO) << "Hunter at " << vAiHunter[j].position.x << ", " << vAiHunter[j].position.y;
                         predatorCaughtIds.push_back(vAiPredator[i].agentId);
-                        numPredCaught++;
+                        if(numPredCaught < numPredators){
+                            numPredCaught++;
+                        }
                     } else if (vAiHunter[j].agentType == HUNTER_WEAK) {
                         LOG(INFO) << "Weak hunter caught by predator!";
                         hunterCaughtIds.push_back(vAiHunter[j].agentId);
-                        numHunterCaught++;
+                        if(numHunterCaught < numHunters){
+                            numHunterCaught++;
+                        }
                     }
                 }
             }
@@ -195,7 +210,7 @@ namespace PredatorPreyHunter
 
     double DomainTotal::run()
     {
-        uint noSteps = 0;
+        uint noSteps = 1;
         uint prevNumPreyCaught = 0;
         uint prevNumPredCaught = 0;
         uint prevNumHunterCaught = 0;
@@ -227,8 +242,8 @@ namespace PredatorPreyHunter
                 LOG(INFO) << "PREDATOR CAUGHT!!!!" << endl;
                 prevNumPredCaught = numPredCaught;
                 VLOG(5)
-                        << "Number of prey caught is " << numPredCaught
-                                << " and the total number of prey is " << numPredators;
+                        << "Number of predators caught is " << numPredCaught
+                                << " and the total number of predators is " << numPredators;
                 if (numPredCaught == numPredators) {
                     LOG(INFO) << "All predators caught in " << noSteps << " steps!";
                     return calculateFitness(noSteps);
@@ -244,7 +259,7 @@ namespace PredatorPreyHunter
                     return calculateFitness(noSteps);
                 }
             }
-        } while (noSteps++ < maxSteps);
+        } while (noSteps++ <= maxSteps);
 
         if (noSteps - 1 == maxSteps) {
             LOG(INFO) << maxSteps << " passed without prey/predator being caught";

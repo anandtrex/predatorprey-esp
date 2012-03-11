@@ -76,7 +76,7 @@ namespace EspPredPreyHunter
     void Network::incrementTests()
     {
         for (uint i = 0; i < numHiddenNeurons; ++i)
-            ++neurons[i]->tests;
+            (neurons[i]->tests)++;
     }
 
 #define LESION_THRESHOLD 0.9
