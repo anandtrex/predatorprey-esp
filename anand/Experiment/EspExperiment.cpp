@@ -26,8 +26,8 @@ namespace EspPredPreyHunter
     using PredatorPreyHunter::Domain;
     using PredatorPreyHunter::fetchRandomDouble;
 
-    EspExperiment::EspExperiment(const string& configFilePath) :
-            Experiment()
+    EspExperiment::EspExperiment(const string& configFilePath)
+            : Experiment()
     {
         libconfig::Config cfg;
 
@@ -51,7 +51,7 @@ namespace EspPredPreyHunter
         const double hunterMoveProb = static_cast<double>(cfg.lookup(
                 "agents:hunter:hunters:[0]:move_probability"));
         const double preyMoveProb = static_cast<double>(cfg.lookup(
-                        "agents:prey:preys:[0]:move_probability"));
+                "agents:prey:preys:[0]:move_probability"));
 
         if (hunterType == 0) {
             domainTotal = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey,
@@ -172,10 +172,18 @@ namespace EspPredPreyHunter
                 networkContainer->incrementTests();
                 fitness = 0.0;
                 for (uint evalTrial = 0; evalTrial < numEvalTrials; evalTrial++) {
+                    LOG(INFO) << "evalTrial is " << evalTrial;
                     domain->init(networkContainer);
-                    fitness += domain->run();
+                    double tempfitness = domain->run();
+                    if (tempfitness > 10 * domain->getMaxSteps()) {
+                        LOG(FATAL) << "Too high fitness " << tempfitness << "!!";
+                    }
+                    fitness += tempfitness;
                 }
                 fitness /= numEvalTrials;
+                if (fitness > 10.0 * domain->getMaxSteps()) {
+                    LOG(FATAL) << "Too high fitness " << fitness << "!!";
+                }
                 genAverageFitness += fitness;
                 networkContainer->setFitness(fitness);
                 if (fitness > genMaxFitness) {
@@ -195,8 +203,7 @@ namespace EspPredPreyHunter
             LOG(INFO) << "Generation: " << generation;
             LOG(INFO) << "Generation max fitness was: " << genMaxFitness;
             genAverageFitness /= numTrialsPerGen;
-            LOG(INFO) << "Generation average fitness was: "
-                    << genAverageFitness;
+            LOG(INFO) << "Generation average fitness was: " << genAverageFitness;
             foutGenAverage << generation << " " << genAverageFitness << "\n";
             foutGenMax << generation << " " << genMaxFitness << "\n";
             // Run it once with the generation champion to get file output

@@ -37,8 +37,8 @@ namespace PredatorPreyHunter
     {
         numOtherAgents = numPrey + numHunters;
         hunterRoleReversalProbability = 0.0;
-        LOG(INFO) << "Initialized DomainTotal with number of predators " << numPredators << ", num of prey " << numPrey
-                        << ", number of hunters " << numHunters;
+        LOG(INFO) << "Initialized DomainTotal with number of predators " << numPredators
+                << ", num of prey " << numPrey << ", number of hunters " << numHunters;
     }
 
     DomainTotal::DomainTotal(const uint& maxSteps, const uint& width, const uint& height,
@@ -50,8 +50,8 @@ namespace PredatorPreyHunter
                     hunterRoleReversalProbability)
     {
         numOtherAgents = numPrey + numHunters;
-        LOG(INFO) << "Initialized DomainTotal with number of predators " << numPredators << ", num of prey " << numPrey
-                << ", number of hunters " << numHunters;
+        LOG(INFO) << "Initialized DomainTotal with number of predators " << numPredators
+                << ", num of prey " << numPrey << ", number of hunters " << numHunters;
     }
 
     DomainTotal::~DomainTotal()
@@ -128,7 +128,11 @@ namespace PredatorPreyHunter
 
     void DomainTotal::step(const uint& stepNo)
     {
+        if (stepNo > maxSteps)
+            LOG(FATAL) << "Step no is greater than maxSteps!";
+
         vector<AgentInformation> vAiPredator, vAiPrey, vAiHunter;
+
         for (uint i = 0; i < numPredators; i++) {
             vAiPredator.push_back(vPredators[i]->getAgentInformation());
         }
@@ -165,7 +169,7 @@ namespace PredatorPreyHunter
                         && (vAiPrey[i].position.y == vAiPredator[j].position.y)) {
                     LOG(INFO) << "Prey caught by Predator";
                     preyCaughtIds.push_back(vAiPrey[i].agentId);
-                    if(numPreyCaught < numPrey){
+                    if (numPreyCaught < numPrey) {
                         numPreyCaught++;
                     }
                 }
@@ -178,16 +182,18 @@ namespace PredatorPreyHunter
                         && (vAiHunter[j].position.y == vAiPredator[i].position.y)) {
                     if (vAiHunter[j].agentType == HUNTER) {
                         LOG(INFO) << "Predator caught by Hunter";
-                        LOG(INFO) << "Predator at " << vAiPredator[i].position.x << ", " << vAiPredator[i].position.y;
-                        LOG(INFO) << "Hunter at " << vAiHunter[j].position.x << ", " << vAiHunter[j].position.y;
+                        LOG(INFO) << "Predator at " << vAiPredator[i].position.x << ", "
+                                << vAiPredator[i].position.y;
+                        LOG(INFO) << "Hunter at " << vAiHunter[j].position.x << ", "
+                                << vAiHunter[j].position.y;
                         predatorCaughtIds.push_back(vAiPredator[i].agentId);
-                        if(numPredCaught < numPredators){
+                        if (numPredCaught < numPredators) {
                             numPredCaught++;
                         }
                     } else if (vAiHunter[j].agentType == HUNTER_WEAK) {
                         LOG(INFO) << "Weak hunter caught by predator!";
                         hunterCaughtIds.push_back(vAiHunter[j].agentId);
-                        if(numHunterCaught < numHunters){
+                        if (numHunterCaught < numHunters) {
                             numHunterCaught++;
                         }
                     }
@@ -259,18 +265,20 @@ namespace PredatorPreyHunter
                     return calculateFitness(noSteps);
                 }
             }
-        } while (noSteps++ <= maxSteps);
+        } while (++noSteps <= maxSteps);
 
         if (noSteps - 1 == maxSteps) {
             LOG(INFO) << maxSteps << " passed without prey/predator being caught";
         }
 
-        return calculateFitness(noSteps);
+        return calculateFitness(noSteps - 1);
     }
 
     double DomainTotal::run(string stepsFilePath)
     {
-        uint noSteps = 0;
+        LOG(INFO) << "Running with output to file";
+
+        uint noSteps = 1;
         uint prevNumPreyCaught = 0;
         uint prevNumPredCaught = 0;
         uint prevNumHunterCaught = 0;
@@ -338,25 +346,53 @@ namespace PredatorPreyHunter
                 fout << positionHunter.x << " " << positionHunter.y;
             }
             fout << endl;
-        } while (noSteps++ < maxSteps);
+        } while (++noSteps <= maxSteps);
         fout.close();
+
+        if (noSteps - 1 == maxSteps) {
+            LOG(INFO) << maxSteps << " passed without prey/predator being caught";
+        }
+
         LOG(INFO) << "[ENDS] Experiment::run()" << endl;
-        return calculateFitness(noSteps);
+        return calculateFitness(noSteps - 1);
     }
 
     double DomainTotal::calculateFitness(const uint& stepCurrent)
     {
+        if (stepCurrent > maxSteps) {
+            LOG(FATAL) << "Step no is greater than maxSteps!" << " stepCurrent is "
+                    << stepCurrent << " and maxSteps is " << maxSteps;
+        }
+
         double fitness = 0.0;
+        LOG(INFO) << "In calculateFitness";
+        LOG(INFO) << "Num prey caught is " << numPreyCaught;
+        LOG(INFO) << "Num predators caught is " << numPredCaught;
+        LOG(INFO) << "Num hunters caught is " << numHunterCaught;
+        LOG(INFO) << "stepCurrent is " << stepCurrent;
+        if (numPreyCaught > numPrey || numPredCaught > numPredators
+                || numHunterCaught > numHunters) {
+            LOG(FATAL) << "Num caught is too high!!";
+        }
         if (numPreyCaught > 0) {     // Yay!
+            LOG(INFO) << "Yay!";
             fitness = static_cast<double>(10) * (maxSteps - stepCurrent) * numPreyCaught;
+            LOG(INFO) << "Returned fitness is " << fitness;
             return fitness;
         } else if (numPredCaught > 0) {     // :-(
-            fitness = static_cast<double>(-10) * (maxSteps - stepCurrent) * numPredCaught;
+            LOG(INFO) << ":-(";
+            LOG(INFO) << "maxSteps is " << maxSteps;
+            fitness = static_cast<double>(10) * -1 * (maxSteps - stepCurrent) * numPredCaught;
+            LOG(INFO) << "Returned fitness is " << fitness;
             return fitness;
         } else if (numHunterCaught > 0) {     // Double Yay!
+            LOG(INFO) << "WTF!!!!!";
+            LOG(FATAL) << "Can't be here!!!!!!!";
             fitness = static_cast<double>(100) * (maxSteps - stepCurrent) * numHunterCaught;
+            LOG(INFO) << "Returned fitness is " << fitness;
             return fitness;
         } else {
+            LOG(INFO) << "Meh";
             // calculate distance from hunter and prey
             uint distancePrey = 0, distanceHunter = 0;
             for (uint i = 0; i < numPredators; i++) {
@@ -375,6 +411,7 @@ namespace PredatorPreyHunter
             distancePrey = ptrGridWorld->getWidth() + ptrGridWorld->getHeight() - distancePrey;
             // take into account the size of the grid for rewarding later
             fitness = static_cast<double>(distancePrey) + distanceHunter;
+            LOG(INFO) << "Returned fitness is " << fitness;
             return fitness;
         }
     }
