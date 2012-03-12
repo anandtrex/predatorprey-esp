@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <fstream>
 
+#include <gflags/gflags.h>
 #include <libconfig.h++>
 
 namespace EspPredPreyHunter
@@ -43,7 +44,8 @@ namespace EspPredPreyHunter
         LOG(INFO) << "Grid size is " << static_cast<uint>(gridWidth) << "x"
                 << static_cast<uint>(gridHeight);
 
-        const uint numHunters = static_cast<uint>(cfg.lookup("agents:hunter:number"));
+        const uint numHunters = (FLAGS_h == -1) ? static_cast<uint>(cfg.lookup("agents:hunter:number")) : FLAGS_h;
+
         const uint numPredators = static_cast<uint>(cfg.lookup("agents:predator:number"));
         const uint numPrey = static_cast<uint>(cfg.lookup("agents:prey:number"));
 

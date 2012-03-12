@@ -82,6 +82,8 @@ namespace PredatorPreyHunter
     template<class T>
     void DomainOne<T>::step(const uint& stepNo)
     {
+        if (stepNo > maxSteps)
+            LOG(FATAL) << "Step no is greater than maxSteps!";
         AgentInformation aiPredator, aiOtherAgent;
         aiPredator = ptrPredator->getAgentInformation();
         aiOtherAgent = ptrOtherAgent->getAgentInformation();
@@ -129,7 +131,7 @@ namespace PredatorPreyHunter
     template<class T>
     double DomainOne<T>::run()
     {
-        uint noSteps = 0;
+        uint noSteps = 1;
         uint prevNumAgentsCaught = 0;
         numAgentsCaught = 0;
         agentCaughtIds = vector<uint>();
@@ -152,19 +154,27 @@ namespace PredatorPreyHunter
                     }
                 }
             }
-        } while (noSteps++ < maxSteps);
+        } while (++noSteps <= maxSteps);
 
         if (noSteps - 1 == maxSteps) {
             LOG(INFO) << maxSteps << " passed without prey/predator being caught";
         }
 
-        return calculateFitness(noSteps);
+        return calculateFitness(noSteps - 1);
     }
 
     template<class T>
     double DomainOne<T>::calculateFitness(const uint& stepCurrent)
     {
+        if (stepCurrent > maxSteps) {
+            LOG(FATAL) << "Step no is greater than maxSteps!" << " stepCurrent is "
+                    << stepCurrent << " and maxSteps is " << maxSteps;
+        }
+
         double fitness = 0.0;
+        if (numAgentsCaught > numAgents) {
+            LOG(FATAL) << "Num caught is too high!!";
+        }
         if (numAgentsCaught > 0) {
             if (ptrOtherAgent->getAgentInformation().agentId == PREY) {     // Yay
                 fitness = static_cast<double>(10) * (maxSteps - stepCurrent) * numAgentsCaught;

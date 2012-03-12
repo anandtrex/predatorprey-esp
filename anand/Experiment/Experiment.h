@@ -9,6 +9,9 @@
 #define EXPERIMENT_H_
 
 #include <fstream>
+#include <gflags/gflags.h>
+
+DECLARE_int32(h);
 
 namespace PredatorPreyHunter
 {

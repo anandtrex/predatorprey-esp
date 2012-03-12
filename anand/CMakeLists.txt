@@ -77,11 +77,11 @@ Experiment/EspExperimentSubtask.cpp
 
 add_executable(esp-predprey ${SRCS})
 #target_link_libraries(esp-predprey ${CORELIBS} ${CMAKE_BINARY_DIR}/glog/lib/glog.so ${CMAKE_BINARY_DIR}/libconfig/lib/libconfig++.so)
-target_link_libraries(esp-predprey ${CORELIBS} glog config++ gflags)
+target_link_libraries(esp-predprey ${CORELIBS} gflags glog config++)
 
+ADD_DEPENDENCIES(esp-predprey gflags-2.0)
 ADD_DEPENDENCIES(esp-predprey glog-0.3.2)
 ADD_DEPENDENCIES(esp-predprey libconfig-1.4.8)
-ADD_DEPENDENCIES(esp-predprey gflags-2.0)
 
 configure_file(${CMAKE_SOURCE_DIR}/esp_predprey.cfg
     ${CMAKE_BINARY_DIR}/esp_predprey.cfg COPYONLY)

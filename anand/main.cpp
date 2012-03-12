@@ -19,6 +19,7 @@ DEFINE_string(c, "", "Path for the config file");
 DEFINE_bool(e, false, "Set to true to run experiment with monolithic network");
 DEFINE_bool(s, false, "Set to true to run experiment with subtask combiner network");
 DEFINE_bool(i, false, "Set to true to run experiment with subtask selection network");
+DEFINE_int32(h, -1, "Number of hunters in the task");
 
 using namespace PredatorPreyHunter;
 using namespace EspPredPreyHunter;
