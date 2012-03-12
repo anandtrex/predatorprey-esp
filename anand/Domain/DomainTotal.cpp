@@ -33,10 +33,9 @@ namespace PredatorPreyHunter
             const uint& numPredators, const uint& numPrey, const uint& numHunters,
             const double& preyMoveProb, const double& hunterMoveProb)
             : Domain(maxSteps, width, height), numPredators(numPredators), numPrey(numPrey), numHunters(
-                    numHunters), preyMoveProb(preyMoveProb), hunterMoveProb(hunterMoveProb)
+                    numHunters), preyMoveProb(preyMoveProb), hunterMoveProb(hunterMoveProb), hunterRoleReversalProbability(0.0)
     {
         numOtherAgents = numPrey + numHunters;
-        hunterRoleReversalProbability = 0.0;
         LOG(INFO) << "Initialized DomainTotal with number of predators " << numPredators
                 << ", num of prey " << numPrey << ", number of hunters " << numHunters;
     }

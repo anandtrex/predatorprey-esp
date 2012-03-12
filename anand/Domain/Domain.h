@@ -44,6 +44,7 @@ namespace PredatorPreyHunter
             //displayEnabled = true;
             ptrGridWorld = new GridWorld(width, height);
             LOG(INFO) << "[CREATED] GridWorld of size " << width << ", " << height;
+            numOtherAgents = -1;
         }
 
         uint getNumOtherAgents()

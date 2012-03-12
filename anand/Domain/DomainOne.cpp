@@ -30,11 +30,9 @@ namespace PredatorPreyHunter
 
     template<class T>
     DomainOne<T>::DomainOne(const uint& maxSteps, const uint& width, const uint& height,
-            const uint& numPredators, const uint& numAgents, const double& agentMoveProb)
-            : Domain(maxSteps, width, height), numPredators(numPredators), numAgents(numAgents), agentMoveProb(
-                    agentMoveProb)
+            const double& agentMoveProb)
+            : Domain(maxSteps, width, height), agentMoveProb(agentMoveProb)
     {
-        numOtherAgents = numAgents;
     }
 
     template<class T>
@@ -53,12 +51,14 @@ namespace PredatorPreyHunter
                 espNetwork));
         LOG(INFO) << "[CREATED] Predator at " << randomPosition.x << ", " << randomPosition.y
                 << " with id " << 1 << endl;
-        // initialize prey
+
+        // initialize other agent
         randomPosition = ptrGridWorld->getRandomPosition();
         this->ptrOtherAgent = new T(ptrGridWorld, 2, randomPosition, agentMoveProb);
         LOG(INFO) << "Agent move probability is " << agentMoveProb;
         LOG(INFO) << "[CREATED] Agent at " << randomPosition.x << ", " << randomPosition.y
                 << " with id " << 2 << endl;
+        LOG(INFO) << "Agent type is " << ptrOtherAgent->getAgentInformation().agentType;
     }
 
     template<class T>
@@ -90,7 +90,6 @@ namespace PredatorPreyHunter
 
         // build vector<AgentInformation>
         vector<AgentInformation> vAgentInformation;
-        vAgentInformation.clear();
         vAgentInformation.push_back(aiPredator);
         vAgentInformation.push_back(aiOtherAgent);
 
@@ -105,15 +104,18 @@ namespace PredatorPreyHunter
 
         if ((aiOtherAgent.position.x == aiPredator.position.x)
                 && (aiOtherAgent.position.y == aiPredator.position.y)) {
-            LOG(INFO) << "Prey caught by predator or predator caught by hunter";
-            if (dynamic_cast<T*>(ptrOtherAgent)->getAgentInformation().agentId == PREY) {     // Yay
-                agentCaughtIds.push_back(aiOtherAgent.agentId);
+            if (ptrOtherAgent->getAgentInformation().agentType == PREY) {     // Yay
+                agentCaughtId = aiOtherAgent.agentId;
                 LOG(INFO) << "Prey caught by predator";
-            } else if (ptrOtherAgent->getAgentInformation().agentId == HUNTER) {
-                agentCaughtIds.push_back(aiPredator.agentId);
+                LOG(INFO) << "Predator was at " << aiPredator.position.x << ", " << aiPredator.position.y;
+                LOG(INFO) << "Prey was at " << aiOtherAgent.position.x << ", " << aiOtherAgent.position.y;
+            } else if (ptrOtherAgent->getAgentInformation().agentType == HUNTER) {
+                agentCaughtId = aiPredator.agentId;
                 LOG(INFO) << "Predator caught by hunter";
+                LOG(INFO) << "Predator was at " << aiPredator.position.x << ", " << aiPredator.position.y;
+                LOG(INFO) << "Hunter was at " << aiOtherAgent.position.x << ", " << aiOtherAgent.position.y;
             }
-            numAgentsCaught++;
+            agentCaught = true;
         }
 
         // Show display
@@ -132,26 +134,19 @@ namespace PredatorPreyHunter
     double DomainOne<T>::run()
     {
         uint noSteps = 1;
-        uint prevNumAgentsCaught = 0;
-        numAgentsCaught = 0;
-        agentCaughtIds = vector<uint>();
+        agentCaught = false;
 
         do {
             VLOG(1) << "Step: " << noSteps << endl;
             (void) step(noSteps);
-            if (numAgentsCaught > 0 && numAgentsCaught > prevNumAgentsCaught) {
+            if (agentCaught) {
                 LOG(INFO) << "CAUGHT!!!!" << endl;
-                prevNumAgentsCaught = numAgentsCaught;
-                if (ptrOtherAgent->getAgentInformation().agentId == PREY) {
-                    if (numAgentsCaught == numAgents) {
-                        LOG(INFO) << "All prey caught in " << noSteps << " steps!";
-                        return calculateFitness(noSteps);
-                    }
-                } else if (ptrOtherAgent->getAgentInformation().agentId == HUNTER) {
-                    if (numAgentsCaught == numPredators) {
-                        LOG(INFO) << "All predators caught in " << noSteps << " steps!";
-                        return calculateFitness(noSteps);
-                    }
+                if (ptrOtherAgent->getAgentInformation().agentType == PREY) {
+                    LOG(INFO) << "Prey caught in " << noSteps << " steps!";
+                    return calculateFitness(noSteps);
+                } else if (ptrOtherAgent->getAgentInformation().agentType == HUNTER) {
+                    LOG(INFO) << "Predator caught in " << noSteps << " steps!";
+                    return calculateFitness(noSteps);
                 }
             }
         } while (++noSteps <= maxSteps);
@@ -172,15 +167,13 @@ namespace PredatorPreyHunter
         }
 
         double fitness = 0.0;
-        if (numAgentsCaught > numAgents) {
-            LOG(FATAL) << "Num caught is too high!!";
-        }
-        if (numAgentsCaught > 0) {
-            if (ptrOtherAgent->getAgentInformation().agentId == PREY) {     // Yay
-                fitness = static_cast<double>(10) * (maxSteps - stepCurrent) * numAgentsCaught;
-            } else if (ptrOtherAgent->getAgentInformation().agentId == HUNTER) {
-                fitness = static_cast<double>(-1) * 10 * (maxSteps - stepCurrent) * numAgentsCaught;
+        if (agentCaught) {
+            if (ptrOtherAgent->getAgentInformation().agentType == PREY) {     // Yay
+                fitness = static_cast<double>(10) * (maxSteps - stepCurrent);
+            } else if (ptrOtherAgent->getAgentInformation().agentType == HUNTER) {
+                fitness = static_cast<double>(-1) * 10 * (maxSteps - stepCurrent);
             }
+            LOG(INFO) << "Returned fitness is " << fitness;
             return fitness;
         } else {
             // calculate distance from hunter and prey
@@ -188,17 +181,16 @@ namespace PredatorPreyHunter
             Position positionOtherAgent = ptrOtherAgent->getPosition();
             uint distanceOtherAgent;
             distanceOtherAgent = ptrGridWorld->distance(positionOtherAgent, positionPredator);
-            // reward for being close to prey and far away from hunter
-            distanceOtherAgent = ptrGridWorld->getWidth() + ptrGridWorld->getHeight()
-                    - distanceOtherAgent;
+
             // take into account the size of the grid for rewarding later
-            if (ptrOtherAgent->getAgentInformation().agentId == PREY) {
+            if (ptrOtherAgent->getAgentInformation().agentType == PREY) {
                 distanceOtherAgent = ptrGridWorld->getWidth() + ptrGridWorld->getHeight()
                         - distanceOtherAgent;
                 fitness = static_cast<double>(distanceOtherAgent);
-            } else if (ptrOtherAgent->getAgentInformation().agentId == HUNTER) {
+            } else if (ptrOtherAgent->getAgentInformation().agentType == HUNTER) {
                 fitness = static_cast<double>(distanceOtherAgent);
             }
+            LOG(INFO) << "Returned fitness is " << fitness;
             return fitness;
         }
     }

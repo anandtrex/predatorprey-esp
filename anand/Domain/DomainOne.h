@@ -28,12 +28,12 @@ namespace PredatorPreyHunter
     template<class T>
     class DomainOne: public Domain
     {
-        uint numPredators;
-        uint numAgents;
+        //uint numPredators;
+        //uint numAgents;
 
-        uint numAgentsCaught;
+        bool agentCaught;
 
-        vector<uint> agentCaughtIds;
+        uint agentCaughtId;
 
         double agentMoveProb;
 
@@ -45,7 +45,7 @@ namespace PredatorPreyHunter
     public:
         DomainOne();
         DomainOne(const uint& maxSteps, const uint& width, const uint& height,
-                const uint& numPredators, const uint& numAgents, const double& agentMoveProb);
+                const double& agentMoveProb);
         virtual ~DomainOne();
         virtual void init(NetworkContainer* espNetwork);
         virtual void enableDisplay(const vector<double>& predatorColour,

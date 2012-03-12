@@ -41,7 +41,7 @@ namespace PredatorPreyHunter
             revStepNo = stepNo;
             LOG(INFO) << "Role reversed!";
         }
-        if (stepNo - revStepNo > 20) {
+        if (typeAgent == HUNTER_WEAK && stepNo - revStepNo > 20) {
             typeAgent = HUNTER;
             revStepNo = -1;
             LOG(INFO) << "Role re-reversed!";
