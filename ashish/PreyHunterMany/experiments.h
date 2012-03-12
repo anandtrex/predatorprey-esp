@@ -38,7 +38,7 @@ using namespace NEAT;
 
 // PredatorPreyHunter routines ***************************************
 Population* predatorpreyhunter_test( int gens, string pathFileGenome, string namePlot, const int mapWidth, const int mapHeight, const int noHunters );
-double predatorpreyhunter_epoch( Population* pop, int generation, char* filename, const int mapWidth, const int mapHeight, const int noHunters );
+double predatorpreyhunter_epoch( Population* pop, int maxGens, int generation, char* filename, const int mapWidth, const int mapHeight, const int noHunters );
 double predatorpreyhunter_evaluate( Organism* org, const int mapWidth, const int mapHeight, const int noHunters );
 double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathFile, const int mapWidth, const int mapHeight, const int noHunters );
 void writeChampionPopulation( Population* pop );
