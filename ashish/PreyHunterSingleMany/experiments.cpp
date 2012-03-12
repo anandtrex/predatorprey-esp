@@ -47,8 +47,8 @@ Population *predatorpreyhunter_test(
     vector<double> vGenerationChamptionFitness;
     vGenerationChamptionFitness.reserve( gens );
 
-    cout<<"START SINGLE PREDATOR PREY HUNTER EVOLUTION"<<endl;
-    cout<<"Reading in the start genome"<<endl;
+    //cout<<"START SINGLE PREDATOR PREY HUNTER EVOLUTION"<<endl;
+    //cout<<"Reading in the start genome"<<endl;
     //string pathFileGenomeStart = "singlepreyhunter_startgenes";
     string pathFileGenomeStart = pathFileGenomeHigher; 
     ifstream iFile( pathFileGenomeStart.c_str(), ios::in );
@@ -59,7 +59,7 @@ Population *predatorpreyhunter_test(
     //Read in the start Genome
     iFile>>curword;
     iFile>>id;
-    cout<<"Reading in Genome id "<<id<<endl;
+    //cout<<"Reading in Genome id "<<id<<endl;
     start_genome=new Genome(id,iFile);
     iFile.close();
 
@@ -116,7 +116,7 @@ Population *predatorpreyhunter_test(
         //cout<<"name of fname: "<<fnamebuf->str()<<endl;
         char temp[50];
         sprintf (temp, "PositionsGenerationChamp%d", gen);
-        championFitness=predatorpreyhunter_epoch(pop,gen,temp,mapWidth,mapHeight, ptrOrganismPrey->net, ptrOrganismHunter->net, noHunters);
+        championFitness=predatorpreyhunter_epoch(pop,gens,gen,temp,mapWidth,mapHeight, ptrOrganismPrey->net, ptrOrganismHunter->net, noHunters);
         vGenerationChamptionFitness.push_back( championFitness );
         //fnamebuf->clear();
         //delete fnamebuf;
@@ -143,7 +143,7 @@ Population *predatorpreyhunter_test(
     return pop;
 }
 
-double predatorpreyhunter_epoch( Population* pop, int generation, char* filename, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter, int noHunters ) {
+double predatorpreyhunter_epoch( Population* pop, int maxGens, int generation, char* filename, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter, int noHunters ) {
   vector<Organism*>::iterator curorg;
   vector<Species*>::iterator curspecies;
   //char cfilename[100];
@@ -165,7 +165,7 @@ double predatorpreyhunter_epoch( Population* pop, int generation, char* filename
   for( ;curorg!=(pop->organisms).end(); ++curorg) {
     double fitnessOrganism = predatorpreyhunter_evaluate(*curorg, mapWidth, mapHeight, ptrNetworkPrey, ptrNetworkHunter, noHunters);
     fitnessAveragePopulation = fitnessAveragePopulation + fitnessOrganism;
-    cout << "FITNESS: " << fitnessOrganism << endl;
+    //cout << "FITNESS: " << fitnessOrganism << endl;
     if ( fitnessGreatest < fitnessOrganism ) { // if fitness of current organism greater than the best make it the champ
       fitnessGreatest = fitnessOrganism; 
       itPtrOrgChamp = curorg;
@@ -178,13 +178,17 @@ double predatorpreyhunter_epoch( Population* pop, int generation, char* filename
     cerr << "predatorpreyhunter_epoch(): itPtrOrgChamp is null!" << endl;
     throw 1; // throw something meaningful later
   }
-  string pathFile = string( filename ) + ".txt";
-  double fitnessOrganism = predatorpreyhunter_evaluate_storeperformance( *itPtrOrgChamp, pathFile, mapWidth, mapHeight, ptrNetworkPrey, ptrNetworkHunter, noHunters ); 
-  ostringstream sout;
-  sout << "NetworkGenerationChamp" << generation << ".txt"; 
-  ofstream foutGenome( sout.str().c_str() );
-  Genome* genomeChamp = ( *itPtrOrgChamp )->gnome;
-  genomeChamp->print_to_file( foutGenome );
+  if ( generation == maxGens ) {
+    string pathFile = string( filename ) + ".txt";
+    double fitnessOrganism = predatorpreyhunter_evaluate_storeperformance( *itPtrOrgChamp, pathFile, mapWidth, mapHeight, ptrNetworkPrey, ptrNetworkHunter, noHunters ); 
+  }
+  if ( generation == maxGens ) {
+    ostringstream sout;
+    sout << "NetworkGenerationChamp" << generation << ".txt"; 
+    ofstream foutGenome( sout.str().c_str() );
+    Genome* genomeChamp = ( *itPtrOrgChamp )->gnome;
+    genomeChamp->print_to_file( foutGenome );
+  }
   // TODO store the champ organism itself to file
 
   //Average and max their fitnesses for dumping to file and snapshot
@@ -205,9 +209,9 @@ double predatorpreyhunter_epoch( Population* pop, int generation, char* filename
   //  pop->snapshot();
 
   //Only print to file every print_every generations
-  if  ( ( generation % ( NEAT::print_every ) )==0 ) {
-    pop->print_to_file_by_species(filename);
-  }
+  //if  ( ( generation % ( NEAT::print_every ) )==0 ) {
+    //pop->print_to_file_by_species(filename);
+  //}
 
   //if (win) {
     //for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
@@ -249,7 +253,7 @@ double predatorpreyhunter_evaluate( Organism* org, const int mapWidth, const int
   }
   org->fitness = sumFitness / noTrials; // arithmetic mean
 
-  cout<<"Org "<<(org->gnome)->genome_id<<" fitness: "<<org->fitness<<endl;
+  //cout<<"Org "<<(org->gnome)->genome_id<<" fitness: "<<org->fitness<<endl;
 
   return org->fitness;
 }
@@ -277,7 +281,7 @@ double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathF
   fitnessOrganism = domainManyHunters.run( pathFile ); 
   org->fitness = fitnessOrganism; 
 
-  cout<<"Org "<<(org->gnome)->genome_id<<" fitness: "<<org->fitness<<endl;
+  //cout<<"Org "<<(org->gnome)->genome_id<<" fitness: "<<org->fitness<<endl;
 
   return org->fitness;
 }
