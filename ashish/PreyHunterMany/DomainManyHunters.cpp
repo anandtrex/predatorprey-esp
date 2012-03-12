@@ -40,24 +40,25 @@ namespace PredatorPreyHunter {
   DomainManyHunters::DomainManyHunters( const int& maxSteps, const int& width, const int& height, NEAT::Network* ptrNetwork, const uint& noHunters ) {
     this->maxSteps = maxSteps;
     ptrGridWorld = new GridWorld( width, height ); 
-    cout << "[CREATED] GridWorld of size " << width << ", " << height << endl;
+    //cout << "[CREATED] GridWorld of size " << width << ", " << height << endl;
     // set of positions where agents have already been created
     vector< Position > vPositionsAllocated; // ideally you should use a set
     // initialize predator 
     Position position;
     position = getNewPosition( width, height, vPositionsAllocated );
     ptrPredator = new Predator( ptrGridWorld, 1, position, ptrNetwork, noHunters + 1 );
-    cout << "[CREATED] Predator at " << position.x << ", " << position.y << endl;
+    //cout << "[CREATED] Predator at " << position.x << ", " << position.y << endl;
     // initialize prey
     position = getNewPosition( width, height, vPositionsAllocated );
     ptrPrey = new Prey( ptrGridWorld, 2, position );
-    cout << "[CREATED] Prey at " << position.x << ", " << position.y << endl;
+    //cout << "[CREATED] Prey at " << position.x << ", " << position.y << endl;
     // initialize hunters
+    vPtrHunter.clear();
     for ( uint i = 1; i <= noHunters; i++ ) {
       position = getNewPosition( width, height, vPositionsAllocated );
       Hunter* ptrHunter = new Hunter( ptrGridWorld, 2 + i, position );
       vPtrHunter.push_back( ptrHunter ); 
-      cout << "[CREATED] Hunter at " << position.x << ", " << position.y << endl;
+      //cout << "[CREATED] Hunter at " << position.x << ", " << position.y << endl;
     }
   }
   DomainManyHunters::~DomainManyHunters() {
@@ -75,9 +76,9 @@ namespace PredatorPreyHunter {
       return fitness;
     }
     else if ( PREDATOR_CAUGHT == caught ) { // :-(
-      cout << "maxSteps - stepCurrent: " << maxSteps - stepCurrent << endl; 
+      //cout << "maxSteps - stepCurrent: " << maxSteps - stepCurrent << endl; 
       fitness = static_cast<double>(-1) * 10 * ( maxSteps - stepCurrent );
-      cout << "FiTness: " << fitness << endl;
+      //cout << "FiTness: " << fitness << endl;
       return fitness; 
     }
     else {
@@ -96,14 +97,16 @@ namespace PredatorPreyHunter {
       for ( uint i = 0; i < vPositionHunter.size(); i++ ) {
         distanceHunter += 1 / static_cast<double> ( ptrGridWorld->distance( vPositionHunter[i], positionPredator ) );
       }
-      distanceHunter = vPositionHunter.size() / distanceHunter; // n / ( 1/x1 + 1/x2 + ... + 1/xn )
+      if ( distanceHunter > 0 ) {
+        distanceHunter = vPositionHunter.size() / distanceHunter; // n / ( 1/x1 + 1/x2 + ... + 1/xn )
+      }
       // reward for being close to prey and far away from hunter
       distancePrey = ptrGridWorld->getWidth() + ptrGridWorld->getHeight() - distancePrey;
       // take into account the size of the grid for rewarding later
       fitness = static_cast<double>(distancePrey) + distanceHunter; // if by any chance it reaches here although it won't
-      cout << "Calculating Fitness: " << fitness << endl;
-      cout << "DistancePrey  : " << distancePrey << endl;
-      cout << "DistanceHunter: " << distanceHunter << endl;
+      //cout << "Calculating Fitness: " << fitness << endl;
+      //cout << "DistancePrey  : " << distancePrey << endl;
+      //cout << "DistanceHunter: " << distanceHunter << endl;
       return fitness;
     }
   }
@@ -116,7 +119,7 @@ namespace PredatorPreyHunter {
     if ( ( aiPrey.position.x == aiPredator.position.x ) 
           &&
          ( aiPrey.position.y == aiPredator.position.y ) ) {
-      cout << "Prey caught by Predator" << endl;
+      //cout << "Prey caught by Predator" << endl;
       return PREY_CAUGHT;
     }
     // check if predator is caught
@@ -126,7 +129,7 @@ namespace PredatorPreyHunter {
       if ( ( aiHunter.position.x == aiPredator.position.x ) 
             &&
           ( aiHunter.position.y == aiPredator.position.y ) ) {
-        cout << "Predator caught by Hunter" << endl;
+        //cout << "Predator caught by Hunter" << endl;
         return PREDATOR_CAUGHT;
       }
     }
@@ -159,19 +162,19 @@ namespace PredatorPreyHunter {
         case PREY_CAUGHT:
           // if prey is caught
           // return fitness of predator
-          cout << "PREY CAUGHT!!!!" << endl;
-          cout << "step: " << noSteps << endl;
+          //cout << "PREY CAUGHT!!!!" << endl;
+          //cout << "step: " << noSteps << endl;
           fitness = calculateFitness( caught, noSteps );
-          cout << "Fitness: " << fitness << endl; 
+          //cout << "Fitness: " << fitness << endl; 
           return fitness; 
           // break;
         case PREDATOR_CAUGHT:
           // if predator is caught
           // return fitness of predator
-          cout << "PREDATOR CAUGHT!!!!" << endl;
-          cout << "step: " << noSteps << endl;
+          //cout << "PREDATOR CAUGHT!!!!" << endl;
+          //cout << "step: " << noSteps << endl;
           fitness = calculateFitness( caught, noSteps );
-          cout << "Fitness: " << fitness << endl; 
+          //cout << "Fitness: " << fitness << endl; 
           return fitness;
           // break;
         case NONE_CAUGHT:
@@ -183,20 +186,20 @@ namespace PredatorPreyHunter {
       noSteps++; // NOTE: Very Important. Do not delete.
     }
     fitness = calculateFitness( NONE_CAUGHT, noSteps ); 
-    cout << "step: " << noSteps << endl;
-    cout << "Fitness: " << fitness << endl;
+    //cout << "step: " << noSteps << endl;
+    //cout << "Fitness: " << fitness << endl;
     return fitness; // here you can also return how close it is to the prey
   }
   double DomainManyHunters::run( string pathFile ) {
-    cout << "[BEGINS] DomainManyHunters::run(pathFile)" << endl;
-    cout << "Saving performance to file: " << pathFile << endl;
+    //cout << "[BEGINS] DomainManyHunters::run(pathFile)" << endl;
+    //cout << "Saving performance to file: " << pathFile << endl;
     // order is type pred.x pred.y type prey.x prey.y ... type[i] hunter[i].x hunter[i].y
     ofstream fout( pathFile.c_str() );
     if ( !fout.is_open() ) {
       cerr << "Could not open file " << pathFile << " for writing!" << endl;
       throw 1; // throw something meaningful later
     } else {
-      cout << "File " << pathFile << " opened successfully for writing" << endl;
+      //cout << "File " << pathFile << " opened successfully for writing" << endl;
     }
     double fitness = 0.0;
     uint noSteps = 0;
@@ -218,16 +221,16 @@ namespace PredatorPreyHunter {
         case PREY_CAUGHT:
           // if prey is caught
           // update fitness of predator
-          cout << "PREY CAUGHT!!!!" << endl;
-          cout << "step: " << noSteps << endl;
+          //cout << "PREY CAUGHT!!!!" << endl;
+          //cout << "step: " << noSteps << endl;
           fout.close(); // use smart pointer later
           return calculateFitness( caught, noSteps );
           // break;
         case PREDATOR_CAUGHT:
           // if predator is caught
           // update fitness of predator
-          cout << "PREDATOR CAUGHT!!!!" << endl;
-          cout << "step: " << noSteps << endl;
+          //cout << "PREDATOR CAUGHT!!!!" << endl;
+          //cout << "step: " << noSteps << endl;
           fout.close(); // use smart pointer later
           return calculateFitness( caught, noSteps );
           // break;
@@ -240,8 +243,8 @@ namespace PredatorPreyHunter {
       noSteps++; // NOTE: Very Important. Do not delete.
     }
     fout.close();
-    cout << "step: " << noSteps << endl;
-    cout << "[ENDS] DomainManyHunters::run(pathFile)" << endl;
+    //cout << "step: " << noSteps << endl;
+    //cout << "[ENDS] DomainManyHunters::run(pathFile)" << endl;
     fitness = calculateFitness( NONE_CAUGHT, noSteps ); 
     return fitness;
   }

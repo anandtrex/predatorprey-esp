@@ -39,8 +39,8 @@ Population *predatorpreyhunter_test(int gens, string pathFileGenome, string name
     vector<double> vGenerationChamptionFitness;
     vGenerationChamptionFitness.reserve( gens );
 
-    cout<<"START SINGLE PREDATOR PREY HUNTER EVOLUTION"<<endl;
-    cout<<"Reading in the start genome"<<endl;
+    //cout<<"START SINGLE PREDATOR PREY HUNTER EVOLUTION"<<endl;
+    //cout<<"Reading in the start genome"<<endl;
     //string pathFileGenomeStart = "singlepreyhunter_startgenes";
     string pathFileGenomeStart = pathFileGenome; 
     ifstream iFile( pathFileGenomeStart.c_str(), ios::in );
@@ -51,7 +51,7 @@ Population *predatorpreyhunter_test(int gens, string pathFileGenome, string name
     //Read in the start Genome
     iFile>>curword;
     iFile>>id;
-    cout<<"Reading in Genome id "<<id<<endl;
+    //cout<<"Reading in Genome id "<<id<<endl;
     start_genome=new Genome(id,iFile);
     iFile.close();
   
@@ -121,7 +121,7 @@ double predatorpreyhunter_epoch(Population *pop,int generation,char *filename, c
   for( ;curorg!=(pop->organisms).end(); ++curorg) {
     double fitnessOrganism = predatorpreyhunter_evaluate(*curorg, mapWidth, mapHeight, noHunters);
     fitnessAveragePopulation = fitnessAveragePopulation + fitnessOrganism;
-    cout << "FITNESS: " << fitnessOrganism << endl;
+    //cout << "FITNESS: " << fitnessOrganism << endl;
     if ( fitnessGreatest < fitnessOrganism ) { // if fitness of current organism greater than the best make it the champ
       fitnessGreatest = fitnessOrganism; 
       itPtrOrgChamp = curorg;
@@ -205,7 +205,7 @@ double predatorpreyhunter_evaluate(Organism *org, const int mapWidth, const int 
   }
   org->fitness = sumFitness / noTrials; // arithmetic mean
 
-  cout<<"Org "<<(org->gnome)->genome_id<<" fitness: "<<org->fitness<<endl;
+  //cout<<"Org "<<(org->gnome)->genome_id<<" fitness: "<<org->fitness<<endl;
 
   return org->fitness;
 }
@@ -233,7 +233,7 @@ double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathF
   fitnessOrganism = domainManyHunters.run( pathFile ); 
   org->fitness = fitnessOrganism; 
 
-  cout<<"Org "<<(org->gnome)->genome_id<<" fitness: "<<org->fitness<<endl;
+  //cout<<"Org "<<(org->gnome)->genome_id<<" fitness: "<<org->fitness<<endl;
 
   return org->fitness;
 }
