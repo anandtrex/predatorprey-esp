@@ -151,7 +151,7 @@ namespace EspPredPreyHunter
         evolve(domainTotal, networkContainerTotal);
     }
 
-    NetworkContainer* EspExperiment::evolve(Domain* domain, NetworkContainer* networkContainer)
+    NetworkContainer* EspExperiment::evolve(Domain* domain, NetworkContainer* networkContainer, const int& numGen)
     {
         vector<NetworkContainer*> hallOfFame = vector<NetworkContainer*>();
         NetworkContainer* generationBestNetwork;
@@ -163,7 +163,7 @@ namespace EspPredPreyHunter
         networkContainer->initializeNetworks();
         VLOG(4) << "Done initializing networks";
 
-        for (uint generation = 1; generation <= numGenerations; generation++) {
+        for (uint generation = 1; generation <= numGen; generation++) {
             genMaxFitness = -numeric_limits<double>::max();     // Minimum possible float value
             genAverageFitness = 0.0;
             networkContainer->evalReset();

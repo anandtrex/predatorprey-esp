@@ -152,28 +152,29 @@ namespace EspPredPreyHunter
     template<class T>
     void EspExperimentSubtask<T>::start()
     {
-        LOG(INFO) << "Evolving for subtask with prey";
-        NetworkContainer* networkContainerChase = evolve(domainPrey, networkContainerPrey);
-        LOG(INFO) << "Subtask 1 done";
-        VLOG(5) << "Num networks in st1 is " << networkContainerChase->getNetworks().size();
+        NetworkContainer* networkContainerChase = networkContainerPrey;
+        NetworkContainer* networkContainerEvade = networkContainerHunter;
+        for (int i = 0; i < numGenerations / 5; i++) {
+            LOG(INFO) << "Evolving for subtask with prey";
+            networkContainerChase = evolve(domainPrey, networkContainerChase, 5);
+            LOG(INFO) << "Subtask 1 done";
 
-        LOG(INFO) << "Evolving for subtask with hunter";
-        NetworkContainer* networkContainerEvade = evolve(domainHunter, networkContainerHunter);
-        LOG(INFO) << "Subtask 2 done";
-        VLOG(5) << "Num networks in st2 is " << networkContainerEvade->getNetworks().size();
-        vector<NetworkContainer*> networkContainers = vector<NetworkContainer*>();
-        // NOTE This order is important! First the prey network, then the hunter network. This is
-        // because this is the order in which the inputs are given by the predator, and used
-        // while activating
-        networkContainers.push_back(networkContainerChase);
-        for (uint i = 0; i < numHunters; i++) {
-            networkContainers.push_back(networkContainerEvade);
+            LOG(INFO) << "Evolving for subtask with hunter";
+            networkContainerEvade = evolve(domainHunter, networkContainerEvade, 5);
+            LOG(INFO) << "Subtask 2 done";
+            vector<NetworkContainer*> networkContainers = vector<NetworkContainer*>();
+            // NOTE This order is important! First the prey network, then the hunter network. This is
+            // because this is the order in which the inputs are given by the predator, and used
+            // while activating
+            networkContainers.push_back(networkContainerChase);
+            for (uint i = 0; i < numHunters; i++) {
+                networkContainers.push_back(networkContainerEvade);
+            }
+            LOG(INFO) << "Evolving for overall task";
+            (dynamic_cast<T*>(networkContainerTotal))->setNetworkContainers(networkContainers);
+            networkContainerTotal = evolve(domainTotal, networkContainerTotal, 5);
+            LOG(INFO) << "Overall task done";
         }
-        LOG(INFO) << "Evolving for overall task";
-        VLOG(5) << "NetworkContainers size is " << networkContainers.size();
-        (dynamic_cast<T*>(networkContainerTotal))->setNetworkContainers(networkContainers);
-        evolve(domainTotal, networkContainerTotal);
-        LOG(INFO) << "Overall task done";
     }
 
     template<>
@@ -184,9 +185,9 @@ namespace EspPredPreyHunter
         const int numInputs = numOutputsPerNetwork * (numNonPredAgents + 1)
                 + (numInputsPerNetwork + 1) * (numNonPredAgents)/* extra agent type input*/
                 ;
-        LOG(INFO) << "Initialising total network container for combiner with " << numHiddenNeurons
-                << " number of hidden neurons, " << "population size " << popSize
-                << ", number of networks " << 1 << ", number of inputs per network "
+        LOG(INFO) << "Initialising total network container for combiner with "
+                << numHiddenNeurons << " number of hidden neurons, " << "population size "
+                << popSize << ", number of networks " << 1 << ", number of inputs per network "
                 << numInputs << " and number of outputs as " << numOutputsPerNetwork;
         return new NetworkContainerCombiner(numHiddenNeurons, popSize, netType, 1, numInputs,
                 numOutputsPerNetwork);
@@ -200,9 +201,9 @@ namespace EspPredPreyHunter
         const int numInputs = (numInputsPerNetwork + 1) /* extra agent type input*/
         * (numNonPredAgents);
         const int numOutputs = numNonPredAgents;
-        LOG(INFO) << "Initialising total network container for selection with " << numHiddenNeurons
-                << " number of hidden neurons, " << "population size " << popSize
-                << ", number of networks " << 1 << ", number of inputs per network as "
+        LOG(INFO) << "Initialising total network container for selection with "
+                << numHiddenNeurons << " number of hidden neurons, " << "population size "
+                << popSize << ", number of networks " << 1 << ", number of inputs per network as "
                 << numInputs << " and number of outputs as " << numOutputs;
         return new NetworkContainerSelection(numHiddenNeurons, popSize, netType, 1, numInputs,
                 numOutputs);

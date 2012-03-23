@@ -168,6 +168,8 @@ namespace PredatorPreyHunter
 
         double fitness = 0.0;
         if (agentCaught) {
+            LOG(INFO) << "Caught! stepCurrent is "
+                                << stepCurrent << " and maxSteps is " << maxSteps;
             if (ptrOtherAgent->getAgentInformation().agentType == PREY) {     // Yay
                 fitness = static_cast<double>(10) * (maxSteps - stepCurrent);
             } else if (ptrOtherAgent->getAgentInformation().agentType == HUNTER) {

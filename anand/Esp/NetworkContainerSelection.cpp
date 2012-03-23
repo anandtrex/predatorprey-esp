@@ -47,7 +47,7 @@ namespace EspPredPreyHunter
         const uint l = input.size() / networkContainers.size();
         const uint m = networkContainers[0]->getOutputsPerNetwork();
 
-        if(k + 1 != l){
+        if (k + 1 != l) {
             LOG(ERROR) << "Input size doesn't match!";
         }
 
@@ -57,14 +57,14 @@ namespace EspPredPreyHunter
             for (uint j = 0; j < k; j++) {
                 tempInput.push_back(input[l * i + j]);
             }
-            //LOG(ERROR) << vecToString(tempInput);
+//            LOG(ERROR) << "tempInput is " << vecToString(tempInput);
             networkContainers[i]->activate(tempInput, tempOutput);
             tempSingleOutputs.insert(tempSingleOutputs.end(), tempOutput.begin(), tempOutput.end());
         }
 
         vector<double> tempOutput(outputsPerNetwork);
         combinerNetwork->activate(newInput, tempOutput);
-        //LOG(ERROR) << "tempSingleOutputs is " << vecToString(tempSingleOutputs);
+//        LOG(ERROR) << "tempSingleOutputs is " << vecToString(tempSingleOutputs);
 
         if (output.size() != m)
             LOG(FATAL) << "Output size wasn't " << m << "!";
@@ -72,14 +72,14 @@ namespace EspPredPreyHunter
         if (tempSingleOutputs.size() != m * networkContainers.size())
             LOG(FATAL) << "tempSingleOutputs size wasn't 10!!";
 
-        //LOG(ERROR) << "tempOutput is " << vecToString(tempOutput);
+//        LOG(ERROR) << "tempOutput is " << vecToString(tempOutput);
 
         const uint maxIndex = getMaxIndex(tempOutput);
         //LOG(ERROR) << "maxIndex is " << maxIndex;
 
         output.assign(tempSingleOutputs.begin() + maxIndex * m,
                 tempSingleOutputs.begin() + maxIndex * m + m);
-        //LOG(ERROR) << "Output is " << vecToString(output);
+//        LOG(ERROR) << "Output is " << vecToString(output);
     }
 }
 
