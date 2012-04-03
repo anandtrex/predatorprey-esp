@@ -100,36 +100,6 @@ namespace EspPredPreyHunter
         // NOTE
         numTrialsPerGen = popSize * 10;
         LOG(INFO) << "Number of trials per generation is " << numTrialsPerGen;
-
-        // Display related stuff
-        const bool displayEnabled = cfg.lookup("experiment:display");
-
-        if (displayEnabled) {
-            LOG(INFO) << "Display enabled";
-
-            vector<vector<double> > colors = vector<vector<double> >();
-            vector<double> color = vector<double>();
-            color.push_back(
-                    static_cast<double>(cfg.lookup("agents:predator:predators:[0]:color:r")));
-            color.push_back(
-                    static_cast<double>(cfg.lookup("agents:predator:predators:[0]:color:g")));
-            color.push_back(
-                    static_cast<double>(cfg.lookup("agents:predator:predators:[0]:color:b")));
-            colors.push_back(color);
-            color = vector<double>();
-            color.push_back(static_cast<double>(cfg.lookup("agents:prey:preys:[0]:color:r")));
-            color.push_back(static_cast<double>(cfg.lookup("agents:prey:preys:[0]:color:g")));
-            color.push_back(static_cast<double>(cfg.lookup("agents:prey:preys:[0]:color:b")));
-            colors.push_back(color);
-
-            color = vector<double>();
-            color.push_back(static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:color:r")));
-            color.push_back(static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:color:g")));
-            color.push_back(static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:color:b")));
-            colors.push_back(color);
-
-            domainTotal->enableDisplay(colors[0], colors[1], colors[2]);
-        }
     }
 
     void EspExperiment::saveNetworkToFile(const string& fileName,

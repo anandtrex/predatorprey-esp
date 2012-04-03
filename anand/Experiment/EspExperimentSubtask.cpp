@@ -111,39 +111,6 @@ namespace EspPredPreyHunter
         // NOTE
         numTrialsPerGen = popSize * 10;
         LOG(INFO) << "Number of trials per generation is " << numTrialsPerGen;
-
-        // Display related stuff
-        bool displayEnabled = cfg.lookup("experiment:display");
-
-        if (displayEnabled) {
-            LOG(INFO) << "Display enabled";
-
-            vector<vector<double> > colors = vector<vector<double> >();
-            vector<double> color = vector<double>();
-            color.push_back(
-                    static_cast<double>(cfg.lookup("agents:predator:predators:[0]:color:r")));
-            color.push_back(
-                    static_cast<double>(cfg.lookup("agents:predator:predators:[0]:color:g")));
-            color.push_back(
-                    static_cast<double>(cfg.lookup("agents:predator:predators:[0]:color:b")));
-            colors.push_back(color);
-            color = vector<double>();
-            color.push_back(static_cast<double>(cfg.lookup("agents:prey:preys:[0]:color:r")));
-            color.push_back(static_cast<double>(cfg.lookup("agents:prey:preys:[0]:color:g")));
-            color.push_back(static_cast<double>(cfg.lookup("agents:prey:preys:[0]:color:b")));
-            colors.push_back(color);
-
-            color = vector<double>();
-            color.push_back(static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:color:r")));
-            color.push_back(static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:color:g")));
-            color.push_back(static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:color:b")));
-            colors.push_back(color);
-
-            domainTotal->enableDisplay(colors[0], colors[1], colors[2]);
-            domainPrey->enableDisplay(colors[0], colors[1]);
-            domainHunter->enableDisplay(colors[0], colors[2]);
-        }
-        //domainTotal->disableDisplay();
     }
 
     /**
@@ -154,7 +121,7 @@ namespace EspPredPreyHunter
     {
         NetworkContainer* networkContainerChase = networkContainerPrey;
         NetworkContainer* networkContainerEvade = networkContainerHunter;
-        for (int i = 0; i < numGenerations / 5; i++) {
+        for (uint i = 0; i < numGenerations / 5; i++) {
             LOG(INFO) << "Evolving for subtask with prey";
             networkContainerChase = evolve(domainPrey, networkContainerChase, 5);
             LOG(INFO) << "Subtask 1 done";

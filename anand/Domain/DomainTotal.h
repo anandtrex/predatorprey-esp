@@ -60,8 +60,6 @@ namespace PredatorPreyHunter
                 const double& hunterRoleReversalProbability);
         ~DomainTotal();
         virtual void init(NetworkContainer* espNetwork);
-        virtual void enableDisplay(const vector<double>& predatorColour,
-                const vector<double>& preyColour, const vector<double>& hunterColour);
         virtual double run();     // return fitness
         virtual double run(std::string stepsFilePath);     // return fitness
         virtual double calculateFitness(const uint& stepCurrent);

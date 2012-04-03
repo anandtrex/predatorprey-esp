@@ -22,7 +22,6 @@ namespace PredatorPreyHunter
     using std::pair;
     using std::ofstream;
     using std::string;
-    using PredPreyHunterVisualizer::Visualizer;
 
     DomainTotal::DomainTotal()
             : Domain()
@@ -105,26 +104,6 @@ namespace PredatorPreyHunter
         }
     }
 
-    void DomainTotal::enableDisplay(const vector<double>& predatorColour,
-            const vector<double>& preyColour, const vector<double>& hunterColour)
-    {
-        this->displayEnabled = true;
-        LOG(INFO) << "Display enabled";
-        map<int, vector<double> > idColorMapping = map<int, vector<double> >();
-        pair<int, vector<double> > p = pair<int, vector<double> >();
-
-        p = pair<int, vector<double> >(1, predatorColour);
-        idColorMapping.insert(p);
-
-        p = pair<int, vector<double> >(2, preyColour);
-        idColorMapping.insert(p);
-
-        p = pair<int, vector<double> >(3, hunterColour);
-        idColorMapping.insert(p);
-
-        visualizer = Visualizer(idColorMapping, ptrGridWorld->width, ptrGridWorld->height);
-    }
-
     void DomainTotal::step(const uint& stepNo)
     {
         if (stepNo > maxSteps)
@@ -199,18 +178,6 @@ namespace PredatorPreyHunter
                 }
             }
         }
-
-        // Show display
-        if (displayEnabled) {
-            // FIXME Need to do this in a better way
-            static vector<AgentInformation> vAgentInformationPrevious = vector<AgentInformation>();
-            if (vAgentInformationPrevious.size() == 0) {
-                vAgentInformationPrevious = vAgentInformation;
-            }
-            visualizer.show(vAgentInformationPrevious, vAgentInformation);
-            vAgentInformationPrevious = vAgentInformation;
-        }
-
     }
 
     double DomainTotal::run()
@@ -225,10 +192,6 @@ namespace PredatorPreyHunter
         predatorCaughtIds = vector<uint>();
         preyCaughtIds = vector<uint>();
         hunterCaughtIds = vector<uint>();
-
-        if (displayEnabled) {
-            visualizer.createWindow();
-        }
 
         do {
             LOG(INFO) << "step: " << noSteps << endl;
@@ -287,10 +250,6 @@ namespace PredatorPreyHunter
         predatorCaughtIds = vector<uint>();
         preyCaughtIds = vector<uint>();
         hunterCaughtIds = vector<uint>();
-
-        if (displayEnabled) {
-            visualizer.createWindow();
-        }
 
         // order is pred.x pred.y prey.x prey.y hunter.x hunter.y
         ofstream fout(stepsFilePath.c_str());

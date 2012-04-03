@@ -22,7 +22,6 @@ namespace PredatorPreyHunter
         GridWorld* ptrGridWorld;
         PredPreyHunterVisualizer::Visualizer visualizer;
         const uint maxSteps;
-        bool displayEnabled;
 
         /**
          * This stores the number of agents that are not predators
@@ -34,12 +33,12 @@ namespace PredatorPreyHunter
 
     public:
         Domain()
-                : maxSteps(0), displayEnabled(false), numOtherAgents(0)
+                : maxSteps(0), numOtherAgents(0)
         {
         }
 
         Domain(const uint& maxSteps, const uint& width, const uint& height)
-                : maxSteps(maxSteps), displayEnabled(false)
+                : maxSteps(maxSteps)
         {
             //displayEnabled = true;
             ptrGridWorld = new GridWorld(width, height);
@@ -50,11 +49,6 @@ namespace PredatorPreyHunter
         uint getNumOtherAgents()
         {
             return numOtherAgents;
-        }
-
-        void disableDisplay()
-        {
-            displayEnabled = false;
         }
 
         virtual ~Domain()
