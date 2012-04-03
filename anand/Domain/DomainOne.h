@@ -46,7 +46,7 @@ namespace PredatorPreyHunter
         virtual ~DomainOne();
         virtual void init(NetworkContainer* espNetwork);
         virtual double run();     // return fitness
-        virtual double run(std::string stepsFilePath)
+        virtual double run(std::string stepsFilePath, std::string networkSelectionFilePath)
         {
             LOG(ERROR) << "Run with steps output not implemented";
             return -1.0;

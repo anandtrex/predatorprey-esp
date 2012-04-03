@@ -15,7 +15,7 @@ namespace EspPredPreyHunter
     NetworkContainerEsp::NetworkContainerEsp()
             : NetworkContainer(0, 0, 0), networks(0)
     {
-
+        networkContainerType = MONOLITHIC;
     }
 
     NetworkContainerEsp::NetworkContainerEsp(const vector<Network*> networks)
@@ -23,6 +23,7 @@ namespace EspPredPreyHunter
                     networks)
     {
         combine = (networks.size() == 1) ? 0 : 1;
+        networkContainerType = MONOLITHIC;
     }
 
     NetworkContainerEsp::NetworkContainerEsp(const uint& nHiddenNeurons, const uint& popSize,
@@ -32,6 +33,8 @@ namespace EspPredPreyHunter
                     numNetworks + (numNetworks == 1 ? 0 : 1))
     {
         combine = (numNetworks == 1) ? 0 : 1;
+
+        networkContainerType = MONOLITHIC;
 
         LOG(INFO) << "Combine is " << combine;
         LOG(INFO) << "Number of networks (including combiner) is " << this->numNetworks;

@@ -9,13 +9,17 @@
 #define EXPERIMENT_H_
 
 #include <fstream>
+#include <sstream>
+#include <time.h>
 #include <gflags/gflags.h>
 
+// this is used in EspExperiment.cpp
 DECLARE_int32(h);
 
 namespace PredatorPreyHunter
 {
     using std::ofstream;
+    using std::ostringstream;
 
     class Experiment
     {
@@ -24,8 +28,13 @@ namespace PredatorPreyHunter
         ofstream foutGenMax;
         Experiment()
         {
-            foutGenAverage.open("average_fitness.log");
-            foutGenMax.open("max_fitness.log");
+            ostringstream sa;
+            sa << "average_fitness." << time(NULL) << ".log";
+            foutGenAverage.open(sa.str().c_str());
+
+            ostringstream sm;
+            sm << "max_fitness." << time(NULL) << ".log";
+            foutGenMax.open(sm.str().c_str());
         }
         ~Experiment()
         {

@@ -13,6 +13,7 @@ namespace EspPredPreyHunter
     NetworkContainerCombiner::NetworkContainerCombiner()
             : NetworkContainer(0, 0, 0), networkContainers(0)
     {
+        networkContainerType = COMBINER;
     }
 
     NetworkContainerCombiner::NetworkContainerCombiner(const uint& nHiddenNeurons,
@@ -25,6 +26,7 @@ namespace EspPredPreyHunter
                 << " and num outputs " << numOutputsPerNetwork;
         combinerNetwork = new FeedForwardNetwork(nHiddenNeurons, popSize, numInputsPerNetwork,
                 numOutputsPerNetwork, true);
+        networkContainerType = COMBINER;
     }
 
     NetworkContainerCombiner::~NetworkContainerCombiner()

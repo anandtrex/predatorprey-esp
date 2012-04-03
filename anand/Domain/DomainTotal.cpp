@@ -32,7 +32,8 @@ namespace PredatorPreyHunter
             const uint& numPredators, const uint& numPrey, const uint& numHunters,
             const double& preyMoveProb, const double& hunterMoveProb)
             : Domain(maxSteps, width, height), numPredators(numPredators), numPrey(numPrey), numHunters(
-                    numHunters), preyMoveProb(preyMoveProb), hunterMoveProb(hunterMoveProb), hunterRoleReversalProbability(0.0)
+                    numHunters), preyMoveProb(preyMoveProb), hunterMoveProb(hunterMoveProb), hunterRoleReversalProbability(
+                    0.0)
     {
         numOtherAgents = numPrey + numHunters;
         LOG(INFO) << "Initialized DomainTotal with number of predators " << numPredators
@@ -236,7 +237,7 @@ namespace PredatorPreyHunter
         return calculateFitness(noSteps - 1);
     }
 
-    double DomainTotal::run(string stepsFilePath)
+    double DomainTotal::run(string stepsFilePath, string networkSelectionFilePath)
     {
         LOG(INFO) << "Running with output to file";
 
@@ -244,6 +245,7 @@ namespace PredatorPreyHunter
         uint prevNumPreyCaught = 0;
         uint prevNumPredCaught = 0;
         uint prevNumHunterCaught = 0;
+
         numPredCaught = 0;
         numPreyCaught = 0;
         numHunterCaught = 0;
@@ -252,60 +254,60 @@ namespace PredatorPreyHunter
         hunterCaughtIds = vector<uint>();
 
         // order is pred.x pred.y prey.x prey.y hunter.x hunter.y
-        ofstream fout(stepsFilePath.c_str());
-        if (!fout.is_open()) {
-            LOG(FATAL) << "Could not open file " << stepsFilePath << " for writing!" << endl;
+        ofstream foutSteps(stepsFilePath.c_str());
+        ofstream foutSelection(networkSelectionFilePath.c_str());
+        if (!foutSteps.is_open()) {
+            LOG(FATAL) << "Could not open steps file " << stepsFilePath << " for writing!"
+                    << endl;
         }
+        if (!foutSelection.is_open()) {
+            LOG(FATAL) << "Could not open steps file " << networkSelectionFilePath
+                    << " for writing!" << endl;
+        }
+        foutSelection << "Type DistanceX DistanceY ... NetworkSelected" << endl;
+
         Position positionPredator, positionPrey, positionHunter;
         do {
-            VLOG(1) << "step: " << noSteps << endl;
             (void) step(noSteps);
-            if (numPreyCaught > 0 && numPreyCaught > prevNumPreyCaught) {
-                LOG(INFO) << "PREY CAUGHT!!!!" << endl;
-                VLOG(5)
-                        << "Number of prey caught is " << numPreyCaught
-                                << " and the total number of prey is " << numPrey;
-                prevNumPreyCaught = numPreyCaught;
-                if (numPreyCaught == numPrey) {
-                    LOG(INFO) << "All prey caught in " << noSteps << " steps!";
-                    return calculateFitness(noSteps);
-                }
-            } else if (numPredCaught > 0 && numPredCaught > prevNumPredCaught) {
-                LOG(INFO) << "PREDATOR CAUGHT!!!!" << endl;
-                prevNumPredCaught = numPredCaught;
-                VLOG(5)
-                        << "Number of prey caught is " << numPredCaught
-                                << " and the total number of prey is " << numPredators;
-                if (numPredCaught == numPredators) {
-                    LOG(INFO) << "All predators caught in " << noSteps << " steps!";
-                    return calculateFitness(noSteps);
-                }
-            } else if (numHunterCaught > 0 && numHunterCaught > prevNumHunterCaught) {
-                LOG(INFO) << "WEAK HUNTER CAUGHT!!!!" << endl;
-                prevNumHunterCaught = numHunterCaught;
-                VLOG(5)
-                        << "Number of weak hunters caught is " << numHunterCaught
-                                << " and the total number of hunters is " << numHunters;
-                if (numHunterCaught == numHunters) {
-                    LOG(INFO) << "All hunters caught in " << noSteps << " steps!";
-                    return calculateFitness(noSteps);
-                }
-            }
+
             for (uint i = 0; i < numPredators; i++) {
                 positionPredator = vPredators[i]->getPosition();
-                fout << positionPredator.x << " " << positionPredator.y << " ";
+                foutSteps << vPredators[i]->getAgentInformation().agentType << " "
+                        << positionPredator.x << " " << positionPredator.y << " ";
+                foutSelection << dynamic_cast<PredatorEsp*>(vPredators[i])->getLastNetworkSelection();
             }
             for (uint i = 0; i < numPrey; i++) {
                 positionPrey = vPreys[i]->getPosition();
-                fout << positionPrey.x << " " << positionPrey.y << " ";
+                foutSteps << vPreys[i]->getAgentInformation().agentType << " " << positionPrey.x
+                        << " " << positionPrey.y << " ";
             }
             for (uint i = 0; i < numHunters; i++) {
                 positionHunter = vHunters[i]->getPosition();
-                fout << positionHunter.x << " " << positionHunter.y;
+                foutSteps << vHunters[i]->getAgentInformation().agentType << " " << positionHunter.x
+                        << " " << positionHunter.y << " ";
             }
-            fout << endl;
+            foutSteps << endl;
+            foutSelection << endl;
+
+            if (numPreyCaught > 0 && numPreyCaught > prevNumPreyCaught) {
+                prevNumPreyCaught = numPreyCaught;
+                if (numPreyCaught == numPrey) {
+                    return calculateFitness(noSteps);
+                }
+            } else if (numPredCaught > 0 && numPredCaught > prevNumPredCaught) {
+                prevNumPredCaught = numPredCaught;
+                if (numPredCaught == numPredators) {
+                    return calculateFitness(noSteps);
+                }
+            } else if (numHunterCaught > 0 && numHunterCaught > prevNumHunterCaught) {
+                prevNumHunterCaught = numHunterCaught;
+                if (numHunterCaught == numHunters) {
+                    return calculateFitness(noSteps);
+                }
+            }
         } while (++noSteps <= maxSteps);
-        fout.close();
+        foutSteps.close();
+        foutSelection.close();
 
         if (noSteps - 1 == maxSteps) {
             LOG(INFO) << maxSteps << " passed without prey/predator being caught";

@@ -58,7 +58,7 @@ namespace PredatorPreyHunter
 
         virtual void init(NetworkContainer* espNetwork) = 0;
         virtual double run() = 0;     // return fitness
-        virtual double run(std::string stepsFilePath) = 0;     // return fitness
+        virtual double run(std::string stepsFilePath, std::string networkSelectionFilePath) = 0;     // return fitness
 
         const uint getMaxSteps() const
         {

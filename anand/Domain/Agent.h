@@ -10,7 +10,7 @@
 
 #include "GridWorld.h"
 
-enum TypeAgent
+enum AgentType
 {
     PREY = 0, PREDATOR = 1, HUNTER = 2, HUNTER_WEAK = 3
 };
@@ -18,7 +18,7 @@ enum TypeAgent
 struct AgentInformation
 {
     uint agentId;
-    TypeAgent agentType;
+    AgentType agentType;
     Position position;
 };
 
@@ -29,8 +29,9 @@ namespace PredatorPreyHunter
     protected:
         const GridWorld* ptrGridWorld;
         const uint agentId;
-        TypeAgent typeAgent;
+        AgentType typeAgent;
         Position position;
+
     public:
         Agent(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p)
             :ptrGridWorld(ptrGridWorld), agentId(agentId), position(p)

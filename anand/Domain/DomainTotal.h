@@ -61,7 +61,7 @@ namespace PredatorPreyHunter
         ~DomainTotal();
         virtual void init(NetworkContainer* espNetwork);
         virtual double run();     // return fitness
-        virtual double run(std::string stepsFilePath);     // return fitness
+        virtual double run(std::string stepsFilePath, std::string networkSelectionFilePath);     // return fitness
         virtual double calculateFitness(const uint& stepCurrent);
     };
 }

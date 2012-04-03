@@ -21,6 +21,7 @@ namespace EspPredPreyHunter
      */
     class NetworkContainerSelection: public NetworkContainerCombiner
     {
+        uint networkSelected;
     public:
         NetworkContainerSelection();
         NetworkContainerSelection(const uint& nHiddenNeurons, const uint& popSize,
@@ -34,6 +35,11 @@ namespace EspPredPreyHunter
          * @return
          */
         void activate(const vector<double>& input, vector<double>& output);
+
+        uint getNetworkSelected() const
+        {
+            return networkSelected;
+        }
     };
 }
 

@@ -182,7 +182,7 @@ namespace EspPredPreyHunter
             const int tempDiff = (numGenerations - 20);
             if (generation > max(tempDiff, 0)) {
                 domain->init(generationBestNetwork);
-                domain->run(concatStringDouble("champion_", generation) + ".log");
+                domain->run(concatStringDouble("champion_", generation) + ".log", concatStringDouble("champion_", generation) + ".selection.log");
                 saveNetworkToFile(concatStringDouble("champion_", generation) + ".net",
                         generationBestNetwork);
             }

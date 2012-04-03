@@ -17,7 +17,7 @@ namespace EspPredPreyHunter
     NetworkContainerSelection::NetworkContainerSelection()
             : NetworkContainerCombiner()
     {
-
+        networkContainerType = SELECTION;
     }
 
     NetworkContainerSelection::NetworkContainerSelection(const uint& nHiddenNeurons,
@@ -26,6 +26,7 @@ namespace EspPredPreyHunter
             : NetworkContainerCombiner(nHiddenNeurons, popSize, netTp, numNetworks,
                     numInputsPerNetwork, numOutputsPerNetwork)
     {
+        networkContainerType = SELECTION;
     }
 
     NetworkContainerSelection::~NetworkContainerSelection()
@@ -75,6 +76,7 @@ namespace EspPredPreyHunter
 //        LOG(ERROR) << "tempOutput is " << vecToString(tempOutput);
 
         const uint maxIndex = getMaxIndex(tempOutput);
+        networkSelected = maxIndex;
         //LOG(ERROR) << "maxIndex is " << maxIndex;
 
         output.assign(tempSingleOutputs.begin() + maxIndex * m,
