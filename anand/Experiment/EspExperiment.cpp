@@ -148,7 +148,7 @@ namespace EspPredPreyHunter
     {
         // TODO Change this
         LOG(INFO) << "Starting evolve";
-        evolve(domainTotal, networkContainerTotal);
+        evolve(domainTotal, networkContainerTotal, numGenerations);
     }
 
     NetworkContainer* EspExperiment::evolve(Domain* domain, NetworkContainer* networkContainer, const int& numGen)

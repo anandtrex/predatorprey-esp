@@ -163,9 +163,11 @@ namespace EspPredPreyHunter
             networkContainerEvade = evolve(domainHunter, networkContainerEvade, 5);
             LOG(INFO) << "Subtask 2 done";
             vector<NetworkContainer*> networkContainers = vector<NetworkContainer*>();
+
             // NOTE This order is important! First the prey network, then the hunter network. This is
             // because this is the order in which the inputs are given by the predator, and used
             // while activating
+
             networkContainers.push_back(networkContainerChase);
             for (uint i = 0; i < numHunters; i++) {
                 networkContainers.push_back(networkContainerEvade);
