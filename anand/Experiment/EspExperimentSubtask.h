@@ -33,6 +33,8 @@ namespace EspPredPreyHunter
         // FIXME Hack
         uint numHunters;
 
+        bool coevolve;
+
     public:
         EspExperimentSubtask(const string& configFilePath);
         ~EspExperimentSubtask()

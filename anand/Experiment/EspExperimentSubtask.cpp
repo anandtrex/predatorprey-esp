@@ -39,6 +39,9 @@ namespace EspPredPreyHunter
         LOG(INFO) << "Grid size is " << static_cast<uint>(gridWidth) << "x"
                 << static_cast<uint>(gridHeight);
 
+        coevolve = cfg.lookup("experiment:esp:coevolve");
+        LOG(ERROR) << "Co-evolve is " << coevolve;
+
         numHunters = static_cast<uint>(cfg.lookup("agents:hunter:number"));
         const uint numPredators = static_cast<uint>(cfg.lookup("agents:predator:number"));
         const uint numPrey = static_cast<uint>(cfg.lookup("agents:prey:number"));
@@ -121,13 +124,42 @@ namespace EspPredPreyHunter
     {
         NetworkContainer* networkContainerChase = networkContainerPrey;
         NetworkContainer* networkContainerEvade = networkContainerHunter;
-        for (uint i = 0; i < numGenerations / 5; i++) {
+
+        const uint genPerStep = 5;
+
+        if (coevolve) {
+            LOG(INFO) << "Co-evolving";
+            for (uint i = 0; i < numGenerations / genPerStep; i++) {
+                LOG(INFO) << "Evolving for subtask with prey";
+                networkContainerChase = evolve(domainPrey, networkContainerChase, genPerStep);
+                LOG(INFO) << "Subtask 1 done";
+
+                LOG(INFO) << "Evolving for subtask with hunter";
+                networkContainerEvade = evolve(domainHunter, networkContainerEvade, genPerStep);
+                LOG(INFO) << "Subtask 2 done";
+                vector<NetworkContainer*> networkContainers = vector<NetworkContainer*>();
+
+                // NOTE This order is important! First the prey network, then the hunter network. This is
+                // because this is the order in which the inputs are given by the predator, and used
+                // while activating
+
+                networkContainers.push_back(networkContainerChase);
+                for (uint i = 0; i < numHunters; i++) {
+                    networkContainers.push_back(networkContainerEvade);
+                }
+                LOG(INFO) << "Evolving for overall task";
+                (dynamic_cast<T*>(networkContainerTotal))->setNetworkContainers(networkContainers);
+                networkContainerTotal = evolve(domainTotal, networkContainerTotal, genPerStep);
+                LOG(INFO) << "Overall task done";
+            }
+        } else {
+            LOG(INFO) << "Not co-evolving";
             LOG(INFO) << "Evolving for subtask with prey";
-            networkContainerChase = evolve(domainPrey, networkContainerChase, 5);
+            networkContainerChase = evolve(domainPrey, networkContainerChase, numGenerations);
             LOG(INFO) << "Subtask 1 done";
 
             LOG(INFO) << "Evolving for subtask with hunter";
-            networkContainerEvade = evolve(domainHunter, networkContainerEvade, 5);
+            networkContainerEvade = evolve(domainHunter, networkContainerEvade, numGenerations);
             LOG(INFO) << "Subtask 2 done";
             vector<NetworkContainer*> networkContainers = vector<NetworkContainer*>();
 
@@ -141,7 +173,7 @@ namespace EspPredPreyHunter
             }
             LOG(INFO) << "Evolving for overall task";
             (dynamic_cast<T*>(networkContainerTotal))->setNetworkContainers(networkContainers);
-            networkContainerTotal = evolve(domainTotal, networkContainerTotal, 5);
+            networkContainerTotal = evolve(domainTotal, networkContainerTotal, numGenerations);
             LOG(INFO) << "Overall task done";
         }
     }
