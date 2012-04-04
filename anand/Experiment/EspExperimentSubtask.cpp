@@ -125,7 +125,7 @@ namespace EspPredPreyHunter
         NetworkContainer* networkContainerChase = networkContainerPrey;
         NetworkContainer* networkContainerEvade = networkContainerHunter;
 
-        const uint genPerStep = 5;
+        const uint genPerStep = 1;
 
         if (coevolve) {
             LOG(INFO) << "Co-evolving";

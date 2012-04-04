@@ -10,6 +10,8 @@
 
 namespace EspPredPreyHunter
 {
+    using std::endl;
+
     void FeedForwardNetwork::activate(const vector<double> &input, vector<double> &output)
     {
         VLOG(4) << "Activating feed forward network";
@@ -21,10 +23,10 @@ namespace EspPredPreyHunter
             biasedInput.push_back(1.0);     // Bias
 
         if ((biasedInput.size() + output.size()) != geneSize) {
-            LOG(ERROR) << "Mismatch between genesize and input + output size";
-            LOG(ERROR) << "Input size is " << biasedInput.size();
-            LOG(ERROR) << "Output size is " << output.size();
-            LOG(ERROR) << "Gene size is " << geneSize;
+            LOG(FATAL) << "Mismatch between genesize and input + output size" << endl
+            << "Input size is " << biasedInput.size() << endl
+            << "Output size is " << output.size() << endl
+            << "Gene size is " << geneSize;
         }
 
         VLOG(5) << "Input is " << vecToString(biasedInput);

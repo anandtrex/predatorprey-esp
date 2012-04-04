@@ -18,6 +18,7 @@ namespace EspPredPreyHunter
             : NetworkContainerCombiner()
     {
         networkContainerType = SELECTION;
+        VLOG(5) << "Initialized NetworkContainerSelection";
     }
 
     NetworkContainerSelection::NetworkContainerSelection(const uint& nHiddenNeurons,
@@ -40,8 +41,8 @@ namespace EspPredPreyHunter
         vector<double> newInput;
 
         newInput.assign(input.begin(), input.begin() + indepInputs);
-        //LOG(ERROR) << endl;
-        //LOG(ERROR) << "Input is " << vecToString(input);
+        // LOG(ERROR) << endl;
+        // LOG(ERROR) << "Input is " << vecToString(input);
 
         vector<double> tempSingleOutputs = vector<double>();
         const uint k = networkContainers[0]->getInputsPerNetwork();
@@ -49,7 +50,7 @@ namespace EspPredPreyHunter
         const uint m = networkContainers[0]->getOutputsPerNetwork();
 
         if (k + 1 != l) {
-            LOG(ERROR) << "Input size doesn't match!";
+            LOG(FATAL) << "Input size doesn't match!";
         }
 
         for (uint i = 0; i < networkContainers.size(); i++) {
@@ -58,30 +59,31 @@ namespace EspPredPreyHunter
             for (uint j = 0; j < k; j++) {
                 tempInput.push_back(input[l * i + j]);
             }
-//            LOG(ERROR) << "tempInput is " << vecToString(tempInput);
+            // LOG(ERROR) << "tempInput is " << vecToString(tempInput);
             networkContainers[i]->activate(tempInput, tempOutput);
             tempSingleOutputs.insert(tempSingleOutputs.end(), tempOutput.begin(), tempOutput.end());
         }
 
         vector<double> tempOutput(outputsPerNetwork);
+        // LOG(ERROR) << "New input is " << vecToString(newInput);
         combinerNetwork->activate(newInput, tempOutput);
-//        LOG(ERROR) << "tempSingleOutputs is " << vecToString(tempSingleOutputs);
+        // LOG(ERROR) << "tempSingleOutputs is " << vecToString(tempSingleOutputs);
 
         if (output.size() != m)
             LOG(FATAL) << "Output size wasn't " << m << "!";
 
         if (tempSingleOutputs.size() != m * networkContainers.size())
-            LOG(FATAL) << "tempSingleOutputs size wasn't 10!!";
+            LOG(FATAL) << "tempSingleOutputs size wasn't " << m * networkContainers.size() <<"!!";
 
-//        LOG(ERROR) << "tempOutput is " << vecToString(tempOutput);
+        // LOG(ERROR) << "tempOutput is " << vecToString(tempOutput);
 
         const uint maxIndex = getMaxIndex(tempOutput);
         networkSelected = maxIndex;
-        //LOG(ERROR) << "maxIndex is " << maxIndex;
+        // LOG(ERROR) << "maxIndex is " << maxIndex;
 
         output.assign(tempSingleOutputs.begin() + maxIndex * m,
                 tempSingleOutputs.begin() + maxIndex * m + m);
-//        LOG(ERROR) << "Output is " << vecToString(output);
+        // LOG(ERROR) << "Output is " << vecToString(output);
     }
 }
 

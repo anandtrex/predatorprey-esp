@@ -28,12 +28,18 @@ namespace PredatorPreyHunter
         ofstream foutGenMax;
         Experiment()
         {
+            time_t rawtime;
+            char buffer [80];
+
+            time ( &rawtime );
+            strftime (buffer,80,"%Y%m%d%H%M",localtime ( &rawtime ));
+
             ostringstream sa;
-            sa << "average_fitness." << time(NULL) << ".log";
+            sa << "average_fitness." << buffer << ".log";
             foutGenAverage.open(sa.str().c_str());
 
             ostringstream sm;
-            sm << "max_fitness." << time(NULL) << ".log";
+            sm << "max_fitness." << buffer << ".log";
             foutGenMax.open(sm.str().c_str());
         }
         ~Experiment()

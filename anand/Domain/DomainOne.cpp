@@ -54,6 +54,9 @@ namespace PredatorPreyHunter
 
         // initialize other agent
         randomPosition = ptrGridWorld->getRandomPosition();
+        while(randomPosition.x == ptrPredator->getPosition().x && randomPosition.y == ptrPredator->getPosition().y){
+            randomPosition = ptrGridWorld->getRandomPosition();
+        }
         this->ptrOtherAgent = new T(ptrGridWorld, 2, randomPosition, agentMoveProb);
         LOG(INFO) << "Agent move probability is " << agentMoveProb;
         LOG(INFO) << "[CREATED] Agent at " << randomPosition.x << ", " << randomPosition.y

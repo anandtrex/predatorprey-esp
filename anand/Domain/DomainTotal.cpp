@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 #include <libconfig.h++>
 
@@ -22,6 +23,7 @@ namespace PredatorPreyHunter
     using std::pair;
     using std::ofstream;
     using std::string;
+    using std::ostringstream;
 
     DomainTotal::DomainTotal()
             : Domain()
@@ -76,32 +78,71 @@ namespace PredatorPreyHunter
         vPredators.clear();
         vPreys.clear();
         vHunters.clear();
+
+        ostringstream ss;
+
         for (uint i = 0; i < numPredators; i++) {
+            ostringstream ts;
             randomPosition = ptrGridWorld->getRandomPosition();
+            ts << randomPosition.x << randomPosition.y;
+            while (ss.str().find(ts.str()) != -1) {
+//                LOG(ERROR) << "Position repeated for predator!";
+//                LOG(ERROR) << "ts is " << ts.str();
+//                LOG(ERROR) << "ss is " << ss.str();
+                ts.clear();
+                ts.str("");
+                randomPosition = ptrGridWorld->getRandomPosition();
+                ts << randomPosition.x << randomPosition.y;
+            }
             vPredators.push_back(
                     dynamic_cast<Predator*>(new PredatorEsp(ptrGridWorld, id++, randomPosition,
                             espNetwork)));
             LOG(INFO) << "[CREATED] Predator at " << randomPosition.x << ", "
                     << randomPosition.y << " with id " << id << endl;
+            ss << randomPosition.x << randomPosition.y << ",";
         }
 
         // initialize prey
         for (uint i = 0; i < numPrey; i++) {
+            ostringstream ts;
             randomPosition = ptrGridWorld->getRandomPosition();
+            ts << randomPosition.x << randomPosition.y;
+            while (ss.str().find(ts.str()) != -1) {
+//                LOG(ERROR) << "Position repeated for prey!";
+//                LOG(ERROR) << "ts is " << ts.str();
+//                LOG(ERROR) << "ss is " << ss.str();
+                ts.clear();
+                ts.str("");
+                randomPosition = ptrGridWorld->getRandomPosition();
+                ts << randomPosition.x << randomPosition.y;
+            }
             vPreys.push_back(new Prey(ptrGridWorld, id++, randomPosition, preyMoveProb));
             LOG(INFO) << "Prey move probability is " << preyMoveProb;
             LOG(INFO) << "[CREATED] Prey at " << randomPosition.x << ", " << randomPosition.y
                     << " with id " << id << endl;
+            ss << randomPosition.x << randomPosition.y << ",";
         }
 
         for (uint i = 0; i < numHunters; i++) {
+            ostringstream ts;
             randomPosition = ptrGridWorld->getRandomPosition();
+            ts << randomPosition.x << randomPosition.y;
+            while (ss.str().find(ts.str()) != -1) {
+//                LOG(ERROR) << "Position repeated for hunter!";
+//                LOG(ERROR) << "ts is " << ts.str();
+//                LOG(ERROR) << "ss is " << ss.str();
+                ts.clear();
+                ts.str("");
+                randomPosition = ptrGridWorld->getRandomPosition();
+                ts << randomPosition.x << randomPosition.y;
+            }
             vHunters.push_back(
                     new Hunter(ptrGridWorld, id++, randomPosition, hunterMoveProb,
                             hunterRoleReversalProbability));
             LOG(INFO) << "Hunter move probability is " << hunterMoveProb;
             LOG(INFO) << "[CREATED] Hunter at " << randomPosition.x << ", " << randomPosition.y
                     << " with id " << id << endl;
+            ss << randomPosition.x << randomPosition.y << ",";
         }
     }
 
@@ -274,7 +315,8 @@ namespace PredatorPreyHunter
                 positionPredator = vPredators[i]->getPosition();
                 foutSteps << vPredators[i]->getAgentInformation().agentType << " "
                         << positionPredator.x << " " << positionPredator.y << " ";
-                foutSelection << dynamic_cast<PredatorEsp*>(vPredators[i])->getLastNetworkSelection();
+                foutSelection
+                        << dynamic_cast<PredatorEsp*>(vPredators[i])->getLastNetworkSelection();
             }
             for (uint i = 0; i < numPrey; i++) {
                 positionPrey = vPreys[i]->getPosition();
