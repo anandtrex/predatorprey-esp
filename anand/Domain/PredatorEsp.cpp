@@ -39,25 +39,25 @@ namespace PredatorPreyHunter
         for (VAICI itAgent = vAgentInformation.begin(); itAgent != vAgentInformation.end();
                 ++itAgent) {
             if (itAgent->agentType == PREY) {
-                tempInput.push_back(ptrGridWorld->distanceX(this->position, itAgent->position)/ptrGridWorld->getWidth());
-                tempInput.push_back(ptrGridWorld->distanceY(this->position, itAgent->position)/ptrGridWorld->getHeight());
+                tempInput.push_back(static_cast<double>(ptrGridWorld->distanceX(this->position, itAgent->position))/ptrGridWorld->getWidth());
+                tempInput.push_back(static_cast<double>(ptrGridWorld->distanceY(this->position, itAgent->position))/ptrGridWorld->getHeight());
                 // NOTE Type should always be AFTER position
                 tempInput.push_back(PREY);
-                ss << PREY << " " << ptrGridWorld->distanceX(this->position, itAgent->position)/ptrGridWorld->getWidth()
-                        << " " << ptrGridWorld->distanceY(this->position, itAgent->position)/ptrGridWorld->getHeight() << " ";
+                ss << PREY << " " << ptrGridWorld->distanceX(this->position, itAgent->position)
+                        << " " << ptrGridWorld->distanceY(this->position, itAgent->position) << " ";
             }
         }
         VLOG(5) << "Done prey";
         for (VAICI itAgent = vAgentInformation.begin(); itAgent != vAgentInformation.end();
                 ++itAgent) {
             if (itAgent->agentType == HUNTER) {
-                tempInput.push_back(ptrGridWorld->distanceX(this->position, itAgent->position)/ptrGridWorld->getWidth());
-                tempInput.push_back(ptrGridWorld->distanceY(this->position, itAgent->position)/ptrGridWorld->getHeight());
+                tempInput.push_back(static_cast<double>(ptrGridWorld->distanceX(this->position, itAgent->position))/ptrGridWorld->getWidth());
+                tempInput.push_back(static_cast<double>(ptrGridWorld->distanceY(this->position, itAgent->position))/ptrGridWorld->getHeight());
                 // NOTE Type should always be AFTER position
                 tempInput.push_back(HUNTER);
 
-                ss << HUNTER << " " << ptrGridWorld->distanceX(this->position, itAgent->position)/ptrGridWorld->getWidth()
-                        << " " << ptrGridWorld->distanceY(this->position, itAgent->position)/ptrGridWorld->getHeight() << " ";
+                ss << HUNTER << " " << ptrGridWorld->distanceX(this->position, itAgent->position)
+                        << " " << ptrGridWorld->distanceY(this->position, itAgent->position) << " ";
 
                 /*
                  // FIXME Hack to handle another network that takes in same input
@@ -67,13 +67,13 @@ namespace PredatorPreyHunter
                  tempInput.push_back(HUNTER);*/
 
             } else if (itAgent->agentType == HUNTER_WEAK) {
-                tempInput.push_back(ptrGridWorld->distanceX(this->position, itAgent->position)/ptrGridWorld->getWidth());
-                tempInput.push_back(ptrGridWorld->distanceY(this->position, itAgent->position)/ptrGridWorld->getHeight());
+                tempInput.push_back(static_cast<double>(ptrGridWorld->distanceX(this->position, itAgent->position))/ptrGridWorld->getWidth());
+                tempInput.push_back(static_cast<double>(ptrGridWorld->distanceY(this->position, itAgent->position))/ptrGridWorld->getHeight());
                 // NOTE Type should always be AFTER position
                 tempInput.push_back(HUNTER_WEAK);
                 ss << HUNTER_WEAK << " "
-                        << ptrGridWorld->distanceX(this->position, itAgent->position)/ptrGridWorld->getWidth() << " "
-                        << ptrGridWorld->distanceY(this->position, itAgent->position)/ptrGridWorld->getHeight() << " ";
+                        << ptrGridWorld->distanceX(this->position, itAgent->position) << " "
+                        << ptrGridWorld->distanceY(this->position, itAgent->position) << " ";
 
                 /*
                  // FIXME Hack to handle another network that takes in same input
