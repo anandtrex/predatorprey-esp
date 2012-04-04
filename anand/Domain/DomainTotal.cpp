@@ -86,9 +86,6 @@ namespace PredatorPreyHunter
             randomPosition = ptrGridWorld->getRandomPosition();
             ts << randomPosition.x << randomPosition.y;
             while (ss.str().find(ts.str()) != -1) {
-//                LOG(ERROR) << "Position repeated for predator!";
-//                LOG(ERROR) << "ts is " << ts.str();
-//                LOG(ERROR) << "ss is " << ss.str();
                 ts.clear();
                 ts.str("");
                 randomPosition = ptrGridWorld->getRandomPosition();
@@ -108,9 +105,6 @@ namespace PredatorPreyHunter
             randomPosition = ptrGridWorld->getRandomPosition();
             ts << randomPosition.x << randomPosition.y;
             while (ss.str().find(ts.str()) != -1) {
-//                LOG(ERROR) << "Position repeated for prey!";
-//                LOG(ERROR) << "ts is " << ts.str();
-//                LOG(ERROR) << "ss is " << ss.str();
                 ts.clear();
                 ts.str("");
                 randomPosition = ptrGridWorld->getRandomPosition();
@@ -128,9 +122,6 @@ namespace PredatorPreyHunter
             randomPosition = ptrGridWorld->getRandomPosition();
             ts << randomPosition.x << randomPosition.y;
             while (ss.str().find(ts.str()) != -1) {
-//                LOG(ERROR) << "Position repeated for hunter!";
-//                LOG(ERROR) << "ts is " << ts.str();
-//                LOG(ERROR) << "ss is " << ss.str();
                 ts.clear();
                 ts.str("");
                 randomPosition = ptrGridWorld->getRandomPosition();
@@ -163,6 +154,30 @@ namespace PredatorPreyHunter
             vAiHunter.push_back(vHunters[i]->getAgentInformation());
         }
 
+        for (uint i = 0; i < numPrey; i++) {
+            for (uint j = 0; j < numPredators; j++) {
+                if ((vAiPrey[i].position.x == vAiPredator[j].position.x)
+                        && (vAiPrey[i].position.y == vAiPredator[j].position.y)) {
+                    LOG(FATAL) << "Predator has already caught prey!" << "Prey at "
+                            << vAiPrey[j].position.x << ", " << vAiPrey[j].position.y << " and "
+                            << "Predator at " << vAiPredator[i].position.x << ", "
+                            << vAiPredator[i].position.y;
+                }
+            }
+        }
+
+        for (uint i = 0; i < numPredators; i++) {
+            for (uint j = 0; j < numHunters; j++) {
+                if ((vAiHunter[j].position.x == vAiPredator[i].position.x)
+                        && (vAiHunter[j].position.y == vAiPredator[i].position.y)) {
+                    LOG(FATAL) << "Hunter has already caught predator!" << "Hunter at "
+                            << vAiHunter[j].position.x << ", " << vAiHunter[j].position.y << " and "
+                            << "Predator at " << vAiPredator[i].position.x << ", "
+                            << vAiPredator[i].position.y;
+                }
+            }
+        }
+
         // build vector<AgentInformation>
         vector<AgentInformation> vAgentInformation;
         vAgentInformation.clear();
@@ -172,15 +187,18 @@ namespace PredatorPreyHunter
 
         // move prey
         for (uint i = 0; i < numPrey; i++) {
-            vPreys[i]->move(vAgentInformation);
+            vAiPrey[i].position = vPreys[i]->move(vAgentInformation);
+            LOG(INFO) << "Moved prey " << i << " to " << vAiPrey[i].position.x << ", " << vAiPrey[i].position.y;
         }
         // move hunter
         for (uint i = 0; i < numHunters; i++) {
-            vHunters[i]->move(vAgentInformation);
+            vAiHunter[i].position = vHunters[i]->move(vAgentInformation);
+            LOG(INFO) << "Moved hunter " << i << " to " << vAiHunter[i].position.x << ", " << vAiHunter[i].position.y;
         }
         // move predator
         for (uint i = 0; i < numPredators; i++) {
-            vPredators[i]->move(vAgentInformation, stepNo);
+            vAiPredator[i].position = vPredators[i]->move(vAgentInformation, stepNo);
+            LOG(INFO) << "Moved predator " << i << " to " << vAiPredator[i].position.x << ", " << vAiPredator[i].position.y;
         }
 
         for (uint i = 0; i < numPrey; i++) {
@@ -191,6 +209,7 @@ namespace PredatorPreyHunter
                     preyCaughtIds.push_back(vAiPrey[i].agentId);
                     if (numPreyCaught < numPrey) {
                         numPreyCaught++;
+                        LOG(INFO) << "Incrementing number of prey caught to " << numPreyCaught;
                     }
                 }
             }
@@ -201,14 +220,10 @@ namespace PredatorPreyHunter
                 if ((vAiHunter[j].position.x == vAiPredator[i].position.x)
                         && (vAiHunter[j].position.y == vAiPredator[i].position.y)) {
                     if (vAiHunter[j].agentType == HUNTER) {
-                        LOG(INFO) << "Predator caught by Hunter";
-                        LOG(INFO) << "Predator at " << vAiPredator[i].position.x << ", "
-                                << vAiPredator[i].position.y;
-                        LOG(INFO) << "Hunter at " << vAiHunter[j].position.x << ", "
-                                << vAiHunter[j].position.y;
                         predatorCaughtIds.push_back(vAiPredator[i].agentId);
                         if (numPredCaught < numPredators) {
                             numPredCaught++;
+                            LOG(INFO) << "Incrementing number of predators caught to " << numPredCaught;
                         }
                     } else if (vAiHunter[j].agentType == HUNTER_WEAK) {
                         LOG(INFO) << "Weak hunter caught by predator!";
@@ -240,7 +255,7 @@ namespace PredatorPreyHunter
             (void) step(noSteps);
             if (numPreyCaught > 0 && numPreyCaught > prevNumPreyCaught) {
                 LOG(INFO) << "PREY CAUGHT!!!!" << endl;
-                VLOG(5)
+                LOG(INFO)
                         << "Number of prey caught is " << numPreyCaught
                                 << " and the total number of prey is " << numPrey;
                 prevNumPreyCaught = numPreyCaught;
@@ -251,7 +266,7 @@ namespace PredatorPreyHunter
             } else if (numPredCaught > 0 && numPredCaught > prevNumPredCaught) {
                 LOG(INFO) << "PREDATOR CAUGHT!!!!" << endl;
                 prevNumPredCaught = numPredCaught;
-                VLOG(5)
+                LOG(INFO)
                         << "Number of predators caught is " << numPredCaught
                                 << " and the total number of predators is " << numPredators;
                 if (numPredCaught == numPredators) {
@@ -270,6 +285,7 @@ namespace PredatorPreyHunter
                 }
             }
         } while (++noSteps <= maxSteps);
+        LOG(ERROR) << "EPISODE END";
 
         if (noSteps - 1 == maxSteps) {
             LOG(INFO) << maxSteps << " passed without prey/predator being caught";

@@ -41,8 +41,7 @@ namespace EspPredPreyHunter
         vector<double> newInput;
 
         newInput.assign(input.begin(), input.begin() + indepInputs);
-        // LOG(ERROR) << endl;
-        // LOG(ERROR) << "Input is " << vecToString(input);
+        LOG(ERROR) << "Input is " << vecToString(input);
 
         vector<double> tempSingleOutputs = vector<double>();
         const uint k = networkContainers[0]->getInputsPerNetwork();
@@ -75,11 +74,11 @@ namespace EspPredPreyHunter
         if (tempSingleOutputs.size() != m * networkContainers.size())
             LOG(FATAL) << "tempSingleOutputs size wasn't " << m * networkContainers.size() <<"!!";
 
-        // LOG(ERROR) << "tempOutput is " << vecToString(tempOutput);
+        LOG(ERROR) << "tempOutput is " << vecToString(tempOutput);
 
         const uint maxIndex = getMaxIndex(tempOutput);
         networkSelected = maxIndex;
-        // LOG(ERROR) << "maxIndex is " << maxIndex;
+        LOG(ERROR) << "maxIndex is " << maxIndex;
 
         output.assign(tempSingleOutputs.begin() + maxIndex * m,
                 tempSingleOutputs.begin() + maxIndex * m + m);

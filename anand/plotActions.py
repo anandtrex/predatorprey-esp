@@ -24,9 +24,9 @@ if __name__ == "__main__":
     prey_y = []
     prey_sel = []
     for i in xrange(1,len(llines)):
-        prey_x.append(random.randint(0,9))
-        prey_y.append(random.randint(0,9))
-        prey_sel.append(random.randint(0,3))
+        prey_x.append(llines[1])
+        prey_y.append(llines[2])
+        prey_sel.append(llines[l-1])
         
     prey_dist = [x**2 + y**2 for x in prey_x for y in prey_y]
     
