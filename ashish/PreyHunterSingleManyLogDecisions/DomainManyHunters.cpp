@@ -10,6 +10,7 @@ namespace PredatorPreyHunter {
   using std::vector;
   using std::string;
   using std::ofstream;
+  using std::ostream;
 
   Position getNewPosition( const int& width, const int& height, vector< Position >& vPositionsAllocated ) {
     Position position;
@@ -151,6 +152,51 @@ namespace PredatorPreyHunter {
     ptrPredatorSelection->move( vAgentInformation ); 
     return NONE_CAUGHT;
   }
+
+  DomainManyHunters::Caught DomainManyHunters::step( std::ostream& out ) {
+    // check if prey is caught
+    // return appropriate caught signal 
+    AgentInformation aiPredator, aiPrey, aiHunter; 
+    aiPredator = ptrPredatorSelection->getAgentInformation();
+    aiPrey = ptrPrey->getAgentInformation();
+    if ( ( aiPrey.position.x == aiPredator.position.x ) 
+          &&
+         ( aiPrey.position.y == aiPredator.position.y ) ) {
+      //cout << "Prey caught by Predator" << endl;
+      return PREY_CAUGHT;
+    }
+    // check if predator is caught
+    // return appropriate caught signal 
+    for ( uint i = 0; i < vPtrHunter.size(); i++ ) {
+      aiHunter = ( vPtrHunter[i] )->getAgentInformation();
+      if ( ( aiHunter.position.x == aiPredator.position.x ) 
+            &&
+          ( aiHunter.position.y == aiPredator.position.y ) ) {
+        //cout << "Predator caught by Hunter" << endl;
+        return PREDATOR_CAUGHT;
+      }
+    }
+    // build vector<AgentInformation>
+    vector<AgentInformation> vAgentInformation;
+    vAgentInformation.clear();
+    vAgentInformation.push_back( aiPredator );
+    vAgentInformation.push_back( aiPrey );
+    for ( uint i = 0; i < vPtrHunter.size(); i++ ) {
+      vAgentInformation.push_back( ( vPtrHunter[i] )->getAgentInformation() );
+    }
+    // move prey
+    ptrPrey->move( vAgentInformation ); 
+    // move hunters
+    for ( uint i = 0; i < vPtrHunter.size(); i++ ) {
+      ( vPtrHunter[i] )->move( vAgentInformation ); 
+    }
+    // move predator
+    ptrPredatorSelection->move( vAgentInformation, out ); 
+    return NONE_CAUGHT;
+  }
+
+
+
   double DomainManyHunters::run() {
     double fitness = 0.0;
     uint noSteps = 0;
@@ -190,17 +236,29 @@ namespace PredatorPreyHunter {
     //cout << "Fitness: " << fitness << endl;
     return fitness; // here you can also return how close it is to the prey
   }
-  double DomainManyHunters::run( string pathFile ) {
-    //cout << "[BEGINS] DomainManyHunters::run(pathFile)" << endl;
-    //cout << "Saving performance to file: " << pathFile << endl;
+
+  double DomainManyHunters::run( string pathFileOutPositions, string pathFileOutDecision ) {
+    //cout << "[BEGINS] DomainManyHunters::run(pathFileOutPositions, pathFileOutDecision)" << endl;
+    //cout << "Saving position to file: " << pathFileOutPositions << endl;
+    //cout << "Saving decision to file: " << pathFileOutDecision << endl;
     // order is type pred.x pred.y type prey.x prey.y ... type[i] hunter[i].x hunter[i].y
-    ofstream fout( pathFile.c_str() );
-    if ( !fout.is_open() ) {
-      cerr << "Could not open file " << pathFile << " for writing!" << endl;
+
+    ofstream foutPos( pathFileOutPositions.c_str() );
+    if ( !foutPos.is_open() ) {
+      cerr << "Could not open file " << pathFileOutPositions << " for writing!" << endl;
       throw 1; // throw something meaningful later
     } else {
-      //cout << "File " << pathFile << " opened successfully for writing" << endl;
+      //cout << "File " << pathFileOutPositions << " opened successfully for writing" << endl;
     }
+
+    ofstream foutDec( pathFileOutDecision.c_str() );
+    if ( !foutDec.is_open() ) {
+      cerr << "Could not open file " << pathFileOutDecision << " for writing!" << endl;
+      throw 1; // throw something meaningful later
+    } else {
+      //cout << "File " << pathFileOutDecision << " opened successfully for writing" << endl;
+    }
+
     double fitness = 0.0;
     uint noSteps = 0;
     Caught caught; // for catching caught signal
@@ -209,13 +267,13 @@ namespace PredatorPreyHunter {
       //cout << "step: " << noSteps << endl;
       positionPredator = ptrPredatorSelection->getPosition(); 
       positionPrey = ptrPrey->getPosition();
-      fout << ptrPredatorSelection->getType() << " " << positionPredator.x << " " << positionPredator.y << " ";
-      fout << ptrPrey->getType() << " " << positionPrey.x << " " << positionPrey.y << " ";
+      foutPos << ptrPredatorSelection->getType() << " " << positionPredator.x << " " << positionPredator.y << " ";
+      foutPos << ptrPrey->getType() << " " << positionPrey.x << " " << positionPrey.y << " ";
       for ( uint i = 0; i < vPtrHunter.size(); i++ ) {
         positionHunter = ( vPtrHunter[i] )->getPosition();
-        fout << ( vPtrHunter[i] )->getType() << " " << positionHunter.x << " " << positionHunter.y << " ";
+        foutPos << ( vPtrHunter[i] )->getType() << " " << positionHunter.x << " " << positionHunter.y << " ";
       }
-      fout << endl;
+      foutPos << endl;
       caught = step(); 
       switch( caught ) {
         case PREY_CAUGHT:
@@ -223,7 +281,7 @@ namespace PredatorPreyHunter {
           // update fitness of predator
           //cout << "PREY CAUGHT!!!!" << endl;
           //cout << "step: " << noSteps << endl;
-          fout.close(); // use smart pointer later
+          foutPos.close(); // use smart pointer later
           return calculateFitness( caught, noSteps );
           // break;
         case PREDATOR_CAUGHT:
@@ -231,7 +289,7 @@ namespace PredatorPreyHunter {
           // update fitness of predator
           //cout << "PREDATOR CAUGHT!!!!" << endl;
           //cout << "step: " << noSteps << endl;
-          fout.close(); // use smart pointer later
+          foutPos.close(); // use smart pointer later
           return calculateFitness( caught, noSteps );
           // break;
         case NONE_CAUGHT:
@@ -242,9 +300,10 @@ namespace PredatorPreyHunter {
       };
       noSteps++; // NOTE: Very Important. Do not delete.
     }
-    fout.close();
+    foutPos.close();
+    foutDec.close();
     //cout << "step: " << noSteps << endl;
-    //cout << "[ENDS] DomainManyHunters::run(pathFile)" << endl;
+    //cout << "[ENDS] DomainManyHunters::run(pathFileOutPositions)" << endl;
     fitness = calculateFitness( NONE_CAUGHT, noSteps ); 
     return fitness;
   }

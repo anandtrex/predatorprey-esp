@@ -9,6 +9,7 @@
 #include "network.h"
 #include <string>
 #include <vector>
+#include <iostream>
 
 namespace PredatorPreyHunter {
   class DomainManyHunters { // this is for now a hack due to dearth of time. make it more general later
@@ -26,12 +27,13 @@ namespace PredatorPreyHunter {
     };
   protected:
     Caught step();
+    Caught step( std::ostream& out );
     double calculateFitness( const Caught& caught, const uint& stepCurrent );
   public:
     DomainManyHunters( const int& maxSteps, const int& width, const int& height, NEAT::Network* ptrNetworkHigher, NEAT::Network* ptrNetworkPrey, NEAT::Network* ptrNetworkHunter, const uint& noHunters );
     ~DomainManyHunters();
     double run(); // return fitness
-    double run( std::string pathFile ); // return fitness
+    double run( std::string pathFileOutPositions, std::string pathFileOutDecision );
   };
 }
 

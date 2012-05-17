@@ -13,6 +13,7 @@ namespace PredatorPreyHunter {
   using std::map;
   using std::pair;
   using std::make_pair;
+  using std::ostream;
 
   PredatorSelection::PredatorSelection (
       const GridWorld* ptrGridWorld,
@@ -284,5 +285,69 @@ namespace PredatorPreyHunter {
     this->position = ptrGridWorld->move( this->position, predatorAction ); 
     return this->position;
   }
+
+  Position PredatorSelection::move( const std::vector<AgentInformation>& vAgentInformation, ostream& out ) {
+    Action predatorAction;
+    int choiceHigher = computeHigher( ptrNetworkHigher, vAgentInformation ); // already zero indexed
+    if ( choiceHigher >= vAgentInformation.size() ) {
+      cerr << "Network selected is beyond the range of other agents!" << endl;
+      throw 1; // throw more meaningful exception here
+    }
+    int choice;
+    // assuming only one predator for now
+    uint indexPredator = vAgentInformation.size(); // garbage value
+    for ( uint i = 0; i < vAgentInformation.size(); i++ ) {
+      if ( vAgentInformation[i].typeAgent == PREDATOR ) {
+        indexPredator = i;
+        break;
+      }
+    }
+
+    if ( choiceHigher >= indexPredator ) {
+      choiceHigher++;
+    }
+
+    if ( vAgentInformation[choiceHigher].typeAgent == PREY ) {
+      choice = computePrey( ptrNetworkPrey, vAgentInformation[choiceHigher] );
+    } else if ( vAgentInformation[choiceHigher].typeAgent == HUNTER ) {
+      choice = computeHunter( ptrNetworkHunter, vAgentInformation[choiceHigher] );
+    } else {
+      cerr << "Predator network selected as a modular network. This is a bug!" << endl;
+      switch( vAgentInformation[choiceHigher].typeAgent ) {
+        case PREDATOR:
+          cerr << "YES, Predator network has been selected by mistake" << endl;
+          break;
+        default:
+          cerr << "NOPE. Some garbage value for agent type has been passed" << endl;
+      }
+      cerr << "Agent Id is " << vAgentInformation[choiceHigher].agentId << endl;
+      throw 1; // throw more meaningful exception later 
+    }
+    switch( choice ) {
+      case 0:
+        predatorAction = NORTH;
+        break;
+      case 1:
+        predatorAction = EAST;
+        break;
+      case 2:
+        predatorAction = SOUTH;
+        break;
+      case 3:
+        predatorAction = WEST;
+        break;
+      case 4:
+        predatorAction = STAY;
+        break;
+      default:
+        cerr << "Predator::move() predatorAction is not within 0 to 4. Implies more than 5 outputs" << endl;
+        cerr << "mostActive: " << choice << endl;
+        throw 1; // throw something meaningful later
+    }
+    this->position = ptrGridWorld->move( this->position, predatorAction ); 
+    out << vAgentInformation[choiceHigher].position.x << ' ' << vAgentInformation[choiceHigher].position.y << ' ' << choice << endl;
+    return this->position;
+  }
+
 }
 

@@ -3,6 +3,7 @@
 
 #include "Predator.h"
 #include "network.h"
+#include <iostream>
 
 namespace PredatorPreyHunter {
   class PredatorSelection : public Predator {
@@ -32,6 +33,7 @@ namespace PredatorPreyHunter {
         const uint& noOtherAgents
     ); 
     virtual Position move( const std::vector<AgentInformation>& vAgentInformation );
+    virtual Position move( const std::vector<AgentInformation>& vAgentInformation, std::ostream& out );
   };
 }
 
