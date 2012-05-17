@@ -114,9 +114,11 @@ Population *predatorpreyhunter_test(
         //fnamebuf=new ostringstream();
         //(*fnamebuf)<<"gen_"<<gen<<"_"; // ends;  //needs end marker
         //cout<<"name of fname: "<<fnamebuf->str()<<endl;
-        char temp[50];
-        sprintf (temp, "PositionsGenerationChamp%d", gen);
-        championFitness=predatorpreyhunter_epoch(pop,gens,gen,temp,mapWidth,mapHeight, ptrOrganismPrey->net, ptrOrganismHunter->net, noHunters);
+        char tempPos[50];
+        char tempDec[50];
+        sprintf (tempPos, "PositionsGenerationChamp%d", gen);
+        sprintf (tempDec, "DecisionsGenerationChamp%d", gen);
+        championFitness=predatorpreyhunter_epoch(pop, gens, gen, tempPos, tempDec, mapWidth, mapHeight, ptrOrganismPrey->net, ptrOrganismHunter->net, noHunters);
         vGenerationChamptionFitness.push_back( championFitness );
         //fnamebuf->clear();
         //delete fnamebuf;
@@ -143,7 +145,7 @@ Population *predatorpreyhunter_test(
     return pop;
 }
 
-double predatorpreyhunter_epoch( Population* pop, int maxGens, int generation, char* filename, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter, int noHunters ) {
+double predatorpreyhunter_epoch( Population* pop, int maxGens, int generation, char* filenamePositions, char* filenameDecision, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter, int noHunters ) {
   vector<Organism*>::iterator curorg;
   vector<Species*>::iterator curspecies;
   //char cfilename[100];
@@ -179,8 +181,9 @@ double predatorpreyhunter_epoch( Population* pop, int maxGens, int generation, c
     throw 1; // throw something meaningful later
   }
   if ( generation == maxGens ) {
-    string pathFile = string( filename ) + ".txt";
-    double fitnessOrganism = predatorpreyhunter_evaluate_storeperformance( *itPtrOrgChamp, pathFile, mapWidth, mapHeight, ptrNetworkPrey, ptrNetworkHunter, noHunters ); 
+    string pathFileOutPositions = string( filenamePositions ) + ".txt";
+    string pathFileOutDecision = string( filenameDecision ) + ".txt";
+    double fitnessOrganism = predatorpreyhunter_evaluate_storeperformance( *itPtrOrgChamp, pathFileOutPositions, pathFileOutDecision, mapWidth, mapHeight, ptrNetworkPrey, ptrNetworkHunter, noHunters ); 
   }
   if ( generation == maxGens ) {
     ostringstream sout;
@@ -258,7 +261,7 @@ double predatorpreyhunter_evaluate( Organism* org, const int mapWidth, const int
   return org->fitness;
 }
 
-double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathFile, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter, const int noHunters ) {
+double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathFileOutPositions, string pathFileOutDecision, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter, const int noHunters ) {
   Network *net;
 
   int numnodes;  /* Used to figure out how many nodes
@@ -278,7 +281,7 @@ double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathF
   int MAP_WIDTH = mapWidth; // whole code needs to change
   int MAP_HEIGHT = mapHeight; // whole code needs to change
   PredatorPreyHunter::DomainManyHunters domainManyHunters( MAX_STEPS, MAP_WIDTH, MAP_HEIGHT, net, ptrNetworkPrey, ptrNetworkHunter, noHunters );   
-  fitnessOrganism = domainManyHunters.run( pathFile ); 
+  fitnessOrganism = domainManyHunters.run( pathFileOutPositions, pathFileOutDecision ); 
   org->fitness = fitnessOrganism; 
 
   //cout<<"Org "<<(org->gnome)->genome_id<<" fitness: "<<org->fitness<<endl;

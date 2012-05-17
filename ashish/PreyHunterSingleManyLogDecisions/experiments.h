@@ -47,9 +47,9 @@ Population* predatorpreyhunter_test(
     const int mapHeight,
     const int noHunters
 );
-double predatorpreyhunter_epoch( Population* pop, int maxGens, int generation, char* filename, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter, const int noHunters );
+double predatorpreyhunter_epoch( Population* pop, int maxGens, int generation, char* filenamePositions, char* filenameDecision, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter, int noHunters );
 double predatorpreyhunter_evaluate( Organism* org, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter, const int noHunters );
-double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathFile, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter, const int noHunters );
+double predatorpreyhunter_evaluate_storeperformance( Organism* org, string pathFileOutPositions, string pathFileOutDecision, const int mapWidth, const int mapHeight, Network* ptrNetworkPrey, Network* ptrNetworkHunter, const int noHunters );
 void writeChampionPopulation( Population* pop );
 
 #endif
