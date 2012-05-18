@@ -238,10 +238,10 @@ namespace PredatorPreyHunter {
   }
 
   double DomainManyHunters::run( string pathFileOutPositions, string pathFileOutDecision ) {
-    //cout << "[BEGINS] DomainManyHunters::run(pathFileOutPositions, pathFileOutDecision)" << endl;
+    cout << "[BEGINS] DomainManyHunters::run(pathFileOutPositions, pathFileOutDecision)" << endl;
     //cout << "Saving position to file: " << pathFileOutPositions << endl;
-    //cout << "Saving decision to file: " << pathFileOutDecision << endl;
     // order is type pred.x pred.y type prey.x prey.y ... type[i] hunter[i].x hunter[i].y
+    //cout << "Saving decision to file: " << pathFileOutDecision << endl;
 
     ofstream foutPos( pathFileOutPositions.c_str() );
     if ( !foutPos.is_open() ) {
@@ -274,7 +274,7 @@ namespace PredatorPreyHunter {
         foutPos << ( vPtrHunter[i] )->getType() << " " << positionHunter.x << " " << positionHunter.y << " ";
       }
       foutPos << endl;
-      caught = step(); 
+      caught = step( foutDec ); 
       switch( caught ) {
         case PREY_CAUGHT:
           // if prey is caught
@@ -282,6 +282,7 @@ namespace PredatorPreyHunter {
           //cout << "PREY CAUGHT!!!!" << endl;
           //cout << "step: " << noSteps << endl;
           foutPos.close(); // use smart pointer later
+          foutDec.close();
           return calculateFitness( caught, noSteps );
           // break;
         case PREDATOR_CAUGHT:
@@ -290,6 +291,7 @@ namespace PredatorPreyHunter {
           //cout << "PREDATOR CAUGHT!!!!" << endl;
           //cout << "step: " << noSteps << endl;
           foutPos.close(); // use smart pointer later
+          foutDec.close();
           return calculateFitness( caught, noSteps );
           // break;
         case NONE_CAUGHT:
