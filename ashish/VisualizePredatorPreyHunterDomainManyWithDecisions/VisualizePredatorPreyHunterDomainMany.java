@@ -45,9 +45,6 @@ public class VisualizePredatorPreyHunterDomainMany {
         System.out.println( counter + " " + agentDecisions );
         counter++;
       }
-      // TESTING { 
-      System.exit( 0 );
-      // }
       FrameVisualizeAgents frameVisualizeAgents = new FrameVisualizeAgents( "Visualize Agents" );
       frameVisualizeAgents.setSize( 200, 200 );
       Container contentPane = frameVisualizeAgents.getContentPane();
@@ -59,12 +56,18 @@ public class VisualizePredatorPreyHunterDomainMany {
       frameVisualizeAgents.setVisible( true );
       GridWorld gridWorld = new GridWorld( gridWidth, gridHeight );
       try {
-        counter = 1;
-        for ( AgentPositions agentPositions : alAgentPositions ) {
-          System.out.println( "STEP " + counter );
-          agentCanvas.drawNext( gridWorld, agentPositions );
+        counter = 0;
+        for ( ; counter < alAgentDecisions.size(); counter++ ) {
+          System.out.println( "STEP " + counter + 1 );
+          AgentDecisions agentDecisions = alAgentDecisions.get( counter );
+          AgentDecision agentDecision = agentDecisions.alAgentDecision.get( 0 );
+          agentCanvas.drawNext( gridWorld, alAgentPositions.get( counter ), agentDecision );
           Thread.sleep( delay );
-          counter++;
+        }
+        for ( ; counter < alAgentPositions.size(); counter++ ) {
+          System.out.println( "STEP " + counter + 1 );
+          agentCanvas.drawNext( gridWorld, alAgentPositions.get( counter ) );
+          Thread.sleep( delay );
         }
       } catch ( InterruptedException ie ) {
         System.out.println( "ERROR: for loop interrupted" );
@@ -101,14 +104,23 @@ class AgentCanvas extends Canvas {
 		colorPredator = new Color( 255, 0, 0 );
 		colorPrey = new Color( 0, 0, 0 );
 		colorHunter = new Color( 0, 0, 255 );
+    colorNetworkSelected = new Color( 255, 255, 0 );
+    agentDecision = new AgentDecision();
 		System.out.println( "Width: " + getWidth() );
 		System.out.println( "Height: " + getHeight() );
+    drawDecision = false;
 	}
 	public void paint( Graphics g ) {
 		if ( null == agentPositions ) {
 			System.out.println( "Trying to draw but no agentPositions" );
 		} else {
 			// you can change this to something else
+      // drawing the decision first
+      if ( drawDecision ) {
+        g.setColor( colorNetworkSelected );
+        g.fillOval( agentDecision.x - stepX, agentDecision.y - stepY, 2 * stepX, 2 * stepY );
+      }
+      // drawing the agents next
       for ( AgentPosition ap : agentPositions.alAgentPosition ) {
         switch( ap.type ) {
           case 0:  // PREY
@@ -130,6 +142,7 @@ class AgentCanvas extends Canvas {
 		}
 	}
 	public void drawNext( GridWorld gridWorld, AgentPositions agentPositions ) {
+    drawDecision = false;
 		this.agentPositions = agentPositions;
 		System.out.println( "Width: " + getWidth() + ", Height: " + getHeight() );
 		System.out.println( agentPositions );
@@ -145,12 +158,35 @@ class AgentCanvas extends Canvas {
     }
 		repaint();
 	}
+	public void drawNext( GridWorld gridWorld, AgentPositions agentPositions, AgentDecision agentDecision ) {
+    drawDecision = true;
+		this.agentPositions = agentPositions;
+    this.agentDecision = agentDecision;
+		System.out.println( "Width: " + getWidth() + ", Height: " + getHeight() );
+		System.out.println( agentPositions );
+		int stepX, stepY;
+		stepX = getWidth() / gridWorld.width;
+		stepY = getHeight() / gridWorld.height;
+		if ( stepX <= 0 || stepY <= 0 ) {
+			throw new IllegalArgumentException( "GridWorld passed is much larger than canvas size!" );
+		}
+    for ( AgentPosition ap : this.agentPositions.alAgentPosition ) {
+      ap.x = ap.x * stepX;
+      ap.y = ap.y * stepY;
+    }
+    this.agentDecision.x = this.agentDecision.x * stepX;
+    this.agentDecision.y = this.agentDecision.y * stepY;
+		repaint();
+	}
 	AgentPositions agentPositions;
 	int stepX;
 	int stepY;
 	Color colorPredator;
 	Color colorPrey;
 	Color colorHunter;
+  Color colorNetworkSelected;
+  AgentDecision agentDecision;
+  boolean drawDecision;
 }
 
 class GridWorld {
@@ -278,7 +314,7 @@ class AgentDecisions {
           strAction = new String( "West" );
           break;
         default:
-          throw new IllegalArgumentException( "Unknown Agent Type encountered!" );
+          throw new IllegalArgumentException( "Unknown Agent Type <" + ad.action + "> encountered!" );
       }
       alStrAgentDecision.add( new String( strAction + "( " + strAgent + " )" ) );
     }
@@ -315,9 +351,9 @@ class ExtractAgentDecisions {
       AgentDecisions agentDecisions = new AgentDecisions();
       for ( int i = 0; i < alInt.size(); i+=3 ) {
         AgentDecision agentDecision = new AgentDecision();
-        agentDecision.action = alInt.get( i );
-        agentDecision.x = alInt.get( i + 1 );
-        agentDecision.y = alInt.get( i + 2 );
+        agentDecision.x = alInt.get( i + 0 );
+        agentDecision.y = alInt.get( i + 1 );
+        agentDecision.action = alInt.get( i + 2 );
         agentDecisions.alAgentDecision.add( agentDecision ); 
       }
 			alAgentDecisions.add( agentDecisions );
