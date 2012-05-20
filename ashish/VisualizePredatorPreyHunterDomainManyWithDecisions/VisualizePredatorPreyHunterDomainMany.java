@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import static java.awt.geom.AffineTransform.*;
+import java.awt.geom.AffineTransform;
 import javax.swing.JFrame;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -58,14 +60,16 @@ public class VisualizePredatorPreyHunterDomainMany {
       try {
         counter = 0;
         for ( ; counter < alAgentDecisions.size(); counter++ ) {
-          System.out.println( "STEP " + counter + 1 );
+          int counterNormalized = counter + 1;
+          System.out.println( "STEP " + counterNormalized );
           AgentDecisions agentDecisions = alAgentDecisions.get( counter );
           AgentDecision agentDecision = agentDecisions.alAgentDecision.get( 0 );
           agentCanvas.drawNext( gridWorld, alAgentPositions.get( counter ), agentDecision );
           Thread.sleep( delay );
         }
         for ( ; counter < alAgentPositions.size(); counter++ ) {
-          System.out.println( "STEP " + counter + 1 );
+          int counterNormalized = counter + 1;
+          System.out.println( "STEP " + counterNormalized );
           agentCanvas.drawNext( gridWorld, alAgentPositions.get( counter ) );
           Thread.sleep( delay );
         }
@@ -110,15 +114,53 @@ class AgentCanvas extends Canvas {
 		System.out.println( "Height: " + getHeight() );
     drawDecision = false;
 	}
+
+  void drawArrow(Graphics g1, int x1, int y1, int x2, int y2) {
+    Graphics2D g = (Graphics2D) g1.create(); 
+    double dx = x2 - x1, dy = y2 - y1;
+    double angle = Math.atan2(dy, dx);
+    int len = (int) Math.sqrt(dx*dx + dy*dy);
+    AffineTransform at = AffineTransform.getTranslateInstance(x1, y1);
+    at.concatenate(AffineTransform.getRotateInstance(angle));
+    g.transform(at);
+
+    // Draw horizontal arrow starting in (0, 0)
+    int ARR_SIZE = 4;
+    g.fillPolygon(new int[] {len, len-ARR_SIZE, len-ARR_SIZE, len},
+                  new int[] {0, -ARR_SIZE, ARR_SIZE, 0}, 4);
+  }
+
+  private void drawArrow2(Graphics g, int x0, int y0, int x1,int y1){
+	int deltaX = x1 - x0;
+	int deltaY = y1 - y0;
+	double frac = 0.2;
+
+	g.drawLine(x0,y0,x1,y1);
+	g.drawLine(x0 + (int)((1-frac)*deltaX + frac*deltaY),
+		   y0 + (int)((1-frac)*deltaY - frac*deltaX),
+		   x1, y1);
+	g.drawLine(x0 + (int)((1-frac)*deltaX - frac*deltaY),
+		   y0 + (int)((1-frac)*deltaY + frac*deltaX),
+		   x1, y1);
+
+    }
+
+
 	public void paint( Graphics g ) {
 		if ( null == agentPositions ) {
 			System.out.println( "Trying to draw but no agentPositions" );
 		} else {
 			// you can change this to something else
-      // drawing the decision first
+      // drawing the network selected first 
       if ( drawDecision ) {
         g.setColor( colorNetworkSelected );
-        g.fillOval( agentDecision.x - stepX, agentDecision.y - stepY, 2 * stepX, 2 * stepY );
+        int xNetworkSelected = agentDecision.x + ( stepX / 2 );
+        int yNetworkSelected = agentDecision.y + ( stepY / 2 );
+        int x1NetworkSelected = xNetworkSelected - stepX;
+        int y1NetworkSelected = yNetworkSelected - stepY;
+        int x2NetworkSelected = xNetworkSelected + stepX;
+        int y2NetworkSelected = yNetworkSelected + stepY;
+        g.fillOval( x1NetworkSelected, y1NetworkSelected, 2 * stepX, 2 * stepY );
       }
       // drawing the agents next
       for ( AgentPosition ap : agentPositions.alAgentPosition ) {
@@ -137,6 +179,42 @@ class AgentCanvas extends Canvas {
             break;
           default: // UNKNOWN TYPE
             throw new IllegalArgumentException( "Unknown Agent Type encountered!" );
+        }
+      }
+      if ( drawDecision ) {
+        g.setColor( colorPredator );  
+        for ( AgentPosition ap : agentPositions.alAgentPosition ) {
+          if ( ap.type == 1 ) { // PREDATOR
+            // NORTH
+            int x1Arrow = ap.x + ( stepX / 2 );
+            int y1Arrow = ap.y + ( stepY / 2 );
+            int x2Arrow, y2Arrow;
+            switch( agentDecision.action ) {
+              case 0: // NORTH
+                x2Arrow = x1Arrow;
+                y2Arrow = y1Arrow + 30;
+                break;
+              case 1: // EAST 
+                x2Arrow = x1Arrow + 30;
+                y2Arrow = y1Arrow;
+                break;
+              case 2: // SOUTH 
+                x2Arrow = x1Arrow;
+                y2Arrow = y1Arrow - 30;
+                break;
+              case 3: // WEST 
+                x2Arrow = x1Arrow - 30;
+                y2Arrow = y1Arrow;
+                break;
+              case 4: // STAY
+                x2Arrow = x1Arrow;
+                y2Arrow = y1Arrow;
+                break;
+              default: // UNKNOWN ACTION
+                throw new IllegalArgumentException( "Unknown Agent Action encountered!" );
+            }
+            drawArrow2( g, x1Arrow, y1Arrow, x2Arrow, y2Arrow ); 
+          }
         }
       }
 		}
@@ -299,19 +377,19 @@ class AgentDecisions {
       String strAction; 
       switch( ad.action ) { // ACTION 
         case 0:
-          strAction = new String( "Stay" );
-          break;
-        case 1:
           strAction = new String( "North" );
           break;
-        case 2:
+        case 1:
           strAction = new String( "East" );
           break;
-        case 3:
+        case 2:
           strAction = new String( "South" );
           break;
-        case 4:
+        case 3:
           strAction = new String( "West" );
+          break;
+        case 4:
+          strAction = new String( "Stay" );
           break;
         default:
           throw new IllegalArgumentException( "Unknown Agent Type <" + ad.action + "> encountered!" );
