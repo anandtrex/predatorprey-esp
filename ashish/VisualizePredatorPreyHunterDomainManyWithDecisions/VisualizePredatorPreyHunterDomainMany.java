@@ -10,6 +10,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import javax.imageio.ImageIO;
+import java.awt.Color;
 
 public class VisualizePredatorPreyHunterDomainMany {
 	 public static void main(String[] args) throws IOException {
@@ -54,6 +58,7 @@ public class VisualizePredatorPreyHunterDomainMany {
       contentPane.add( agentCanvas );
       agentCanvas.setMinimumSize( new Dimension( 100, 100 ) );
       agentCanvas.setPreferredSize( new Dimension( 100, 100 ) );
+      agentCanvas.setBackground(Color.WHITE);
       frameVisualizeAgents.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
       frameVisualizeAgents.setVisible( true );
       GridWorld gridWorld = new GridWorld( gridWidth, gridHeight );
@@ -65,12 +70,14 @@ public class VisualizePredatorPreyHunterDomainMany {
           AgentDecisions agentDecisions = alAgentDecisions.get( counter );
           AgentDecision agentDecision = agentDecisions.alAgentDecision.get( 0 );
           agentCanvas.drawNext( gridWorld, alAgentPositions.get( counter ), agentDecision );
+          saveCanvasToFile(agentCanvas, counterNormalized);
           Thread.sleep( delay );
         }
         for ( ; counter < alAgentPositions.size(); counter++ ) {
           int counterNormalized = counter + 1;
           System.out.println( "STEP " + counterNormalized );
           agentCanvas.drawNext( gridWorld, alAgentPositions.get( counter ) );
+          saveCanvasToFile(agentCanvas, counterNormalized);
           Thread.sleep( delay );
         }
       } catch ( InterruptedException ie ) {
@@ -78,6 +85,30 @@ public class VisualizePredatorPreyHunterDomainMany {
       }
       System.out.println( "FINISHED" );
 	 }
+	 
+	 private static BufferedImage canvasToImage(Canvas cnvs) {
+         int w = cnvs.getWidth();
+         int h = cnvs.getHeight();
+         int type = BufferedImage.TYPE_INT_RGB;
+         BufferedImage image = new BufferedImage(w,h,type);
+         Graphics2D g2 = image.createGraphics();
+         g2.setPaint ( Color.WHITE/*new Color ( r, g, b )*/ );
+         g2.fillRect ( 0, 0, image.getWidth(), image.getHeight() );
+         cnvs.paint(g2);
+         g2.dispose();
+         return image;
+     }
+     
+    private static void saveCanvasToFile(Canvas canvas, int stepNo) {
+      try {
+          // retrieve image
+          BufferedImage bi = canvasToImage(canvas);
+          File outputfile = new File("vid"+stepNo+".png");
+          ImageIO.write(bi, "png", outputfile);
+      } catch (IOException e) {
+
+      }
+    }
 }
 
 class FrameVisualizeAgents extends JFrame {
