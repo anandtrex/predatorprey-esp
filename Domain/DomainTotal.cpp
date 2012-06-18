@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 #include <libconfig.h++>
 
@@ -22,7 +23,7 @@ namespace PredatorPreyHunter
     using std::pair;
     using std::ofstream;
     using std::string;
-    using PredPreyHunterVisualizer::Visualizer;
+    using std::ostringstream;
 
     DomainTotal::DomainTotal()
             : Domain()
@@ -33,10 +34,12 @@ namespace PredatorPreyHunter
             const uint& numPredators, const uint& numPrey, const uint& numHunters,
             const double& preyMoveProb, const double& hunterMoveProb)
             : Domain(maxSteps, width, height), numPredators(numPredators), numPrey(numPrey), numHunters(
-                    numHunters), preyMoveProb(preyMoveProb), hunterMoveProb(hunterMoveProb)
+                    numHunters), preyMoveProb(preyMoveProb), hunterMoveProb(hunterMoveProb), hunterRoleReversalProbability(
+                    0.0)
     {
         numOtherAgents = numPrey + numHunters;
-        hunterRoleReversalProbability = 0.0;
+        LOG(INFO) << "Initialized DomainTotal with number of predators " << numPredators
+                << ", num of prey " << numPrey << ", number of hunters " << numHunters;
     }
 
     DomainTotal::DomainTotal(const uint& maxSteps, const uint& width, const uint& height,
@@ -48,119 +51,195 @@ namespace PredatorPreyHunter
                     hunterRoleReversalProbability)
     {
         numOtherAgents = numPrey + numHunters;
+        LOG(INFO) << "Initialized DomainTotal with number of predators " << numPredators
+                << ", num of prey " << numPrey << ", number of hunters " << numHunters;
     }
 
     DomainTotal::~DomainTotal()
     {
-        delete ptrPredator;
-        delete ptrPrey;
-        delete ptrHunter;
+        for (uint i = 0; i < numPredators; i++) {
+            delete vPredators[i];
+        }
+        vPredators.clear();
+        for (uint i = 0; i < numPrey; i++) {
+            delete vPreys[i];
+        }
+        vPreys.clear();
+        for (uint i = 0; i < numHunters; i++) {
+            delete vHunters[i];
+        }
+        vHunters.clear();
     }
 
     void DomainTotal::init(NetworkContainer* espNetwork)
     {
-        Position randomPosition = ptrGridWorld->getRandomPosition();
-        ptrPredator = dynamic_cast<Predator*>(new PredatorEsp(ptrGridWorld, 1, randomPosition,
-                espNetwork));
-        LOG(INFO) << "[CREATED] Predator at " << randomPosition.x << ", " << randomPosition.y
-                << " with id " << 1 << endl;
+        Position randomPosition;
+        uint id = 1;
+        vPredators.clear();
+        vPreys.clear();
+        vHunters.clear();
+
+        ostringstream ss;
+
+        for (uint i = 0; i < numPredators; i++) {
+            ostringstream ts;
+            randomPosition = ptrGridWorld->getRandomPosition();
+            ts << randomPosition.x << randomPosition.y;
+            while (ss.str().find(ts.str()) != -1) {
+                ts.clear();
+                ts.str("");
+                randomPosition = ptrGridWorld->getRandomPosition();
+                ts << randomPosition.x << randomPosition.y;
+            }
+            vPredators.push_back(
+                    dynamic_cast<Predator*>(new PredatorEsp(ptrGridWorld, id++, randomPosition,
+                            espNetwork)));
+            LOG(INFO) << "[CREATED] Predator at " << randomPosition.x << ", "
+                    << randomPosition.y << " with id " << id << endl;
+            ss << randomPosition.x << randomPosition.y << ",";
+        }
 
         // initialize prey
-        randomPosition = ptrGridWorld->getRandomPosition();
-        ptrPrey = new Prey(ptrGridWorld, 2, randomPosition, preyMoveProb);
-        LOG(INFO) << "Prey move probability is " << preyMoveProb;
-        LOG(INFO) << "[CREATED] Prey at " << randomPosition.x << ", " << randomPosition.y
-                << " with id " << 2 << endl;
+        for (uint i = 0; i < numPrey; i++) {
+            ostringstream ts;
+            randomPosition = ptrGridWorld->getRandomPosition();
+            ts << randomPosition.x << randomPosition.y;
+            while (ss.str().find(ts.str()) != -1) {
+                ts.clear();
+                ts.str("");
+                randomPosition = ptrGridWorld->getRandomPosition();
+                ts << randomPosition.x << randomPosition.y;
+            }
+            vPreys.push_back(new Prey(ptrGridWorld, id++, randomPosition, preyMoveProb));
+            LOG(INFO) << "Prey move probability is " << preyMoveProb;
+            LOG(INFO) << "[CREATED] Prey at " << randomPosition.x << ", " << randomPosition.y
+                    << " with id " << id << endl;
+            ss << randomPosition.x << randomPosition.y << ",";
+        }
 
-        randomPosition = ptrGridWorld->getRandomPosition();
-        ptrHunter = new Hunter(ptrGridWorld, 3, randomPosition, hunterMoveProb,
-                hunterRoleReversalProbability);
-        LOG(INFO) << "Hunter move probability is " << hunterMoveProb;
-        LOG(INFO) << "[CREATED] Hunter at " << randomPosition.x << ", " << randomPosition.y
-                << " with id " << 3 << endl;
+        for (uint i = 0; i < numHunters; i++) {
+            ostringstream ts;
+            randomPosition = ptrGridWorld->getRandomPosition();
+            ts << randomPosition.x << randomPosition.y;
+            while (ss.str().find(ts.str()) != -1) {
+                ts.clear();
+                ts.str("");
+                randomPosition = ptrGridWorld->getRandomPosition();
+                ts << randomPosition.x << randomPosition.y;
+            }
+            vHunters.push_back(
+                    new Hunter(ptrGridWorld, id++, randomPosition, hunterMoveProb,
+                            hunterRoleReversalProbability));
+            LOG(INFO) << "Hunter move probability is " << hunterMoveProb;
+            LOG(INFO) << "[CREATED] Hunter at " << randomPosition.x << ", " << randomPosition.y
+                    << " with id " << id << endl;
+            ss << randomPosition.x << randomPosition.y << ",";
+        }
     }
 
-    void DomainTotal::enableDisplay(const vector<double>& predatorColour,
-            const vector<double>& preyColour, const vector<double>& hunterColour)
+    void DomainTotal::step(const uint& stepNo)
     {
-        this->displayEnabled = true;
-        LOG(INFO) << "Display enabled";
-        map<int, vector<double> > idColorMapping = map<int, vector<double> >();
-        pair<int, vector<double> > p = pair<int, vector<double> >();
+        if (stepNo > maxSteps)
+            LOG(FATAL) << "Step no is greater than maxSteps!";
 
-        p = pair<int, vector<double> >(1, predatorColour);
-        idColorMapping.insert(p);
+        vector<AgentInformation> vAiPredator, vAiPrey, vAiHunter;
 
-        p = pair<int, vector<double> >(2, preyColour);
-        idColorMapping.insert(p);
+        for (uint i = 0; i < numPredators; i++) {
+            vAiPredator.push_back(vPredators[i]->getAgentInformation());
+        }
+        for (uint i = 0; i < numPrey; i++) {
+            vAiPrey.push_back(vPreys[i]->getAgentInformation());
+        }
+        for (uint i = 0; i < numHunters; i++) {
+            vAiHunter.push_back(vHunters[i]->getAgentInformation());
+        }
 
-        p = pair<int, vector<double> >(3, hunterColour);
-        idColorMapping.insert(p);
+        for (uint i = 0; i < numPrey; i++) {
+            for (uint j = 0; j < numPredators; j++) {
+                if ((vAiPrey[i].position.x == vAiPredator[j].position.x)
+                        && (vAiPrey[i].position.y == vAiPredator[j].position.y)) {
+                    LOG(FATAL) << "Predator has already caught prey!" << "Prey at "
+                            << vAiPrey[j].position.x << ", " << vAiPrey[j].position.y << " and "
+                            << "Predator at " << vAiPredator[i].position.x << ", "
+                            << vAiPredator[i].position.y;
+                }
+            }
+        }
 
-        visualizer = Visualizer(idColorMapping, ptrGridWorld->width, ptrGridWorld->height);
-    }
-
-    void DomainTotal::step()
-    {
-        AgentInformation aiPredator, aiPrey, aiHunter;
-        aiPredator = ptrPredator->getAgentInformation();
-        aiPrey = ptrPrey->getAgentInformation();
-        aiHunter = ptrHunter->getAgentInformation();
+        for (uint i = 0; i < numPredators; i++) {
+            for (uint j = 0; j < numHunters; j++) {
+                if ((vAiHunter[j].position.x == vAiPredator[i].position.x)
+                        && (vAiHunter[j].position.y == vAiPredator[i].position.y)) {
+                    LOG(FATAL) << "Hunter has already caught predator!" << "Hunter at "
+                            << vAiHunter[j].position.x << ", " << vAiHunter[j].position.y << " and "
+                            << "Predator at " << vAiPredator[i].position.x << ", "
+                            << vAiPredator[i].position.y;
+                }
+            }
+        }
 
         // build vector<AgentInformation>
         vector<AgentInformation> vAgentInformation;
         vAgentInformation.clear();
-        vAgentInformation.push_back(aiPredator);
-        vAgentInformation.push_back(aiPrey);
-        vAgentInformation.push_back(aiHunter);
+        vAgentInformation.insert(vAgentInformation.begin(), vAiPredator.begin(), vAiPredator.end());
+        vAgentInformation.insert(vAgentInformation.begin(), vAiPrey.begin(), vAiPrey.end());
+        vAgentInformation.insert(vAgentInformation.begin(), vAiHunter.begin(), vAiHunter.end());
 
         // move prey
-        ptrPrey->move(vAgentInformation);
+        for (uint i = 0; i < numPrey; i++) {
+            vAiPrey[i].position = vPreys[i]->move(vAgentInformation);
+            LOG(INFO) << "Moved prey " << i << " to " << vAiPrey[i].position.x << ", " << vAiPrey[i].position.y;
+        }
         // move hunter
-        ptrHunter->move(vAgentInformation);
+        for (uint i = 0; i < numHunters; i++) {
+            vAiHunter[i].position = vHunters[i]->move(vAgentInformation);
+            LOG(INFO) << "Moved hunter " << i << " to " << vAiHunter[i].position.x << ", " << vAiHunter[i].position.y;
+        }
         // move predator
-        ptrPredator->move(vAgentInformation);
-
-        VLOG(2) << "Predator at " << aiPredator.position.x << "," << aiPredator.position.y;
-        VLOG(2) << "Prey at " << aiPrey.position.x << "," << aiPrey.position.y;
-        VLOG(2) << "Hunter at " << aiHunter.position.x << "," << aiHunter.position.y;
-
-        if ((aiPrey.position.x == aiPredator.position.x)
-                && (aiPrey.position.y == aiPredator.position.y)) {
-            LOG(INFO) << "Prey caught by Predator";
-            preyCaughtIds.push_back(aiPrey.agentId);
-            numPreyCaught++;
+        for (uint i = 0; i < numPredators; i++) {
+            vAiPredator[i].position = vPredators[i]->move(vAgentInformation, stepNo);
+            LOG(INFO) << "Moved predator " << i << " to " << vAiPredator[i].position.x << ", " << vAiPredator[i].position.y;
         }
 
-        if ((aiHunter.position.x == aiPredator.position.x)
-                && (aiHunter.position.y == aiPredator.position.y)) {
-            if (aiHunter.agentType == HUNTER) {
-                LOG(INFO) << "Predator caught by Hunter";
-                predatorCaughtIds.push_back(aiPredator.agentId);
-                numPredCaught++;
-            } else if (aiHunter.agentType == HUNTER_WEAK) {
-                LOG(INFO) << "Weak hunter caught by predator!";
-                hunterCaughtIds.push_back(aiPredator.agentId);
-                numHunterCaught++;
+        for (uint i = 0; i < numPrey; i++) {
+            for (uint j = 0; j < numPredators; j++) {
+                if ((vAiPrey[i].position.x == vAiPredator[j].position.x)
+                        && (vAiPrey[i].position.y == vAiPredator[j].position.y)) {
+                    LOG(INFO) << "Prey caught by Predator";
+                    preyCaughtIds.push_back(vAiPrey[i].agentId);
+                    if (numPreyCaught < numPrey) {
+                        numPreyCaught++;
+                        LOG(INFO) << "Incrementing number of prey caught to " << numPreyCaught;
+                    }
+                }
             }
         }
 
-        // Show display
-        if (displayEnabled) {
-            // FIXME Need to do this in a better way
-            static vector<AgentInformation> vAgentInformationPrevious = vector<AgentInformation>();
-            if (vAgentInformationPrevious.size() == 0) {
-                vAgentInformationPrevious = vAgentInformation;
+        for (uint i = 0; i < numPredators; i++) {
+            for (uint j = 0; j < numHunters; j++) {
+                if ((vAiHunter[j].position.x == vAiPredator[i].position.x)
+                        && (vAiHunter[j].position.y == vAiPredator[i].position.y)) {
+                    if (vAiHunter[j].agentType == HUNTER) {
+                        predatorCaughtIds.push_back(vAiPredator[i].agentId);
+                        if (numPredCaught < numPredators) {
+                            numPredCaught++;
+                            LOG(INFO) << "Incrementing number of predators caught to " << numPredCaught;
+                        }
+                    } else if (vAiHunter[j].agentType == HUNTER_WEAK) {
+                        LOG(INFO) << "Weak hunter caught by predator!";
+                        hunterCaughtIds.push_back(vAiHunter[j].agentId);
+                        if (numHunterCaught < numHunters) {
+                            numHunterCaught++;
+                        }
+                    }
+                }
             }
-            visualizer.show(vAgentInformationPrevious, vAgentInformation);
-            vAgentInformationPrevious = vAgentInformation;
         }
-
     }
 
     double DomainTotal::run()
     {
-        uint noSteps = 0;
+        uint noSteps = 1;
         uint prevNumPreyCaught = 0;
         uint prevNumPredCaught = 0;
         uint prevNumHunterCaught = 0;
@@ -171,16 +250,12 @@ namespace PredatorPreyHunter
         preyCaughtIds = vector<uint>();
         hunterCaughtIds = vector<uint>();
 
-        if (displayEnabled) {
-            visualizer.createWindow();
-        }
-
         do {
-            VLOG(1) << "step: " << noSteps << endl;
-            (void) step();
+            LOG(INFO) << "step: " << noSteps << endl;
+            (void) step(noSteps);
             if (numPreyCaught > 0 && numPreyCaught > prevNumPreyCaught) {
                 LOG(INFO) << "PREY CAUGHT!!!!" << endl;
-                VLOG(5)
+                LOG(INFO)
                         << "Number of prey caught is " << numPreyCaught
                                 << " and the total number of prey is " << numPrey;
                 prevNumPreyCaught = numPreyCaught;
@@ -191,9 +266,9 @@ namespace PredatorPreyHunter
             } else if (numPredCaught > 0 && numPredCaught > prevNumPredCaught) {
                 LOG(INFO) << "PREDATOR CAUGHT!!!!" << endl;
                 prevNumPredCaught = numPredCaught;
-                VLOG(5)
-                        << "Number of prey caught is " << numPredCaught
-                                << " and the total number of prey is " << numPredators;
+                LOG(INFO)
+                        << "Number of predators caught is " << numPredCaught
+                                << " and the total number of predators is " << numPredators;
                 if (numPredCaught == numPredators) {
                     LOG(INFO) << "All predators caught in " << noSteps << " steps!";
                     return calculateFitness(noSteps);
@@ -209,21 +284,25 @@ namespace PredatorPreyHunter
                     return calculateFitness(noSteps);
                 }
             }
-        } while (noSteps++ < maxSteps);
+        } while (++noSteps <= maxSteps);
+        LOG(ERROR) << "EPISODE END";
 
         if (noSteps - 1 == maxSteps) {
             LOG(INFO) << maxSteps << " passed without prey/predator being caught";
         }
 
-        return calculateFitness(noSteps);
+        return calculateFitness(noSteps - 1);
     }
 
-    double DomainTotal::run(string stepsFilePath)
+    double DomainTotal::run(string stepsFilePath, string networkSelectionFilePath)
     {
-        uint noSteps = 0;
+        LOG(INFO) << "Running with output to file";
+
+        uint noSteps = 1;
         uint prevNumPreyCaught = 0;
         uint prevNumPredCaught = 0;
         uint prevNumHunterCaught = 0;
+
         numPredCaught = 0;
         numPreyCaught = 0;
         numHunterCaught = 0;
@@ -231,87 +310,126 @@ namespace PredatorPreyHunter
         preyCaughtIds = vector<uint>();
         hunterCaughtIds = vector<uint>();
 
-        if (displayEnabled) {
-            visualizer.createWindow();
-        }
-
         // order is pred.x pred.y prey.x prey.y hunter.x hunter.y
-        ofstream fout(stepsFilePath.c_str());
-        if (!fout.is_open()) {
-            LOG(FATAL) << "Could not open file " << stepsFilePath << " for writing!" << endl;
+        ofstream foutSteps(stepsFilePath.c_str());
+        ofstream foutSelection(networkSelectionFilePath.c_str());
+        if (!foutSteps.is_open()) {
+            LOG(FATAL) << "Could not open steps file " << stepsFilePath << " for writing!"
+                    << endl;
         }
-        double fitness = 0.0;
+        if (!foutSelection.is_open()) {
+            LOG(FATAL) << "Could not open steps file " << networkSelectionFilePath
+                    << " for writing!" << endl;
+        }
+        foutSelection << "Type DistanceX DistanceY ... NetworkSelected" << endl;
+
         Position positionPredator, positionPrey, positionHunter;
         do {
-            VLOG(1) << "step: " << noSteps << endl;
-            (void) step();
+            (void) step(noSteps);
+
+            for (uint i = 0; i < numPredators; i++) {
+                positionPredator = vPredators[i]->getPosition();
+                foutSteps << vPredators[i]->getAgentInformation().agentType << " "
+                        << positionPredator.x << " " << positionPredator.y << " ";
+                foutSelection
+                        << dynamic_cast<PredatorEsp*>(vPredators[i])->getLastNetworkSelection();
+            }
+            for (uint i = 0; i < numPrey; i++) {
+                positionPrey = vPreys[i]->getPosition();
+                foutSteps << vPreys[i]->getAgentInformation().agentType << " " << positionPrey.x
+                        << " " << positionPrey.y << " ";
+            }
+            for (uint i = 0; i < numHunters; i++) {
+                positionHunter = vHunters[i]->getPosition();
+                foutSteps << vHunters[i]->getAgentInformation().agentType << " " << positionHunter.x
+                        << " " << positionHunter.y << " ";
+            }
+            foutSteps << endl;
+            foutSelection << endl;
+
             if (numPreyCaught > 0 && numPreyCaught > prevNumPreyCaught) {
-                LOG(INFO) << "PREY CAUGHT!!!!" << endl;
-                VLOG(5)
-                        << "Number of prey caught is " << numPreyCaught
-                                << " and the total number of prey is " << numPrey;
                 prevNumPreyCaught = numPreyCaught;
                 if (numPreyCaught == numPrey) {
-                    LOG(INFO) << "All prey caught in " << noSteps << " steps!";
                     return calculateFitness(noSteps);
                 }
             } else if (numPredCaught > 0 && numPredCaught > prevNumPredCaught) {
-                LOG(INFO) << "PREDATOR CAUGHT!!!!" << endl;
                 prevNumPredCaught = numPredCaught;
-                VLOG(5)
-                        << "Number of prey caught is " << numPredCaught
-                                << " and the total number of prey is " << numPredators;
                 if (numPredCaught == numPredators) {
-                    LOG(INFO) << "All predators caught in " << noSteps << " steps!";
                     return calculateFitness(noSteps);
                 }
             } else if (numHunterCaught > 0 && numHunterCaught > prevNumHunterCaught) {
-                LOG(INFO) << "WEAK HUNTER CAUGHT!!!!" << endl;
                 prevNumHunterCaught = numHunterCaught;
-                VLOG(5)
-                        << "Number of weak hunters caught is " << numHunterCaught
-                                << " and the total number of hunters is " << numHunters;
                 if (numHunterCaught == numHunters) {
-                    LOG(INFO) << "All hunters caught in " << noSteps << " steps!";
                     return calculateFitness(noSteps);
                 }
             }
-            positionPredator = ptrPredator->getPosition();
-            positionPrey = ptrPrey->getPosition();
-            positionHunter = ptrHunter->getPosition();
-            fout << positionPredator.x << " " << positionPredator.y << " ";
-            fout << positionPrey.x << " " << positionPrey.y << " ";
-            fout << positionHunter.x << " " << positionHunter.y << endl;
-        } while (noSteps++ < maxSteps);
-        fout.close();
+        } while (++noSteps <= maxSteps);
+        foutSteps.close();
+        foutSelection.close();
+
+        if (noSteps - 1 == maxSteps) {
+            LOG(INFO) << maxSteps << " passed without prey/predator being caught";
+        }
+
         LOG(INFO) << "[ENDS] Experiment::run()" << endl;
-        return calculateFitness(noSteps);
+        return calculateFitness(noSteps - 1);
     }
 
     double DomainTotal::calculateFitness(const uint& stepCurrent)
     {
+        if (stepCurrent > maxSteps) {
+            LOG(FATAL) << "Step no is greater than maxSteps!" << " stepCurrent is "
+                    << stepCurrent << " and maxSteps is " << maxSteps;
+        }
+
         double fitness = 0.0;
+        LOG(INFO) << "In calculateFitness";
+        LOG(INFO) << "Num prey caught is " << numPreyCaught;
+        LOG(INFO) << "Num predators caught is " << numPredCaught;
+        LOG(INFO) << "Num hunters caught is " << numHunterCaught;
+        LOG(INFO) << "stepCurrent is " << stepCurrent;
+        if (numPreyCaught > numPrey || numPredCaught > numPredators
+                || numHunterCaught > numHunters) {
+            LOG(FATAL) << "Num caught is too high!!";
+        }
         if (numPreyCaught > 0) {     // Yay!
+            LOG(INFO) << "Yay!";
             fitness = static_cast<double>(10) * (maxSteps - stepCurrent) * numPreyCaught;
+            LOG(INFO) << "Returned fitness is " << fitness;
             return fitness;
         } else if (numPredCaught > 0) {     // :-(
-            fitness = static_cast<double>(-10) * (maxSteps - stepCurrent) * numPredCaught;
+            LOG(INFO) << ":-(";
+            LOG(INFO) << "maxSteps is " << maxSteps;
+            fitness = static_cast<double>(10) * -1 * (maxSteps - stepCurrent) * numPredCaught;
+            LOG(INFO) << "Returned fitness is " << fitness;
             return fitness;
         } else if (numHunterCaught > 0) {     // Double Yay!
-            fitness = static_cast<double>(100) * (maxSteps - stepCurrent) * numPredCaught;
+            LOG(INFO) << "WTF!!!!!";
+            LOG(FATAL) << "Can't be here!!!!!!!";
+            fitness = static_cast<double>(100) * (maxSteps - stepCurrent) * numHunterCaught;
+            LOG(INFO) << "Returned fitness is " << fitness;
             return fitness;
         } else {
+            LOG(INFO) << "Meh";
             // calculate distance from hunter and prey
-            Position positionPredator = ptrPredator->getPosition();
-            Position positionPrey = ptrPrey->getPosition();
-            Position positionHunter = ptrHunter->getPosition();
-            uint distancePrey, distanceHunter;
-            distancePrey = ptrGridWorld->distance(positionPrey, positionPredator);
-            distanceHunter = ptrGridWorld->distance(positionHunter, positionPredator);
+            uint distancePrey = 0, distanceHunter = 0;
+            for (uint i = 0; i < numPredators; i++) {
+                Position positionPredator = vPredators[i]->getPosition();
+                for (uint j = 0; j < numPrey; j++) {
+                    Position positionPrey = vPreys[j]->getPosition();
+                    distancePrey += ptrGridWorld->distance(positionPrey, positionPredator);
+                }
+                for (uint j = 0; j < numHunters; j++) {
+                    Position positionHunter = vHunters[j]->getPosition();
+                    distanceHunter += ptrGridWorld->distance(positionHunter, positionPredator);
+                }
+            }
+
             // reward for being close to prey and far away from hunter
             distancePrey = ptrGridWorld->getWidth() + ptrGridWorld->getHeight() - distancePrey;
             // take into account the size of the grid for rewarding later
-            fitness = static_cast<double>(distancePrey) + distanceHunter;     // if by any chance it reaches here although it won't
+            fitness = static_cast<double>(distancePrey) + distanceHunter;
+            LOG(INFO) << "Returned fitness is " << fitness;
             return fitness;
         }
     }

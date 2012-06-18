@@ -8,23 +8,30 @@
 #include "PredatorEsp.h"
 #include <algorithm>
 #include <limits>
+#include <sstream>
+#include "../Esp/NetworkContainerSelection.h"
 
 namespace PredatorPreyHunter
 {
     using std::vector;
     using std::endl;
     using std::abs;
-    using std::numeric_limits;
+    using std::ostringstream;
+    using EspPredPreyHunter::NetworkContainerSelection;
 
     PredatorEsp::PredatorEsp(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p,
-            NetworkContainer* networkContainer) :
-            Predator(ptrGridWorld, agentId, p), networkContainer(networkContainer)
+            NetworkContainer* networkContainer)
+            : Predator(ptrGridWorld, agentId, p), networkContainer(networkContainer)
     {
     }
 
-    Position PredatorEsp::move(const std::vector<AgentInformation>& vAgentInformation)
+    Position PredatorEsp::move(const std::vector<AgentInformation>& vAgentInformation,
+            const uint& stepNo)
     {
         VLOG(5) << "Moving";
+
+        ostringstream ss;
+
         typedef vector<AgentInformation>::const_iterator VAICI;
         vector<double> tempInput = vector<double>();
 
@@ -32,26 +39,48 @@ namespace PredatorPreyHunter
         for (VAICI itAgent = vAgentInformation.begin(); itAgent != vAgentInformation.end();
                 ++itAgent) {
             if (itAgent->agentType == PREY) {
-                tempInput.push_back(ptrGridWorld->distanceX(this->position, itAgent->position));
-                tempInput.push_back(ptrGridWorld->distanceY(this->position, itAgent->position));
+                tempInput.push_back(static_cast<double>(ptrGridWorld->distanceX(this->position, itAgent->position))/ptrGridWorld->getWidth());
+                tempInput.push_back(static_cast<double>(ptrGridWorld->distanceY(this->position, itAgent->position))/ptrGridWorld->getHeight());
                 // NOTE Type should always be AFTER position
                 tempInput.push_back(PREY);
+                ss << PREY << " " << ptrGridWorld->distanceX(this->position, itAgent->position)
+                        << " " << ptrGridWorld->distanceY(this->position, itAgent->position) << " ";
             }
         }
         VLOG(5) << "Done prey";
         for (VAICI itAgent = vAgentInformation.begin(); itAgent != vAgentInformation.end();
                 ++itAgent) {
             if (itAgent->agentType == HUNTER) {
-                tempInput.push_back(ptrGridWorld->distanceX(this->position, itAgent->position));
-                tempInput.push_back(ptrGridWorld->distanceY(this->position, itAgent->position));
+                tempInput.push_back(static_cast<double>(ptrGridWorld->distanceX(this->position, itAgent->position))/ptrGridWorld->getWidth());
+                tempInput.push_back(static_cast<double>(ptrGridWorld->distanceY(this->position, itAgent->position))/ptrGridWorld->getHeight());
                 // NOTE Type should always be AFTER position
                 tempInput.push_back(HUNTER);
-            }
-            else if (itAgent->agentType == HUNTER_WEAK) {
-                tempInput.push_back(ptrGridWorld->distanceX(this->position, itAgent->position));
-                tempInput.push_back(ptrGridWorld->distanceY(this->position, itAgent->position));
+
+                ss << HUNTER << " " << ptrGridWorld->distanceX(this->position, itAgent->position)
+                        << " " << ptrGridWorld->distanceY(this->position, itAgent->position) << " ";
+
+                /*
+                 // FIXME Hack to handle another network that takes in same input
+                 tempInput.push_back(ptrGridWorld->distanceX(this->position, itAgent->position));
+                 tempInput.push_back(ptrGridWorld->distanceY(this->position, itAgent->position));
+                 // NOTE Type should always be AFTER position
+                 tempInput.push_back(HUNTER);*/
+
+            } else if (itAgent->agentType == HUNTER_WEAK) {
+                tempInput.push_back(static_cast<double>(ptrGridWorld->distanceX(this->position, itAgent->position))/ptrGridWorld->getWidth());
+                tempInput.push_back(static_cast<double>(ptrGridWorld->distanceY(this->position, itAgent->position))/ptrGridWorld->getHeight());
                 // NOTE Type should always be AFTER position
                 tempInput.push_back(HUNTER_WEAK);
+                ss << HUNTER_WEAK << " "
+                        << ptrGridWorld->distanceX(this->position, itAgent->position) << " "
+                        << ptrGridWorld->distanceY(this->position, itAgent->position) << " ";
+
+                /*
+                 // FIXME Hack to handle another network that takes in same input
+                 tempInput.push_back(ptrGridWorld->distanceX(this->position, itAgent->position));
+                 tempInput.push_back(ptrGridWorld->distanceY(this->position, itAgent->position));
+                 // NOTE Type should always be AFTER position
+                 tempInput.push_back(HUNTER_WEAK);*/
             }
         }
         VLOG(5) << "Done hunter";
@@ -61,41 +90,18 @@ namespace PredatorPreyHunter
         // FIXME Number of actions hardcoded as 5!
         vector<double> output = vector<double>(5);
         networkContainer->activate(input, output);
-        Action predatorAction = (Action)getMaxIndex(output);
-        VLOG(2) << "Action selected is " << predatorAction;
+        if (networkContainer->getNetworkContainerType() == SELECTION) {
+            ss << dynamic_cast<NetworkContainerSelection*>(networkContainer)->getNetworkSelected();
+        } else {
+            ss << "NA";
+        }
+        lastSelection = ss.str();
+
+        Action predatorAction = (Action) getMaxIndex(output);
         position = ptrGridWorld->move(position, predatorAction);
+
         VLOG(5) << "Moved";
         return position;
-    }
-
-    uint PredatorEsp::getMaxIndex(const vector<double>& vec)
-    {
-        VLOG(5) << "Returning the max index";
-        //return std::distance(vec.begin(), max_element(vec.begin(), vec.end()));
-        vector<uint> maxIndexes = vector<uint>();
-        double maxValue = -numeric_limits<double>::max();
-
-        vector<double>::const_iterator it = vec.begin();
-        while(it != vec.end())
-        {
-            VLOG(5) << *it;
-            if(*it > maxValue){
-                maxValue = *it;
-                maxIndexes = vector<uint>();
-                maxIndexes.push_back(std::distance(vec.begin(), it));
-            } else if (*it == maxValue) {
-                maxIndexes.push_back(std::distance(vec.begin(), it));
-            }
-            it++;
-        }
-        if(maxIndexes.size() == 1){
-            VLOG(5) << "Only one max index";
-            return maxIndexes[0];
-        }
-        else {
-            VLOG(5) << "Multiple max indexes";
-            return maxIndexes[fetchRandomLong() % (maxIndexes.size() - 1)];
-        }
     }
 }
 
