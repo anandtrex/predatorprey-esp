@@ -1,5 +1,0 @@
-cmake_minimum_required( VERSION 2.6 )
-set ( project_name "AggregateNetworks" ) 
-project( ${project_name} )
-file( GLOB neat_sources *.cpp )
-add_executable( ${project_name} ${neat_sources} )
