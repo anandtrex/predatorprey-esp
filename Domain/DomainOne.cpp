@@ -30,19 +30,17 @@ namespace PredatorPreyHunter
 
     template<class T>
     DomainOne<T>::DomainOne(const uint& maxSteps, const uint& width, const uint& height,
-            const uint& numPredators, const uint& numAgents, const double& agentMoveProb)
-            : Domain(maxSteps, width, height), numPredators(numPredators), numAgents(numAgents), agentMoveProb(
-                    agentMoveProb)
+            const double& agentMoveProb)
+            : Domain(maxSteps, width, height), agentMoveProb(agentMoveProb)
     {
-        numOtherAgents = numAgents;
     }
 
     template<class T>
     DomainOne<T>::~DomainOne()
     {
-         delete ptrPredator;
-         delete ptrOtherAgent;
-         delete ptrGridWorld;
+        delete ptrPredator;
+        delete ptrOtherAgent;
+        delete ptrGridWorld;
     }
 
     template<class T>
@@ -53,49 +51,37 @@ namespace PredatorPreyHunter
                 espNetwork));
         LOG(INFO) << "[CREATED] Predator at " << randomPosition.x << ", " << randomPosition.y
                 << " with id " << 1 << endl;
-        // initialize prey
+
+        // initialize other agent
         randomPosition = ptrGridWorld->getRandomPosition();
+        while(randomPosition.x == ptrPredator->getPosition().x && randomPosition.y == ptrPredator->getPosition().y){
+            randomPosition = ptrGridWorld->getRandomPosition();
+        }
         this->ptrOtherAgent = new T(ptrGridWorld, 2, randomPosition, agentMoveProb);
         LOG(INFO) << "Agent move probability is " << agentMoveProb;
         LOG(INFO) << "[CREATED] Agent at " << randomPosition.x << ", " << randomPosition.y
                 << " with id " << 2 << endl;
+        LOG(INFO) << "Agent type is " << ptrOtherAgent->getAgentInformation().agentType;
     }
 
     template<class T>
-    void DomainOne<T>::enableDisplay(const vector<double>& predatorColour,
-            const vector<double>& preyColour)
+    void DomainOne<T>::step(const uint& stepNo)
     {
-        this->displayEnabled = true;
-        LOG(INFO) << "Display enabled";
-        map<int, vector<double> > idColorMapping = map<int, vector<double> >();
-        pair<int, vector<double> > p = pair<int, vector<double> >();
-
-        p = pair<int, vector<double> >(1, predatorColour);
-        idColorMapping.insert(p);
-
-        p = pair<int, vector<double> >(2, preyColour);
-        idColorMapping.insert(p);
-
-        visualizer = Visualizer(idColorMapping, ptrGridWorld->width, ptrGridWorld->height);
-    }
-
-    template<class T>
-    void DomainOne<T>::step()
-    {
+        if (stepNo > maxSteps)
+            LOG(FATAL) << "Step no is greater than maxSteps!";
         AgentInformation aiPredator, aiOtherAgent;
         aiPredator = ptrPredator->getAgentInformation();
         aiOtherAgent = ptrOtherAgent->getAgentInformation();
 
         // build vector<AgentInformation>
         vector<AgentInformation> vAgentInformation;
-        vAgentInformation.clear();
         vAgentInformation.push_back(aiPredator);
         vAgentInformation.push_back(aiOtherAgent);
 
         // move prey
-        ptrOtherAgent->move(vAgentInformation);
+        ptrOtherAgent->move(vAgentInformation, stepNo);
         // move predator
-        ptrPredator->move(vAgentInformation);
+        ptrPredator->move(vAgentInformation, stepNo);
 
         VLOG(2) << "Predator at " << aiPredator.position.x << "," << aiPredator.position.y;
         VLOG(2)
@@ -103,74 +89,67 @@ namespace PredatorPreyHunter
 
         if ((aiOtherAgent.position.x == aiPredator.position.x)
                 && (aiOtherAgent.position.y == aiPredator.position.y)) {
-            LOG(INFO) << "Prey caught by predator or predator caught by hunter";
-            if (dynamic_cast<T*>(ptrOtherAgent)->getAgentInformation().agentId == PREY) {     // Yay
-                agentCaughtIds.push_back(aiOtherAgent.agentId);
+            if (ptrOtherAgent->getAgentInformation().agentType == PREY) {     // Yay
+                agentCaughtId = aiOtherAgent.agentId;
                 LOG(INFO) << "Prey caught by predator";
-            } else if (ptrOtherAgent->getAgentInformation().agentId == HUNTER) {
-                agentCaughtIds.push_back(aiPredator.agentId);
+                LOG(INFO) << "Predator was at " << aiPredator.position.x << ", " << aiPredator.position.y;
+                LOG(INFO) << "Prey was at " << aiOtherAgent.position.x << ", " << aiOtherAgent.position.y;
+            } else if (ptrOtherAgent->getAgentInformation().agentType == HUNTER) {
+                agentCaughtId = aiPredator.agentId;
                 LOG(INFO) << "Predator caught by hunter";
+                LOG(INFO) << "Predator was at " << aiPredator.position.x << ", " << aiPredator.position.y;
+                LOG(INFO) << "Hunter was at " << aiOtherAgent.position.x << ", " << aiOtherAgent.position.y;
             }
-            numAgentsCaught++;
-        }
-
-        // Show display
-        if (displayEnabled) {
-            // FIXME Need to do this in a better way
-            static vector<AgentInformation> vAgentInformationPrevious = vector<AgentInformation>();
-            if (vAgentInformationPrevious.size() == 0) {
-                vAgentInformationPrevious = vAgentInformation;
-            }
-            visualizer.show(vAgentInformationPrevious, vAgentInformation);
-            vAgentInformationPrevious = vAgentInformation;
+            agentCaught = true;
         }
     }
 
     template<class T>
     double DomainOne<T>::run()
     {
-        uint noSteps = 0;
-        uint prevNumAgentsCaught = 0;
-        numAgentsCaught = 0;
-        agentCaughtIds = vector<uint>();
+        uint noSteps = 1;
+        agentCaught = false;
 
         do {
             VLOG(1) << "Step: " << noSteps << endl;
-            (void) step();
-            if (numAgentsCaught > 0 && numAgentsCaught > prevNumAgentsCaught) {
+            (void) step(noSteps);
+            if (agentCaught) {
                 LOG(INFO) << "CAUGHT!!!!" << endl;
-                prevNumAgentsCaught = numAgentsCaught;
-                if (ptrOtherAgent->getAgentInformation().agentId == PREY) {
-                    if (numAgentsCaught == numAgents) {
-                        LOG(INFO) << "All prey caught in " << noSteps << " steps!";
-                        return calculateFitness(noSteps);
-                    }
-                } else if (ptrOtherAgent->getAgentInformation().agentId == HUNTER) {
-                    if (numAgentsCaught == numPredators) {
-                        LOG(INFO) << "All predators caught in " << noSteps << " steps!";
-                        return calculateFitness(noSteps);
-                    }
+                if (ptrOtherAgent->getAgentInformation().agentType == PREY) {
+                    LOG(INFO) << "Prey caught in " << noSteps << " steps!";
+                    return calculateFitness(noSteps);
+                } else if (ptrOtherAgent->getAgentInformation().agentType == HUNTER) {
+                    LOG(INFO) << "Predator caught in " << noSteps << " steps!";
+                    return calculateFitness(noSteps);
                 }
             }
-        } while (noSteps++ < maxSteps);
+        } while (++noSteps <= maxSteps);
 
         if (noSteps - 1 == maxSteps) {
             LOG(INFO) << maxSteps << " passed without prey/predator being caught";
         }
 
-        return calculateFitness(noSteps);
+        return calculateFitness(noSteps - 1);
     }
 
     template<class T>
     double DomainOne<T>::calculateFitness(const uint& stepCurrent)
     {
+        if (stepCurrent > maxSteps) {
+            LOG(FATAL) << "Step no is greater than maxSteps!" << " stepCurrent is "
+                    << stepCurrent << " and maxSteps is " << maxSteps;
+        }
+
         double fitness = 0.0;
-        if (numAgentsCaught > 0) {
-            if (ptrOtherAgent->getAgentInformation().agentId == PREY) {     // Yay
-                fitness = static_cast<double>(10) * (maxSteps - stepCurrent) * numAgentsCaught;
-            } else if (ptrOtherAgent->getAgentInformation().agentId == HUNTER) {
-                fitness = static_cast<double>(-1) * 10 * (maxSteps - stepCurrent) * numAgentsCaught;
+        if (agentCaught) {
+            LOG(INFO) << "Caught! stepCurrent is "
+                                << stepCurrent << " and maxSteps is " << maxSteps;
+            if (ptrOtherAgent->getAgentInformation().agentType == PREY) {     // Yay
+                fitness = static_cast<double>(10) * (maxSteps - stepCurrent);
+            } else if (ptrOtherAgent->getAgentInformation().agentType == HUNTER) {
+                fitness = static_cast<double>(-1) * 10 * (maxSteps - stepCurrent);
             }
+            LOG(INFO) << "Returned fitness is " << fitness;
             return fitness;
         } else {
             // calculate distance from hunter and prey
@@ -178,22 +157,21 @@ namespace PredatorPreyHunter
             Position positionOtherAgent = ptrOtherAgent->getPosition();
             uint distanceOtherAgent;
             distanceOtherAgent = ptrGridWorld->distance(positionOtherAgent, positionPredator);
-            // reward for being close to prey and far away from hunter
-            distanceOtherAgent = ptrGridWorld->getWidth() + ptrGridWorld->getHeight()
-                    - distanceOtherAgent;
+
             // take into account the size of the grid for rewarding later
-            if (ptrOtherAgent->getAgentInformation().agentId == PREY) {
+            if (ptrOtherAgent->getAgentInformation().agentType == PREY) {
                 distanceOtherAgent = ptrGridWorld->getWidth() + ptrGridWorld->getHeight()
                         - distanceOtherAgent;
                 fitness = static_cast<double>(distanceOtherAgent);
-            } else if (ptrOtherAgent->getAgentInformation().agentId == HUNTER) {
+            } else if (ptrOtherAgent->getAgentInformation().agentType == HUNTER) {
                 fitness = static_cast<double>(distanceOtherAgent);
             }
+            LOG(INFO) << "Returned fitness is " << fitness;
             return fitness;
         }
     }
 
-    template class DomainOne<Prey>;
-    template class DomainOne<Hunter>;
+    template class DomainOne<Prey> ;
+    template class DomainOne<Hunter> ;
 }
 

@@ -93,8 +93,8 @@ namespace PredatorPreyHunter
     Position GridWorld::getRandomPosition()
     {
         Position position;
-        position.x = static_cast<int>(fetchRandomDouble() * width);
-        position.y = static_cast<int>(fetchRandomDouble() * height);
+        position.x = static_cast<int>(fetchRandomLong() % width);
+        position.y = static_cast<int>(fetchRandomLong() % height);
         return position;
     }
 }

@@ -10,6 +10,11 @@
 
 #include "Network.h"
 
+enum NetworkContainerType
+{
+    MONOLITHIC = 0, COMBINER = 1, SELECTION = 2
+};
+
 namespace EspPredPreyHunter
 {
     using std::vector;
@@ -26,6 +31,7 @@ namespace EspPredPreyHunter
         uint totalNumInputs;     // For the overall container -- calculated value
         uint totalNumOutputs;     // For the overall container -- calculated value
         uint numNetworks;     // Includes combiner network
+        NetworkContainerType networkContainerType;
     public:
         NetworkContainer(const uint& inputsPerNetwork, const uint& outputsPerNetwork,
                 const uint& numNetworks)
@@ -65,6 +71,11 @@ namespace EspPredPreyHunter
         virtual void activate(const vector<double>& input, vector<double>& output) = 0;
 
         virtual string toString() = 0;
+
+        NetworkContainerType getNetworkContainerType() const
+        {
+            return networkContainerType;
+        }
         const uint getInputsPerNetwork() const
         {
             return inputsPerNetwork;
@@ -83,14 +94,5 @@ namespace EspPredPreyHunter
         }
     };
 }
-
-
-
-
-
-
-
-
-
 
 #endif /* NETWORKESPCOMBINER_H_ */

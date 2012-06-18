@@ -22,38 +22,33 @@ namespace PredatorPreyHunter
         GridWorld* ptrGridWorld;
         PredPreyHunterVisualizer::Visualizer visualizer;
         const uint maxSteps;
-        bool displayEnabled;
 
         /**
          * This stores the number of agents that are not predators
          */
         uint numOtherAgents;
 
-        virtual void step() = 0;
+        virtual void step(const uint& stepNo) = 0;
         virtual double calculateFitness(const uint& stepCurrent) = 0;
 
     public:
         Domain()
-                : maxSteps(0), displayEnabled(false), numOtherAgents(0)
+                : maxSteps(0), numOtherAgents(0)
         {
         }
 
         Domain(const uint& maxSteps, const uint& width, const uint& height)
-                : maxSteps(maxSteps), displayEnabled(false)
+                : maxSteps(maxSteps)
         {
             //displayEnabled = true;
             ptrGridWorld = new GridWorld(width, height);
             LOG(INFO) << "[CREATED] GridWorld of size " << width << ", " << height;
+            numOtherAgents = -1;
         }
 
         uint getNumOtherAgents()
         {
             return numOtherAgents;
-        }
-
-        void disableDisplay()
-        {
-            displayEnabled = false;
         }
 
         virtual ~Domain()
@@ -63,7 +58,12 @@ namespace PredatorPreyHunter
 
         virtual void init(NetworkContainer* espNetwork) = 0;
         virtual double run() = 0;     // return fitness
-        virtual double run(std::string stepsFilePath) = 0;     // return fitness
+        virtual double run(std::string stepsFilePath, std::string networkSelectionFilePath) = 0;     // return fitness
+
+        const uint getMaxSteps() const
+        {
+            return maxSteps;
+        }
     };
 }
 

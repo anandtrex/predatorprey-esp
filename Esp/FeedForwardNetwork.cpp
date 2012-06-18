@@ -10,6 +10,8 @@
 
 namespace EspPredPreyHunter
 {
+    using std::endl;
+
     void FeedForwardNetwork::activate(const vector<double> &input, vector<double> &output)
     {
         VLOG(4) << "Activating feed forward network";
@@ -17,20 +19,20 @@ namespace EspPredPreyHunter
 
         vector<double> biasedInput(input);
 
-        if(bias)
-            biasedInput.push_back(1.0); // Bias
+        if (bias)
+            biasedInput.push_back(1.0);     // Bias
 
-        if(( biasedInput.size() + output.size() ) != geneSize){
-            LOG(ERROR) << "Mismatch between genesize and input + output size";
-            LOG(ERROR) << "Input size is " << biasedInput.size();
-            LOG(ERROR) << "Output size is " << output.size();
-            LOG(ERROR) << "Gene size is " << geneSize;
+        if ((biasedInput.size() + output.size()) != geneSize) {
+            LOG(FATAL) << "Mismatch between genesize and input + output size" << endl
+            << "Input size is " << biasedInput.size() << endl
+            << "Output size is " << output.size() << endl
+            << "Gene size is " << geneSize;
         }
 
         VLOG(5) << "Input is " << vecToString(biasedInput);
 
         // evaluate hidden/output layer
-        for (i = 0; i < numHiddenNeurons; ++i) {  //for each hidden unit
+        for (i = 0; i < numHiddenNeurons; ++i) {     //for each hidden unit
             //if(!pop[i]->lesioned){
             activation[i] = 0.0;
             for (j = 0; j < biasedInput.size(); ++j) {
@@ -44,8 +46,6 @@ namespace EspPredPreyHunter
             activation[i] = sigmoid(activation[i]);
             //}
         }
-
-
 
         VLOG(4) << "Inputs evaluated";
 

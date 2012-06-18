@@ -21,7 +21,7 @@ namespace PredatorPreyHunter
             this->typeAgent = PREDATOR;
         }
 
-        virtual Position move(const std::vector<AgentInformation>& vAgentInformation) = 0;
+        virtual Position move(const std::vector<AgentInformation>& vAgentInformation, const uint& stepNo) = 0;
     };
 }
 

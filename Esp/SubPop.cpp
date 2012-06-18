@@ -9,7 +9,6 @@
 
 #include "SubPop.h"
 
-
 namespace EspPredPreyHunter
 {
     using std::sort;
@@ -229,13 +228,11 @@ namespace EspPredPreyHunter
         int i = 0;
         for (; i < numBreed - 5; ++i) {
             crossover(pop[i]->weight, pop[findMate(i)]->weight,
-                    pop[numNeurons - (1 + i * 2)]->weight,
-                    pop[numNeurons - (2 + i * 2)]->weight);
+                    pop[numNeurons - (1 + i * 2)]->weight, pop[numNeurons - (2 + i * 2)]->weight);
         }
         for (; i < numBreed; ++i) {
             crossover(pop[i]->weight, hallOfFameNetwork->neurons[neuronNumber]->weight,
-                    pop[numNeurons - (1 + i * 2)]->weight,
-                    pop[numNeurons - (2 + i * 2)]->weight);
+                    pop[numNeurons - (1 + i * 2)]->weight, pop[numNeurons - (2 + i * 2)]->weight);
         }
     }
 }

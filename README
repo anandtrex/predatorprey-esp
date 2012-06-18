@@ -1,0 +1,8 @@
+Compile the code in a separate build directory using "cmake .."
+The configuration is stored in "esp_predprey.cfg"
+"run.sh" runs the default case. The last flag toggles between monolithic
+network, task decomposition selection network and task decomposition combiner
+network.
+
+The ESP code is based on Aditya Rawal and Padmini Rajagopalan's Multi-component
+ESP code.

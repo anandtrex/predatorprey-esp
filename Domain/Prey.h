@@ -8,7 +8,7 @@ namespace PredatorPreyHunter {
       double moveProbability;
     public:
       Prey( const GridWorld* ptrGridWorld, const uint& agentId, const Position& p, const double& moveProbability );
-      Position move( const std::vector<AgentInformation>& vAgentInformation );
+      Position move( const std::vector<AgentInformation>& vAgentInformation, const uint& stepNo = -1 );
   };
 }
 #endif // PPH_PREY_H

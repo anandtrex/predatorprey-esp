@@ -9,33 +9,42 @@ namespace PredatorPreyHunter
     using std::abs;
 
     Hunter::Hunter(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p,
-            const double& moveProbability)
-            : Agent(ptrGridWorld, agentId, p), moveProbability(moveProbability)
+            const double& moveProbability) :
+            Agent(ptrGridWorld, agentId, p), moveProbability(moveProbability), roleReversalProbability(
+                    0.0), revStepNo(-1)
     {
         this->typeAgent = HUNTER;
-        roleReversalProbability = 0.0;
     }
 
     Hunter::Hunter(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p,
-            const double& moveProbability, const double& roleReversalProbability)
-            : Agent(ptrGridWorld, agentId, p), moveProbability(moveProbability), roleReversalProbability(
-                    roleReversalProbability)
+            const double& moveProbability, const double& roleReversalProbability) :
+            Agent(ptrGridWorld, agentId, p), moveProbability(moveProbability), roleReversalProbability(
+                    roleReversalProbability), revStepNo(-1)
     {
         this->typeAgent = HUNTER;
     }
 
-    Position Hunter::move(const std::vector<AgentInformation>& vAgentInformation)
+    Position Hunter::move(const std::vector<AgentInformation>& vAgentInformation,
+            const uint& stepNo)
     {
         Position p;
-        if (typeAgent == HUNTER_WEAK){
+        if (typeAgent == HUNTER_WEAK) {
             p = movePrey(vAgentInformation);
         } else if (typeAgent == HUNTER) {
             p = moveHunter(vAgentInformation);
         }
 
         // TODO Sets this once till end of episode, need to keep track of number of steps and reverse this
-        if (fetchRandomDouble() < roleReversalProbability){
+        if (revStepNo == -1 && typeAgent == HUNTER
+                && fetchRandomDouble() < roleReversalProbability) {
             typeAgent = HUNTER_WEAK;
+            revStepNo = stepNo;
+            LOG(INFO) << "Role reversed!";
+        }
+        if (typeAgent == HUNTER_WEAK && stepNo - revStepNo > 20) {
+            typeAgent = HUNTER;
+            revStepNo = -1;
+            LOG(INFO) << "Role re-reversed!";
         }
 
         return p;
@@ -74,7 +83,7 @@ namespace PredatorPreyHunter
         // uses the same conventions
         const int MAP_LENGTH = ptrGridWorld->getWidth();
         const int MAP_HEIGHT = ptrGridWorld->getHeight();
-        int x_dist = itPredatorClosest->position.x - this->position.x;     // NOTE: Predator - Hunter
+        int x_dist = itPredatorClosest->position.x - this->position.x;    // NOTE: Predator - Hunter
         int temp;
         if ((abs(x_dist)) > (MAP_LENGTH / 2)) {     // account for the toroid
             temp = x_dist;
@@ -83,7 +92,7 @@ namespace PredatorPreyHunter
                 x_dist = 0 - x_dist;     // account for who is behind who
         }
         // do the same thing for y
-        int y_dist = itPredatorClosest->position.y - this->position.y;     // NOTE: Predator - Hunter
+        int y_dist = itPredatorClosest->position.y - this->position.y;    // NOTE: Predator - Hunter
         if ((abs(y_dist)) > (MAP_HEIGHT / 2)) {
             temp = y_dist;
             y_dist = MAP_HEIGHT - abs(y_dist);

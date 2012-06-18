@@ -30,8 +30,13 @@ namespace EspPredPreyHunter
         DomainOne<Prey>* domainPrey;
         DomainOne<Hunter>* domainHunter;
 
+        // FIXME Hack
+        uint numHunters;
+
+        bool coevolve;
+
     public:
-        EspExperimentSubtask(const char* configFilePath);
+        EspExperimentSubtask(const string& configFilePath);
         ~EspExperimentSubtask()
         {
         }

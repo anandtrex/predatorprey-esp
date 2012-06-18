@@ -15,17 +15,17 @@ namespace EspPredPreyHunter
 {
     using std::vector;
 
-    class NetworkContainerSubtask: public NetworkContainer
+    class NetworkContainerCombiner: public NetworkContainer
     {
     protected:
         vector<NetworkContainer*> networkContainers;
         Network* combinerNetwork;
     public:
-        NetworkContainerSubtask();
-        NetworkContainerSubtask(const uint& nHiddenNeurons, const uint& popSize,
-                    const uint& netTp, const uint& numNetworks, const uint& numInputsPerNetwork,
-                    const uint& numOutputsPerNetwork);
-        virtual ~NetworkContainerSubtask();
+        NetworkContainerCombiner();
+        NetworkContainerCombiner(const uint& nHiddenNeurons, const uint& popSize, const uint& netTp,
+                const uint& numNetworks, const uint& numInputsPerNetwork,
+                const uint& numOutputsPerNetwork);
+        virtual ~NetworkContainerCombiner();
 
         void initializeNetworks();
         //void setNetwork(const NetworkContainer& networkContainer);

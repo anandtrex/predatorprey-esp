@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <fstream>
 
+#include <gflags/gflags.h>
 #include <libconfig.h++>
 
 namespace EspPredPreyHunter
@@ -26,30 +27,45 @@ namespace EspPredPreyHunter
     using PredatorPreyHunter::Domain;
     using PredatorPreyHunter::fetchRandomDouble;
 
-    EspExperiment::EspExperiment(const char* configFilePath)
+    EspExperiment::EspExperiment(const string& configFilePath)
             : Experiment()
     {
         libconfig::Config cfg;
 
         LOG(INFO) << "Reading from config file " << configFilePath;
-        cfg.readFile(configFilePath);
+        cfg.readFile(configFilePath.c_str());
 
-        uint maxSteps = cfg.lookup("experiment:max_steps");
+        const uint maxSteps = cfg.lookup("experiment:max_steps");
         LOG(INFO) << "Max steps in experiment is "
                 << static_cast<uint>(cfg.lookup("experiment:max_steps"));
 
-        uint gridWidth = cfg.lookup("experiment:grid:width");
-        uint gridHeight = cfg.lookup("experiment:grid:height");
+        const uint gridWidth = cfg.lookup("experiment:grid:width");
+        const uint gridHeight = cfg.lookup("experiment:grid:height");
         LOG(INFO) << "Grid size is " << static_cast<uint>(gridWidth) << "x"
                 << static_cast<uint>(gridHeight);
 
-        uint numHunters = static_cast<uint>(cfg.lookup("agents:hunter:number"));
-        uint numPredators = static_cast<uint>(cfg.lookup("agents:predator:number"));
-        uint numPrey = static_cast<uint>(cfg.lookup("agents:prey:number"));
+        const uint numHunters = (FLAGS_h == -1) ? static_cast<uint>(cfg.lookup("agents:hunter:number")) : FLAGS_h;
 
-        domainTotal = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey, numHunters,
-                static_cast<double>(cfg.lookup("agents:prey:preys:[0]:move_probability")),
-                static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:move_probability")));
+        const uint numPredators = static_cast<uint>(cfg.lookup("agents:predator:number"));
+        const uint numPrey = static_cast<uint>(cfg.lookup("agents:prey:number"));
+
+        const uint hunterType = static_cast<uint>(cfg.lookup("agents:hunter:hunters:[0]:type"));
+        const double hunterMoveProb = static_cast<double>(cfg.lookup(
+                "agents:hunter:hunters:[0]:move_probability"));
+        const double preyMoveProb = static_cast<double>(cfg.lookup(
+                "agents:prey:preys:[0]:move_probability"));
+
+        if (hunterType == 0) {
+            domainTotal = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey,
+                    numHunters, preyMoveProb - 0.1, hunterMoveProb - 0.1);
+        } else if (hunterType == 1) {
+            const double hunterRoleReversalProb = static_cast<double>(cfg.lookup(
+                    "agents:hunter:hunters:[0]:role_reversal_probability"));
+            domainTotal = new DomainTotal(maxSteps, gridWidth, gridHeight, numPredators, numPrey,
+                    numHunters, preyMoveProb - 0.1, hunterMoveProb - 0.1, hunterRoleReversalProb);
+            LOG(INFO) << "Hunter has MPD. Role reversal probability is "
+                    << hunterRoleReversalProb;
+        }
         LOG(INFO) << "Initialized domain with " << numPredators << " predators," << numPrey
                 << " prey and " << numHunters << " hunters.";
         LOG(INFO) << "Hunter move probability is "
@@ -67,61 +83,23 @@ namespace EspPredPreyHunter
         const int numOutputsPerNetwork = 5;
 
         LOG(INFO) << "Initialising network container with " << numHiddenNeurons
-                       << " as number of hidden neurons, " << "population size " << popSize
-                       << ", number of networks as " << numHunters + numPrey
-                       << " number of inputs per network as " << numInputsPerNetwork
-                       << " and number of outputs as " << numOutputsPerNetwork;
+                << " as number of hidden neurons, " << "population size " << popSize
+                << ", number of networks as " << numHunters + numPrey
+                << " number of inputs per network as " << numInputsPerNetwork
+                << " and number of outputs as " << numOutputsPerNetwork;
 
-        /*
-         esp = new Esp(static_cast<uint>(cfg.lookup("experiment:esp:num_hidden_neurons")), popSize,
-         0, numHunters + numPrey, numInputsPerNetwork, numOutputsPerNetwork);
-         LOG(INFO) << "Initialized esp with "
-         << static_cast<uint>(cfg.lookup("experiment:esp:num_hidden_neurons"))
-         << " as number of hidden neurons, " << "population size " << popSize
-         << ", number of other agents as " << numHunters + numPrey << "and "
-         << "number of actions as " << numOutputsPerNetwork;*/
         networkContainerTotal = new NetworkContainerEsp(numHiddenNeurons, popSize, netType,
                 numHunters + numPrey, numInputsPerNetwork, numOutputsPerNetwork);
 
         numGenerations = cfg.lookup("experiment:esp:num_generations");
         LOG(INFO) << "Number of generations is " << numGenerations;
 
-        numEvalTrials = 5;
+        numEvalTrials = cfg.lookup("experiment:esp:num_eval_trials");
         LOG(INFO) << "Number of trials for evaluation is " << numEvalTrials;
 
         // NOTE
         numTrialsPerGen = popSize * 10;
         LOG(INFO) << "Number of trials per generation is " << numTrialsPerGen;
-
-        // Display related stuff
-        bool displayEnabled = cfg.lookup("experiment:display");
-
-        if (displayEnabled) {
-            LOG(INFO) << "Display enabled";
-
-            vector<vector<double> > colors = vector<vector<double> >();
-            vector<double> color = vector<double>();
-            color.push_back(
-                    static_cast<double>(cfg.lookup("agents:predator:predators:[0]:color:r")));
-            color.push_back(
-                    static_cast<double>(cfg.lookup("agents:predator:predators:[0]:color:g")));
-            color.push_back(
-                    static_cast<double>(cfg.lookup("agents:predator:predators:[0]:color:b")));
-            colors.push_back(color);
-            color = vector<double>();
-            color.push_back(static_cast<double>(cfg.lookup("agents:prey:preys:[0]:color:r")));
-            color.push_back(static_cast<double>(cfg.lookup("agents:prey:preys:[0]:color:g")));
-            color.push_back(static_cast<double>(cfg.lookup("agents:prey:preys:[0]:color:b")));
-            colors.push_back(color);
-
-            color = vector<double>();
-            color.push_back(static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:color:r")));
-            color.push_back(static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:color:g")));
-            color.push_back(static_cast<double>(cfg.lookup("agents:hunter:hunters:[0]:color:b")));
-            colors.push_back(color);
-
-            domainTotal->enableDisplay(colors[0], colors[1], colors[2]);
-        }
     }
 
     void EspExperiment::saveNetworkToFile(const string& fileName,
@@ -140,10 +118,10 @@ namespace EspPredPreyHunter
     {
         // TODO Change this
         LOG(INFO) << "Starting evolve";
-        evolve(domainTotal, networkContainerTotal);
+        evolve(domainTotal, networkContainerTotal, numGenerations);
     }
 
-    NetworkContainer* EspExperiment::evolve(Domain* domain, NetworkContainer* networkContainer)
+    NetworkContainer* EspExperiment::evolve(Domain* domain, NetworkContainer* networkContainer, const int& numGen)
     {
         vector<NetworkContainer*> hallOfFame = vector<NetworkContainer*>();
         NetworkContainer* generationBestNetwork;
@@ -155,7 +133,7 @@ namespace EspPredPreyHunter
         networkContainer->initializeNetworks();
         VLOG(4) << "Done initializing networks";
 
-        for (uint generation = 0; generation < numGenerations; generation++) {
+        for (uint generation = 1; generation <= numGen; generation++) {
             genMaxFitness = -numeric_limits<double>::max();     // Minimum possible float value
             genAverageFitness = 0.0;
             networkContainer->evalReset();
@@ -166,10 +144,18 @@ namespace EspPredPreyHunter
                 networkContainer->incrementTests();
                 fitness = 0.0;
                 for (uint evalTrial = 0; evalTrial < numEvalTrials; evalTrial++) {
+                    LOG(INFO) << "evalTrial is " << evalTrial;
                     domain->init(networkContainer);
-                    fitness += domain->run();
+                    double tempfitness = domain->run();
+                    if (tempfitness > 10 * domain->getMaxSteps()) {
+                        LOG(FATAL) << "Too high fitness " << tempfitness << "!!";
+                    }
+                    fitness += tempfitness;
                 }
                 fitness /= numEvalTrials;
+                if (fitness > 10.0 * domain->getMaxSteps()) {
+                    LOG(FATAL) << "Too high fitness " << fitness << "!!";
+                }
                 genAverageFitness += fitness;
                 networkContainer->setFitness(fitness);
                 if (fitness > genMaxFitness) {
@@ -189,15 +175,14 @@ namespace EspPredPreyHunter
             LOG(INFO) << "Generation: " << generation;
             LOG(INFO) << "Generation max fitness was: " << genMaxFitness;
             genAverageFitness /= numTrialsPerGen;
-            LOG(INFO) << "Generation average fitness was: "
-                    << static_cast<double>(genAverageFitness);
+            LOG(INFO) << "Generation average fitness was: " << genAverageFitness;
             foutGenAverage << generation << " " << genAverageFitness << "\n";
             foutGenMax << generation << " " << genMaxFitness << "\n";
             // Run it once with the generation champion to get file output
             const int tempDiff = (numGenerations - 20);
             if (generation > max(tempDiff, 0)) {
                 domain->init(generationBestNetwork);
-                domain->run(concatStringDouble("champion_", generation) + ".log");
+                domain->run(concatStringDouble("champion_", generation) + ".log", concatStringDouble("champion_", generation) + ".selection.log");
                 saveNetworkToFile(concatStringDouble("champion_", generation) + ".net",
                         generationBestNetwork);
             }

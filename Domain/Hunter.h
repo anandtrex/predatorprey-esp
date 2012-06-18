@@ -7,8 +7,10 @@ namespace PredatorPreyHunter
 {
     class Hunter: public Agent
     {
-        double moveProbability;
-        double roleReversalProbability;
+        const double moveProbability;
+        const double roleReversalProbability;
+        uint revStepNo;
+
         Position moveHunter(const std::vector<AgentInformation>& vAgentInformation);
         Position movePrey(const std::vector<AgentInformation>& vAgentInformation);
     public:
@@ -16,7 +18,7 @@ namespace PredatorPreyHunter
                 const double& moveProbability);
         Hunter(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p,
                         const double& moveProbability, const double& roleReversalProbability);
-        Position move(const std::vector<AgentInformation>& vAgentInformation);
+        Position move(const std::vector<AgentInformation>& vAgentInformation, const uint& stepNo = -1);
     };
 }
 

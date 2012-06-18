@@ -15,6 +15,7 @@ namespace PredatorPreyHunter
 {
     using EspPredPreyHunter::NetworkContainer;
     using std::vector;
+    using std::string;
 
     /**
      * This predator moves towards the prey with the given probability, the movement being random otherwise
@@ -22,17 +23,15 @@ namespace PredatorPreyHunter
     class PredatorEsp: public Predator
     {
         NetworkContainer* networkContainer;
+        string lastSelection;
 
-        /**
-         * Returns the index of the maximum element in a given vector. If there are more than one maximum elements,
-         * it returns a random index among the maximum elements
-         * @param vec
-         * @return
-         */
-        uint getMaxIndex(const vector<double>& vec);
     public:
         PredatorEsp(const GridWorld* ptrGridWorld, const uint& agentId, const Position& p, NetworkContainer *network);
-        Position move(const std::vector<AgentInformation>& vAgentInformation);
+        Position move(const std::vector<AgentInformation>& vAgentInformation, const uint& stepNo = -1);
+        string getLastNetworkSelection()
+        {
+            return lastSelection;
+        }
     };
 }
 

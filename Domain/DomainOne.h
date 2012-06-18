@@ -28,30 +28,25 @@ namespace PredatorPreyHunter
     template<class T>
     class DomainOne: public Domain
     {
-        uint numPredators;
-        uint numAgents;
+        bool agentCaught;
 
-        uint numAgentsCaught;
-
-        vector<uint> agentCaughtIds;
+        uint agentCaughtId;
 
         double agentMoveProb;
 
     protected:
         Predator* ptrPredator;
         Agent* ptrOtherAgent;
-        void step();
+        void step(const uint& stepNo);
 
     public:
         DomainOne();
         DomainOne(const uint& maxSteps, const uint& width, const uint& height,
-                const uint& numPredators, const uint& numAgents, const double& agentMoveProb);
+                const double& agentMoveProb);
         virtual ~DomainOne();
         virtual void init(NetworkContainer* espNetwork);
-        virtual void enableDisplay(const vector<double>& predatorColour,
-                const vector<double>& preyColour);
         virtual double run();     // return fitness
-        virtual double run(std::string stepsFilePath)
+        virtual double run(std::string stepsFilePath, std::string networkSelectionFilePath)
         {
             LOG(ERROR) << "Run with steps output not implemented";
             return -1.0;

@@ -1,0 +1,9 @@
+cd build_m
+make -j8
+condor_submit condor_run
+cd ../build_st/
+make -j8
+condor_submit condor_run
+cd ../build_i/
+make -j8
+condor_submit condor_run
